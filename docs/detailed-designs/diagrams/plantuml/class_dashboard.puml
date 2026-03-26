@@ -1,0 +1,59 @@
+@startuml class_dashboard
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 10
+skinparam classAttributeIconSize 0
+
+title Dashboard Module — Class Diagram
+
+class DashboardController {
+  +get_summary(user_id): SummaryResponse
+  +get_active_loans(user_id): ActiveLoansResponse
+  +get_recent_activity(user_id): ActivityResponse
+}
+
+class DashboardService {
+  -loan_repo: LoanRepository
+  -payment_repo: PaymentRepository
+  -activity_repo: ActivityRepository
+  +get_summary(user_id): DashboardSummary
+  +get_active_loans(user_id, tab): list[LoanSummary]
+  +get_recent_activity(user_id, limit): list[ActivityItem]
+}
+
+class DashboardSummary <<DTO>> {
+  +total_lent_out: Decimal
+  +total_owed: Decimal
+  +upcoming_payments_7d: int
+  +overdue_payments: int
+}
+
+class LoanSummary <<DTO>> {
+  +loan_id: UUID
+  +counterparty_name: str
+  +principal: Decimal
+  +outstanding_balance: Decimal
+  +next_due_date: date
+  +status: str
+}
+
+class ActivityItem <<DTO>> {
+  +id: UUID
+  +event_type: str
+  +description: str
+  +timestamp: datetime
+  +loan_id: UUID
+}
+
+class ActivityRepository {
+  +find_by_user(user_id, limit): list[ActivityItem]
+  +save(item): ActivityItem
+}
+
+DashboardController --> DashboardService
+DashboardService --> ActivityRepository
+DashboardService ..> DashboardSummary
+DashboardService ..> LoanSummary
+DashboardService ..> ActivityItem
+ActivityRepository ..> ActivityItem
+@enduml

@@ -1,0 +1,27 @@
+@startuml c4_container
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 10
+
+title LendQ — C4 Container Diagram
+
+actor "User\n(Browser)" as user
+
+rectangle "LendQ System" {
+  rectangle "Frontend SPA\n[React / HTML]" as spa
+  rectangle "API Gateway\n[Flask REST API]" as api
+  database "PostgreSQL\nDatabase" as db
+  rectangle "Auth Service\n[JWT / Flask]" as auth
+  rectangle "Notification\nService" as notif
+}
+
+rectangle "SMTP Server" as smtp
+
+user --> spa : HTTPS
+spa --> api : REST/JSON
+api --> auth : Authenticate
+api --> db : Read/Write
+api --> notif : Trigger alerts
+notif --> smtp : Send emails
+auth --> db : Verify credentials
+@enduml

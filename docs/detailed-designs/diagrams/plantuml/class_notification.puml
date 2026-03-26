@@ -1,0 +1,68 @@
+@startuml class_notification
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 10
+skinparam classAttributeIconSize 0
+
+title Notification Module — Class Diagram
+
+class NotificationController {
+  +list_notifications(user_id, filters): PaginatedResponse
+  +get_unread_count(user_id): CountResponse
+  +mark_as_read(notification_id): MessageResponse
+  +mark_all_as_read(user_id): MessageResponse
+}
+
+class NotificationService {
+  -notif_repo: NotificationRepository
+  -email_service: EmailService
+  +create_notification(user_id, type, msg, loan_id): Notification
+  +list_notifications(user_id, page, type_filter): PaginatedResult
+  +get_unread_count(user_id): int
+  +mark_read(notification_id): void
+  +mark_all_read(user_id): void
+  +send_payment_due_alert(payment): void
+  +send_overdue_alert(payment): void
+  +send_payment_received(payment): void
+  +send_schedule_changed(payment): void
+}
+
+class Notification <<Entity>> {
+  +id: UUID
+  +user_id: UUID
+  +type: NotificationType
+  +message: str
+  +loan_id: UUID
+  +is_read: bool
+  +created_at: datetime
+}
+
+enum NotificationType {
+  PAYMENT_DUE
+  PAYMENT_OVERDUE
+  PAYMENT_RECEIVED
+  SCHEDULE_CHANGED
+  LOAN_MODIFIED
+  SYSTEM
+}
+
+class EmailService {
+  -smtp_config: dict
+  +send_email(to, subject, body): void
+}
+
+class NotificationRepository {
+  +find_by_user(user_id, page, type): PaginatedResult
+  +count_unread(user_id): int
+  +find_by_id(id): Notification
+  +save(notification): Notification
+  +mark_read(id): void
+  +mark_all_read(user_id): void
+}
+
+NotificationController --> NotificationService
+NotificationService --> NotificationRepository
+NotificationService --> EmailService
+NotificationRepository ..> Notification
+Notification --> NotificationType
+@enduml

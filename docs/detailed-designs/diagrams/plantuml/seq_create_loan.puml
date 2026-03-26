@@ -1,0 +1,34 @@
+@startuml seq_create_loan
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 10
+skinparam sequenceMessageAlign center
+
+title Create Loan Sequence
+
+actor Creditor
+participant "LoanController" as ctrl
+participant "AuthMiddleware" as auth
+participant "LoanService" as svc
+participant "UserRepository" as user_repo
+participant "LoanRepository" as loan_repo
+participant "ScheduleService" as sched
+participant "PaymentRepository" as pay_repo
+participant "NotificationService" as notif
+
+Creditor -> ctrl : POST /api/loans\n{borrower_id, principal, ...}
+ctrl -> auth : verify_token +\nrequire_role("Creditor")
+auth --> ctrl : authorized
+ctrl -> svc : create_loan(creditor_id, data)
+svc -> user_repo : find_by_id(borrower_id)
+user_repo --> svc : Borrower user
+svc -> loan_repo : save(new Loan)
+loan_repo --> svc : Loan
+svc -> sched : generate_schedule(loan)
+sched -> pay_repo : save_all(payments)
+pay_repo --> sched : list[Payment]
+sched --> svc : list[Payment]
+svc -> notif : create_notification(\nborrower_id, LOAN_MODIFIED,\n"New loan created")
+svc --> ctrl : Loan
+ctrl --> Creditor : 201 {loan}
+@enduml

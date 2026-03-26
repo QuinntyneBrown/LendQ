@@ -1,0 +1,38 @@
+@startuml seq_login
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 10
+skinparam sequenceMessageAlign center
+
+title Login Sequence
+
+actor User
+participant "AuthController" as ctrl
+participant "AuthService" as svc
+participant "UserRepository" as repo
+participant "PasswordService" as pwd
+participant "TokenService" as tok
+
+User -> ctrl : POST /api/auth/login\n{email, password}
+ctrl -> svc : authenticate(email, password)
+svc -> repo : find_by_email(email)
+repo --> svc : User | None
+
+alt User not found
+  svc --> ctrl : AuthenticationError
+  ctrl --> User : 401 Invalid credentials
+else User found
+  svc -> pwd : verify_password(password, user.hash)
+  alt Password invalid
+    svc --> ctrl : AuthenticationError
+    ctrl --> User : 401 Invalid credentials
+  else Password valid
+    svc -> tok : create_access_token(user.id, roles)
+    tok --> svc : access_token
+    svc -> tok : create_refresh_token(user.id)
+    tok --> svc : refresh_token
+    svc --> ctrl : TokenResponse
+    ctrl --> User : 200 {access_token, refresh_token}
+  end
+end
+@enduml

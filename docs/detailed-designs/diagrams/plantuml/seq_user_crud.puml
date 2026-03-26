@@ -1,0 +1,47 @@
+@startuml seq_user_crud
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 10
+skinparam sequenceMessageAlign center
+
+title User CRUD Operations
+
+actor Admin
+participant "UserController" as ctrl
+participant "AuthMiddleware" as auth
+participant "UserService" as svc
+participant "UserRepository" as repo
+
+== List Users ==
+Admin -> ctrl : GET /api/users?page=1&search=
+ctrl -> auth : verify_token + require_role("Admin")
+auth --> ctrl : authorized
+ctrl -> svc : list_users(page, size, search)
+svc -> repo : find_all(page, size, search)
+repo --> svc : PaginatedResult
+svc --> ctrl : PaginatedResult
+ctrl --> Admin : 200 {users, total, page}
+
+== Create User ==
+Admin -> ctrl : POST /api/users\n{name, email, roles}
+ctrl -> auth : verify_token + require_role("Admin")
+auth --> ctrl : authorized
+ctrl -> svc : create_user(data)
+svc -> repo : find_by_email(email)
+repo --> svc : None (available)
+svc -> repo : save(new User)
+repo --> svc : User
+svc -> svc : assign_roles(user, role_ids)
+svc --> ctrl : User
+ctrl --> Admin : 201 {user}
+
+== Delete User ==
+Admin -> ctrl : DELETE /api/users/{id}
+ctrl -> auth : verify_token + require_role("Admin")
+auth --> ctrl : authorized
+ctrl -> svc : delete_user(id)
+svc -> repo : find_by_id(id)
+svc -> repo : delete(id)
+svc --> ctrl : success
+ctrl --> Admin : 204
+@enduml
