@@ -53,7 +53,7 @@ The permission set is fixed in code and data migrations. Roles reference permiss
 2. Removing a privileged role from a user performs the same revocation sequence when the permission set is reduced.
 3. Administrative mutations create immutable audit records with actor, target, action, before state, after state, request id, and timestamp.
 
-This behavior resolves the prior “next token refresh” gap.
+This behavior resolves the prior "next token refresh" gap.
 
 ## Sequence Diagram
 

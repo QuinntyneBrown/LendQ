@@ -23,7 +23,7 @@ This is now a coherent production-target design set rather than a collection of 
 | Prior finding | Resolution |
 |---|---|
 | Frontend token storage violated security requirements | Replaced with memory-only access tokens, `HttpOnly` refresh cookie, CSRF controls, and immediate session invalidation across Modules 1, 7, 8, and 15 |
-| Frontend and backend contracts were inconsistent | Introduced [docs/api/openapi.yaml](docs/api/openapi.yaml) and aligned all feature modules to the same endpoints and payloads |
+| Frontend and backend contracts were inconsistent | Introduced [docs/api/openapi.yaml](api/openapi.yaml) and aligned all feature modules to the same endpoints and payloads |
 | Payment model was mutable and non-auditable | Replaced with immutable `payment_transactions`, `payment_allocations`, reversals, schedule-version preservation, and idempotent write rules in Module 4 and Module 11 |
 | Borrowers could directly edit creditor-controlled loan terms | Replaced with borrower change-request flow, approval endpoints, and terms-version history in Modules 3 and 10 |
 | Notification design relied on polling and lacked reliability design | Standardized on transactional outbox, Celery workers, SSE delivery, preferences, and delivery-state tracking in Modules 6, 13, 14, and 16 |
