@@ -8,13 +8,13 @@ The authentication module implements email-based identity, verification, passwor
 
 ## C4 Component Diagram
 
-![C4 Component — Auth](diagrams/rendered/c4_component_auth.png)
+![C4 Component - Auth](diagrams/rendered/c4_component_auth.png)
 
 *Source: [diagrams/plantuml/c4_component_auth.puml](diagrams/plantuml/c4_component_auth.puml)*
 
 ## Class Diagram
 
-![Class Diagram — Auth](diagrams/rendered/class_auth.png)
+![Class Diagram - Auth](diagrams/rendered/class_auth.png)
 
 *Source: [diagrams/plantuml/class_auth.puml](diagrams/plantuml/class_auth.puml)*
 
@@ -51,7 +51,7 @@ Every authorized API request validates token signature, `session_id`, current `s
 
 ### Login
 
-![Sequence — Login](diagrams/rendered/seq_login.png)
+![Sequence - Login](diagrams/rendered/seq_login.png)
 
 *Source: [diagrams/plantuml/seq_login.puml](diagrams/plantuml/seq_login.puml)*
 
@@ -63,7 +63,7 @@ Every authorized API request validates token signature, `session_id`, current `s
 
 ### Sign-Up And Email Verification
 
-![Sequence — Sign-Up](diagrams/rendered/seq_signup.png)
+![Sequence - Sign-Up](diagrams/rendered/seq_signup.png)
 
 *Source: [diagrams/plantuml/seq_signup.puml](diagrams/plantuml/seq_signup.puml)*
 
@@ -74,7 +74,7 @@ Every authorized API request validates token signature, `session_id`, current `s
 
 ### Forgot Password And Global Revocation
 
-![Sequence — Forgot Password](diagrams/rendered/seq_forgot_password.png)
+![Sequence - Forgot Password](diagrams/rendered/seq_forgot_password.png)
 
 *Source: [diagrams/plantuml/seq_forgot_password.puml](diagrams/plantuml/seq_forgot_password.puml)*
 

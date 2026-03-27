@@ -8,13 +8,13 @@ The notification module delivers in-app and optional email notifications for loa
 
 ## C4 Component Diagram
 
-![C4 Component — Notification](diagrams/rendered/c4_component_notification.png)
+![C4 Component - Notification](diagrams/rendered/c4_component_notification.png)
 
 *Source: [diagrams/plantuml/c4_component_notification.puml](diagrams/plantuml/c4_component_notification.puml)*
 
 ## Class Diagram
 
-![Class Diagram — Notification](diagrams/rendered/class_notification.png)
+![Class Diagram - Notification](diagrams/rendered/class_notification.png)
 
 *Source: [diagrams/plantuml/class_notification.puml](diagrams/plantuml/class_notification.puml)*
 
@@ -56,7 +56,7 @@ The notification module delivers in-app and optional email notifications for loa
 
 ## Sequence Diagram
 
-![Sequence — Notifications](diagrams/rendered/seq_notifications.png)
+![Sequence - Notifications](diagrams/rendered/seq_notifications.png)
 
 *Source: [diagrams/plantuml/seq_notifications.puml](diagrams/plantuml/seq_notifications.puml)*
 

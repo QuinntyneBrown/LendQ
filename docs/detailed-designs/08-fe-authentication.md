@@ -10,7 +10,7 @@ The frontend authentication feature implements login, sign-up, verify-email, for
 
 ## Class Diagram
 
-![Class — Auth](diagrams/rendered/fe_class_auth.png)
+![Class - Auth](diagrams/rendered/fe_class_auth.png)
 
 *Source: [diagrams/plantuml/fe_class_auth.puml](diagrams/plantuml/fe_class_auth.puml)*
 
@@ -51,7 +51,7 @@ No auth token is stored in `localStorage` or `sessionStorage`.
 
 ## Sequence Diagram
 
-![Sequence — Login](diagrams/rendered/fe_seq_login.png)
+![Sequence - Login](diagrams/rendered/fe_seq_login.png)
 
 *Source: [diagrams/plantuml/fe_seq_login.puml](diagrams/plantuml/fe_seq_login.puml)*
 

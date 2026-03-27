@@ -8,13 +8,13 @@ The loan module owns loan creation, creditor-controlled term edits, auditable te
 
 ## C4 Component Diagram
 
-![C4 Component — Loan](diagrams/rendered/c4_component_loan.png)
+![C4 Component - Loan](diagrams/rendered/c4_component_loan.png)
 
 *Source: [diagrams/plantuml/c4_component_loan.puml](diagrams/plantuml/c4_component_loan.puml)*
 
 ## Class Diagram
 
-![Class Diagram — Loan](diagrams/rendered/class_loan.png)
+![Class Diagram - Loan](diagrams/rendered/class_loan.png)
 
 *Source: [diagrams/plantuml/class_loan.puml](diagrams/plantuml/class_loan.puml)*
 
@@ -67,13 +67,13 @@ Creation and edit validation requires that installment strategy be complete and 
 
 ### Create Loan
 
-![Sequence — Create Loan](diagrams/rendered/seq_create_loan.png)
+![Sequence - Create Loan](diagrams/rendered/seq_create_loan.png)
 
 *Source: [diagrams/plantuml/seq_create_loan.puml](diagrams/plantuml/seq_create_loan.puml)*
 
 ### Update Loan Terms
 
-![Sequence — Update Loan](diagrams/rendered/seq_update_loan.png)
+![Sequence - Update Loan](diagrams/rendered/seq_update_loan.png)
 
 *Source: [diagrams/plantuml/seq_update_loan.puml](diagrams/plantuml/seq_update_loan.puml)*
 

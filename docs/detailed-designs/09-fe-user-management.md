@@ -10,7 +10,7 @@ This feature provides the admin-only user list, add/edit dialog, role-permission
 
 ## Class Diagram
 
-![Class — User Management](diagrams/rendered/fe_class_user.png)
+![Class - User Management](diagrams/rendered/fe_class_user.png)
 
 *Source: [diagrams/plantuml/fe_class_user.puml](diagrams/plantuml/fe_class_user.puml)*
 
@@ -37,7 +37,7 @@ This feature provides the admin-only user list, add/edit dialog, role-permission
 
 ## Sequence Diagram
 
-![Sequence — User CRUD](diagrams/rendered/fe_seq_user_crud.png)
+![Sequence - User CRUD](diagrams/rendered/fe_seq_user_crud.png)
 
 *Source: [diagrams/plantuml/fe_seq_user_crud.puml](diagrams/plantuml/fe_seq_user_crud.puml)*
 

@@ -8,13 +8,13 @@ This module covers administrative user management, controlled RBAC, searchable a
 
 ## C4 Component Diagram
 
-![C4 Component — User RBAC](diagrams/rendered/c4_component_user.png)
+![C4 Component - User RBAC](diagrams/rendered/c4_component_user.png)
 
 *Source: [diagrams/plantuml/c4_component_user.puml](diagrams/plantuml/c4_component_user.puml)*
 
 ## Class Diagram
 
-![Class Diagram — User RBAC](diagrams/rendered/class_user_rbac.png)
+![Class Diagram - User RBAC](diagrams/rendered/class_user_rbac.png)
 
 *Source: [diagrams/plantuml/class_user_rbac.puml](diagrams/plantuml/class_user_rbac.puml)*
 
@@ -57,7 +57,7 @@ This behavior resolves the prior "next token refresh" gap.
 
 ## Sequence Diagram
 
-![Sequence — User CRUD](diagrams/rendered/seq_user_crud.png)
+![Sequence - User CRUD](diagrams/rendered/seq_user_crud.png)
 
 *Source: [diagrams/plantuml/seq_user_crud.puml](diagrams/plantuml/seq_user_crud.puml)*
 

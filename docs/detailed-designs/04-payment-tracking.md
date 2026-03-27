@@ -8,13 +8,13 @@ This module defines the immutable payment ledger, allocation rules, schedule adj
 
 ## C4 Component Diagram
 
-![C4 Component — Payment](diagrams/rendered/c4_component_payment.png)
+![C4 Component - Payment](diagrams/rendered/c4_component_payment.png)
 
 *Source: [diagrams/plantuml/c4_component_payment.puml](diagrams/plantuml/c4_component_payment.puml)*
 
 ## Class Diagram
 
-![Class Diagram — Payment](diagrams/rendered/class_payment.png)
+![Class Diagram - Payment](diagrams/rendered/class_payment.png)
 
 *Source: [diagrams/plantuml/class_payment.puml](diagrams/plantuml/class_payment.puml)*
 
@@ -67,19 +67,19 @@ All balance-affecting POST routes require `Idempotency-Key`.
 
 ### Record Payment
 
-![Sequence — Record Payment](diagrams/rendered/seq_record_payment.png)
+![Sequence - Record Payment](diagrams/rendered/seq_record_payment.png)
 
 *Source: [diagrams/plantuml/seq_record_payment.puml](diagrams/plantuml/seq_record_payment.puml)*
 
 ### Reschedule Payment
 
-![Sequence — Reschedule Payment](diagrams/rendered/seq_reschedule_payment.png)
+![Sequence - Reschedule Payment](diagrams/rendered/seq_reschedule_payment.png)
 
 *Source: [diagrams/plantuml/seq_reschedule_payment.puml](diagrams/plantuml/seq_reschedule_payment.puml)*
 
 ### Pause Payments
 
-![Sequence — Pause Payments](diagrams/rendered/seq_pause_payment.png)
+![Sequence - Pause Payments](diagrams/rendered/seq_pause_payment.png)
 
 *Source: [diagrams/plantuml/seq_pause_payment.puml](diagrams/plantuml/seq_pause_payment.puml)*
 
