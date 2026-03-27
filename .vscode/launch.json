@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "LendQ API",
+      "type": "python",
+      "request": "launch",
+      "module": "flask",
+      "env": {
+        "FLASK_APP": "app:create_app",
+        "FLASK_ENV": "development"
+      },
+      "args": ["run", "--debug", "--port", "5000"],
+      "jinja": true,
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}/backend"
+    },
+    {
+      "name": "LendQ Frontend",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend/src"
+    },
+    {
+      "name": "Attach API (debugpy)",
+      "type": "python",
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 5678
+      },
+      "justMyCode": false
+    }
+  ]
+}
