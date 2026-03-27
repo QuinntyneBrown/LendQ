@@ -12,7 +12,7 @@ The frontend authentication module implements the login, sign-up, and forgot-pas
 
 ![Class — Auth](diagrams/rendered/fe_class_auth.png)
 
-*Source: [diagrams/plantuml/fe_class_auth.puml](diagrams/plantuml/fe_class_auth.puml)*
+*Source: [diagrams/rendered/fe_class_auth.png](diagrams/rendered/fe_class_auth.png)*
 
 ## Screen Designs (from ui-design.pen)
 
@@ -81,7 +81,7 @@ The frontend authentication module implements the login, sign-up, and forgot-pas
 
 ![Sequence — Login](diagrams/rendered/fe_seq_login.png)
 
-*Source: [diagrams/plantuml/fe_seq_login.puml](diagrams/plantuml/fe_seq_login.puml)*
+*Source: [diagrams/rendered/fe_seq_login.png](diagrams/rendered/fe_seq_login.png)*
 
 **Behavior**:
 1. User enters email and password on the `LoginPage` and clicks "Sign In".

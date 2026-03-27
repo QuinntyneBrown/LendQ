@@ -26,7 +26,7 @@ The LendQ frontend is a React single-page application (SPA) built with TypeScrip
 
 ![C4 Container — Full Stack](diagrams/rendered/fe_c4_container.png)
 
-*Source: [diagrams/plantuml/fe_c4_container.puml](diagrams/plantuml/fe_c4_container.puml) | [diagrams/drawio/fe_c4_container.drawio](diagrams/drawio/fe_c4_container.drawio)*
+*Source: [diagrams/rendered/fe_c4_container.png](diagrams/rendered/fe_c4_container.png) | [diagrams/drawio/fe_c4_container.drawio](diagrams/drawio/fe_c4_container.drawio)*
 
 The React SPA runs entirely in the browser. It fetches data from the Flask REST API via JSON over HTTPS, authenticating with JWT bearer tokens. The backend handles all business logic, database access, and email dispatch.
 
@@ -34,7 +34,7 @@ The React SPA runs entirely in the browser. It fetches data from the Flask REST 
 
 ![C4 Component — SPA](diagrams/rendered/fe_c4_component_spa.png)
 
-*Source: [diagrams/plantuml/fe_c4_component_spa.puml](diagrams/plantuml/fe_c4_component_spa.puml)*
+*Source: [diagrams/rendered/fe_c4_component_spa.png](diagrams/rendered/fe_c4_component_spa.png)*
 
 ### Internal Architecture
 
@@ -146,7 +146,7 @@ src/
 
 ![Class — API Types](diagrams/rendered/fe_class_api_types.png)
 
-*Source: [diagrams/plantuml/fe_class_api_types.puml](diagrams/plantuml/fe_class_api_types.puml)*
+*Source: [diagrams/rendered/fe_class_api_types.png](diagrams/rendered/fe_class_api_types.png)*
 
 ### Key TypeScript Types
 
@@ -185,7 +185,7 @@ The `ApiClient` is a configured Axios instance with two interceptors:
 
 ![Class — Layout](diagrams/rendered/fe_class_layout.png)
 
-*Source: [diagrams/plantuml/fe_class_layout.puml](diagrams/plantuml/fe_class_layout.puml)*
+*Source: [diagrams/rendered/fe_class_layout.png](diagrams/rendered/fe_class_layout.png)*
 
 ### Responsive Navigation Strategy
 
@@ -259,7 +259,7 @@ From `ui-design.pen`:
 
 ![Sequence — Responsive Nav](diagrams/rendered/fe_seq_responsive_nav.png)
 
-*Source: [diagrams/plantuml/fe_seq_responsive_nav.puml](diagrams/plantuml/fe_seq_responsive_nav.puml)*
+*Source: [diagrams/rendered/fe_seq_responsive_nav.png](diagrams/rendered/fe_seq_responsive_nav.png)*
 
 **Behavior**:
 1. On initial render, `useBreakpoint` checks the viewport width via `window.matchMedia`.
@@ -272,7 +272,7 @@ From `ui-design.pen`:
 
 ![Sequence — Token Refresh](diagrams/rendered/fe_seq_token_refresh.png)
 
-*Source: [diagrams/plantuml/fe_seq_token_refresh.puml](diagrams/plantuml/fe_seq_token_refresh.puml)*
+*Source: [diagrams/rendered/fe_seq_token_refresh.png](diagrams/rendered/fe_seq_token_refresh.png)*
 
 **Behavior**:
 1. When any API request receives a 401, the Axios response interceptor intercepts it.

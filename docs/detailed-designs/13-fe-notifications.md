@@ -12,7 +12,7 @@ The frontend notification module provides three notification surfaces: a bell ic
 
 ![Class — Notification Module](diagrams/rendered/fe_class_notification.png)
 
-*Source: [diagrams/plantuml/fe_class_notification.puml](diagrams/plantuml/fe_class_notification.puml)*
+*Source: [diagrams/rendered/fe_class_notification.png](diagrams/rendered/fe_class_notification.png)*
 
 ## Screen Designs (from ui-design.pen)
 

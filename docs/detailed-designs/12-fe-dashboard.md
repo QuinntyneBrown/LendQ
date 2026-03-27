@@ -12,7 +12,7 @@ The frontend dashboard module is the primary landing page after login. It displa
 
 ![Class — Dashboard](diagrams/rendered/fe_class_dashboard.png)
 
-*Source: [diagrams/plantuml/fe_class_dashboard.puml](diagrams/plantuml/fe_class_dashboard.puml)*
+*Source: [diagrams/rendered/fe_class_dashboard.png](diagrams/rendered/fe_class_dashboard.png)*
 
 ## Screen Designs (from ui-design.pen)
 
@@ -69,7 +69,7 @@ The frontend dashboard module is the primary landing page after login. It displa
 
 ![Sequence — Dashboard Load](diagrams/rendered/fe_seq_dashboard_load.png)
 
-*Source: [diagrams/plantuml/fe_seq_dashboard_load.puml](diagrams/plantuml/fe_seq_dashboard_load.puml)*
+*Source: [diagrams/rendered/fe_seq_dashboard_load.png](diagrams/rendered/fe_seq_dashboard_load.png)*
 
 **Behavior**:
 1. User navigates to `/dashboard` (default route after login).

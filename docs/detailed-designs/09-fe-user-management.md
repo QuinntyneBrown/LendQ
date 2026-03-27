@@ -12,7 +12,7 @@ The frontend user management module provides Admin-only screens for listing, cre
 
 ![Class — User Management](diagrams/rendered/fe_class_user.png)
 
-*Source: [diagrams/plantuml/fe_class_user.puml](diagrams/plantuml/fe_class_user.puml)*
+*Source: [diagrams/rendered/fe_class_user.png](diagrams/rendered/fe_class_user.png)*
 
 ## Screen Designs (from ui-design.pen)
 
@@ -78,7 +78,7 @@ The frontend user management module provides Admin-only screens for listing, cre
 
 ![Sequence — User CRUD](diagrams/rendered/fe_seq_user_crud.png)
 
-*Source: [diagrams/plantuml/fe_seq_user_crud.puml](diagrams/plantuml/fe_seq_user_crud.puml)*
+*Source: [diagrams/rendered/fe_seq_user_crud.png](diagrams/rendered/fe_seq_user_crud.png)*
 
 **Behavior**:
 

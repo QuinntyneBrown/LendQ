@@ -12,7 +12,7 @@ The frontend payment module provides UI components for displaying the payment sc
 
 ![Class — Payment Module](diagrams/rendered/fe_class_payment.png)
 
-*Source: [diagrams/plantuml/fe_class_payment.puml](diagrams/plantuml/fe_class_payment.puml)*
+*Source: [diagrams/rendered/fe_class_payment.png](diagrams/rendered/fe_class_payment.png)*
 
 ## Screen Designs (from ui-design.pen)
 
@@ -100,7 +100,7 @@ Filterable by type: All, Payments, Reschedules, Pauses, Adjustments.
 
 ![Sequence — Record Payment](diagrams/rendered/fe_seq_record_payment.png)
 
-*Source: [diagrams/plantuml/fe_seq_record_payment.puml](diagrams/plantuml/fe_seq_record_payment.puml)*
+*Source: [diagrams/rendered/fe_seq_record_payment.png](diagrams/rendered/fe_seq_record_payment.png)*
 
 **Behavior**:
 1. User clicks "Record Payment" on a scheduled payment row in the Loan Detail page.

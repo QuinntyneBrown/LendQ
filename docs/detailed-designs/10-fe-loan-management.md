@@ -12,7 +12,7 @@ The frontend loan management module provides screens for creditors to create and
 
 ![Class — Loan Management](diagrams/rendered/fe_class_loan.png)
 
-*Source: [diagrams/plantuml/fe_class_loan.puml](diagrams/plantuml/fe_class_loan.puml)*
+*Source: [diagrams/rendered/fe_class_loan.png](diagrams/rendered/fe_class_loan.png)*
 
 ## Screen Designs (from ui-design.pen)
 
@@ -86,7 +86,7 @@ Or accessed directly via sidebar navigation:
 
 ![Sequence — Create Loan](diagrams/rendered/fe_seq_create_loan.png)
 
-*Source: [diagrams/plantuml/fe_seq_create_loan.puml](diagrams/plantuml/fe_seq_create_loan.puml)*
+*Source: [diagrams/rendered/fe_seq_create_loan.png](diagrams/rendered/fe_seq_create_loan.png)*
 
 **Behavior**:
 1. Creditor clicks "Create New Loan" on the loan list page. The `CreateEditLoanModal` opens.
