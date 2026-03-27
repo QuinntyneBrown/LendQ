@@ -1,0 +1,42 @@
+@startuml seq_record_payment
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 10
+skinparam sequenceMessageAlign center
+
+title Record Payment Sequence
+
+actor User
+participant "PaymentController" as ctrl
+participant "AuthMiddleware" as auth
+participant "PaymentService" as svc
+participant "PaymentRepository" as pay_repo
+participant "LoanRepository" as loan_repo
+participant "ChangeLogRepository" as cl
+participant "NotificationService" as notif
+
+User -> ctrl : POST /api/loans/{id}/payments\n{amount, date, notes}
+ctrl -> auth : verify_token
+auth --> ctrl : user_id, roles
+ctrl -> svc : record_payment(loan_id, amount, date, note)
+svc -> pay_repo : find_next_due(loan_id)
+pay_repo --> svc : Payment (scheduled)
+
+alt Lump sum (amount > scheduled)
+  svc -> svc : Mark current as PAID
+  svc -> svc : Apply excess to\nfuture payments
+end
+
+svc -> pay_repo : save(updated Payment)
+svc -> svc : recalculate_balance(loan_id)
+svc -> loan_repo : update_balance(loan_id, new_balance)
+
+alt Balance == 0
+  svc -> loan_repo : update_status(PAID_OFF)
+end
+
+svc -> cl : save(payment event)
+svc -> notif : send_payment_received(payment)
+svc --> ctrl : PaymentResponse
+ctrl --> User : 200 {payment, new_balance}
+@enduml

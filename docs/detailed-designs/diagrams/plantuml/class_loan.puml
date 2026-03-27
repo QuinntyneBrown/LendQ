@@ -1,0 +1,61 @@
+@startuml class_loan
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 10
+skinparam classAttributeIconSize 0
+
+title Loan Management — Class Diagram
+
+class LoanController {
+  +list_loans(filters): PaginatedResponse
+  +get_loan(loan_id): LoanDetailResponse
+  +create_loan(payload): LoanResponse
+  +update_loan(loan_id, payload): LoanResponse
+}
+
+class LoanService {
+  -loan_repo: LoanRepository
+  -user_repo: UserRepository
+  -schedule_service: ScheduleService
+  +list_loans(user_id, role, page, size): PaginatedResult
+  +get_loan_detail(loan_id, user_id): LoanDetail
+  +create_loan(creditor_id, data): Loan
+  +update_loan(loan_id, user_id, role, data): Loan
+  -validate_borrower_update(data): void
+}
+
+class Loan <<Entity>> {
+  +id: UUID
+  +creditor_id: UUID
+  +borrower_id: UUID
+  +description: str
+  +principal: Decimal
+  +interest_rate: Decimal
+  +repayment_frequency: str
+  +start_date: date
+  +status: LoanStatus
+  +notes: str
+  +created_at: datetime
+  +updated_at: datetime
+}
+
+enum LoanStatus {
+  ACTIVE
+  PAUSED
+  PAID_OFF
+  OVERDUE
+  DEFAULTED
+}
+
+class LoanRepository {
+  +find_by_creditor(creditor_id, page, size): PaginatedResult
+  +find_by_borrower(borrower_id, page, size): PaginatedResult
+  +find_by_id(id): Loan
+  +save(loan): Loan
+}
+
+LoanController --> LoanService
+LoanService --> LoanRepository
+LoanRepository ..> Loan
+Loan --> LoanStatus
+@enduml

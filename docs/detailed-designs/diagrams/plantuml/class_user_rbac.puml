@@ -1,0 +1,86 @@
+@startuml class_user_rbac
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 10
+skinparam classAttributeIconSize 0
+
+title User Management & RBAC — Class Diagram
+
+class UserController {
+  +list_users(filters): PaginatedResponse
+  +get_user(user_id): UserResponse
+  +create_user(payload): UserResponse
+  +update_user(user_id, payload): UserResponse
+  +delete_user(user_id): MessageResponse
+}
+
+class RoleController {
+  +list_roles(): list[RoleResponse]
+  +get_role(role_id): RoleResponse
+  +update_role_permissions(role_id, perms): RoleResponse
+}
+
+class UserService {
+  -user_repo: UserRepository
+  -role_repo: RoleRepository
+  +list_users(page, size, search): PaginatedResult
+  +get_user(user_id): User
+  +create_user(data): User
+  +update_user(user_id, data): User
+  +delete_user(user_id): void
+  +assign_roles(user_id, role_ids): void
+}
+
+class RoleService {
+  -role_repo: RoleRepository
+  +list_roles(): list[Role]
+  +update_permissions(role_id, perms): Role
+}
+
+class User <<Entity>> {
+  +id: UUID
+  +name: str
+  +email: str
+  +password_hash: str
+  +is_active: bool
+  +created_at: datetime
+  +updated_at: datetime
+}
+
+class Role <<Entity>> {
+  +id: UUID
+  +name: str
+  +description: str
+  +permissions: list[str]
+}
+
+class UserRole <<Entity>> {
+  +user_id: UUID
+  +role_id: UUID
+  +assigned_at: datetime
+}
+
+class UserRepository {
+  +find_all(page, size, search): PaginatedResult
+  +find_by_id(id): User
+  +find_by_email(email): User
+  +save(user): User
+  +delete(id): void
+}
+
+class RoleRepository {
+  +find_all(): list[Role]
+  +find_by_id(id): Role
+  +save(role): Role
+}
+
+UserController --> UserService
+RoleController --> RoleService
+UserService --> UserRepository
+UserService --> RoleRepository
+RoleService --> RoleRepository
+User "1" -- "*" UserRole
+Role "1" -- "*" UserRole
+UserRepository ..> User
+RoleRepository ..> Role
+@enduml
