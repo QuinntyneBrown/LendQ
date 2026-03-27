@@ -9,396 +9,409 @@ Artifacts reviewed:
 - `docs/specs/L1.md`
 - `docs/specs/L2.md`
 - `docs/detailed-designs/00-index.md`
-- `docs/detailed-designs/01-authentication.md`
-- `docs/detailed-designs/02-user-management.md`
-- `docs/detailed-designs/03-loan-management.md`
-- `docs/detailed-designs/04-payment-tracking.md`
-- `docs/detailed-designs/05-dashboard.md`
-- `docs/detailed-designs/06-notifications.md`
-- supporting PlantUML and Draw.io diagrams under `docs/detailed-designs/diagrams/`
-- visual design artifact `docs/ui-design.pen`
+- `docs/detailed-designs/01-authentication.md` through `13-fe-notifications.md`
+- PlantUML and Draw.io sources under `docs/detailed-designs/diagrams/`
+- `docs/ui-design.pen`
 
 ## Executive Summary
 
-The current design is a credible first pass, but it is not yet sufficient for a secure, high-performance, production-ready implementation.
+The design set is materially stronger than the previous revision. The most important improvement is that the system is no longer documented as backend-only: the new frontend design modules define a React SPA architecture, route structure, responsive navigation, shared UI system, and primary screen flows.
 
-The strongest parts are the module decomposition, the baseline stack choice (React SPA, Flask, SQLAlchemy, PostgreSQL), the use of diagrams, and the early inclusion of core security basics such as password hashing, hashed reset tokens, hashed refresh-token storage, soft deletes, and audit/change tracking.
+That said, the project is still not ready to be treated as a secure, production-ready implementation design for a financial application.
 
-The main blockers are:
+The main blockers are now more specific:
 
-1. The design set is still backend-heavy and does not translate the UI-centric L2 requirements into a frontend technical architecture.
-2. The auth/session model is not production-safe enough for a React SPA handling financial data.
-3. The loan/payment data model is too weak for auditable financial accounting, partial payments, prepayments, and schedule changes.
-4. Multi-step workflows do not define transaction boundaries, idempotency, concurrency control, or reliable event delivery.
-5. The async/notification architecture is underspecified for a multi-instance production deployment.
-6. Observability, deployment, recovery, testing, and operational readiness are largely absent from the design.
+1. The updated requirements are stronger than the updated designs. Several new security, financial-integrity, notification-reliability, and operational requirements are still not designed.
+2. Some frontend and backend designs now contradict each other on core integration points.
+3. The session/token model directly conflicts with the revised security requirements.
+4. The loan and payment models still do not satisfy the new immutable, auditable financial-record requirements.
 
-Verdict: do not start implementation against this design as-is. Tighten the architecture first, especially around auth, payment accounting, consistency, and frontend/API contract definition.
+Verdict: the frontend architecture gap has been substantially reduced, but the system still needs another design pass before implementation should begin.
+
+## Material Improvements Since The Prior Audit
+
+- Frontend technical architecture now exists in `07-fe-architecture.md`, with module boundaries, routing, shared UI, and responsive navigation.
+- Frontend feature designs now exist for auth, users, loans, payments, dashboard, and notifications in `08` through `13`.
+- The frontend design maps many components back to `ui-design.pen`, especially dashboard, auth, loan detail, payment dialogs, notification dropdowns, and toast behavior.
+- The client data-fetching story is clearer: TanStack Query cache keys, invalidation behavior, and basic route protection are documented.
+- Dashboard loading behavior and partial rendering are better documented than before.
 
 ## Requirement Coverage Summary
 
 Status legend:
 
-- `Covered`: materially addressed
-- `Partial`: addressed, but important implementation gaps remain
-- `At Risk`: design exists, but likely to fail requirements or production-readiness goals without redesign
-- `Missing`: not materially designed
+- `Covered`: materially addressed by current designs
+- `Partial`: substantially addressed, but notable gaps remain
+- `At Risk`: documented, but the current design is likely to fail the requirement or create production risk
+- `Missing`: no material design coverage
 
 | Requirement Area | Status | Notes |
 |---|---|---|
-| L1-1 Authentication & Login | Partial | Core backend flows exist, but the design uses email-only login while L1 states email/username, and there is no production-grade SPA session-storage strategy. |
-| L1-2 User Management & RBAC | Partial | CRUD and multi-role support are documented, but permission governance, revocation behavior, and admin audit controls are underdefined. |
-| L1-3 Loan Management | At Risk | CRUD exists, but the loan model is missing key schedule/term attributes and allows overly broad borrower updates. |
-| L1-4 Payment Tracking & Scheduling | At Risk | Workflow coverage exists, but the payment model cannot support robust reconciliation, partial payments, or idempotent money movement. |
-| L1-5 Dashboard & Overview | Partial | Endpoints and aggregates are defined, but scale/read-model strategy is missing and the balance source of truth is inconsistent. |
-| L1-6 Notifications & Alerts | Partial | Notification triggers exist, but real-time delivery, dedupe, retry, worker topology, and delivery-state tracking are not fully designed. |
-| L1-7 Responsive Design | Missing from technical design | Visual design assets exist in `docs/ui-design.pen`, but there is no frontend technical design for responsive routing, auth guards, state, accessibility, or performance. |
+| L1-1 User Authentication & Secure Session Management | Partial | Core screens and refresh flow are designed, but email verification is missing and token storage violates the revised security requirements. |
+| L1-2 User Management & RBAC | Partial | Admin UX exists, but immediate revocation, permission-catalog governance, and audit expectations are not fully designed. |
+| L1-3 Loan Management & Terms Governance | At Risk | Core screens exist, but required loan-term fields, borrower approval workflow, and terms versioning are not reflected in the backend or frontend design. |
+| L1-4 Payment Tracking, Scheduling & Balance Management | At Risk | Core payment flows exist, but immutable transactions, allocations, reversals, and idempotent money movement are still not designed. |
+| L1-5 Dashboard & Overview | Partial | Good frontend coverage exists, but backend balance source of truth and freshness semantics remain weak. |
+| L1-6 Notifications & Alerts | Partial | Notification surfaces exist, but event-driven delivery, delivery status, preferences, and worker topology are not fully designed. |
+| L1-7 Responsive Design | Partial | Frontend architecture and dashboard breakpoint designs exist, but visual coverage for many non-dashboard screens is still desktop-first and inferred. |
+| L1-8 Application Security & Abuse Protection | At Risk | Requirements are explicit, but the current auth/session design directly conflicts with them. |
+| L1-9 Financial Integrity & Auditability | At Risk | The current financial model still centers on mutable schedule rows rather than an authoritative transaction/allocation system. |
+| L1-10 Accessibility, Client Quality & Performance | Partial | Route protection, loading skeletons, and responsive layout are documented, but accessibility semantics and concrete performance targets are not. |
+| L1-11 Reliability, Observability & Operational Readiness | Missing | No concrete design set covers health checks, telemetry, backup/restore, recovery objectives, or release quality gates. |
+| L1-12 API Contract & Integration Governance | Partial | API conventions exist, but no OpenAPI contract, deprecation policy, or idempotency contract is designed. |
 
 ## Priority Findings
 
 | Severity | Finding | Why It Matters |
 |---|---|---|
-| Critical | No end-to-end frontend technical design tied to the L2 requirements | Most L2 requirements are screen, navigation, dialog, and responsive behaviors; the design set is explicitly backend-oriented and leaves implementation-critical frontend decisions open. |
-| Critical | SPA auth/session design is not production-safe as written | Returning bearer tokens to a React SPA without a documented storage and rotation strategy creates avoidable token theft and replay risk. |
-| Critical | Payment accounting model is not auditable enough | A mutable `Payment` row is not a sufficient ledger for partial payments, lump sums, chargeback/reversal scenarios, or reconciliation. |
-| Critical | Multi-write business workflows lack transaction/outbox/idempotency design | Loan creation, payment recording, schedule updates, activity creation, and notifications can diverge under retries, concurrency, or partial failure. |
-| High | Loan schedule generation is underspecified and inconsistent with requirements | Required frequencies and custom schedules cannot be derived from the current loan fields and algorithm. |
-| High | Authorization revocation and permission governance are too weak | Role changes take effect on next token refresh; critical access can remain live after revocation or deactivation. |
-| High | Async job architecture is unresolved for production | APScheduler inside the app and a vague "or Celery beat" choice is not a reliable multi-instance production strategy. |
-| Medium | Dashboard and notification reads will become hot paths | Frequent polling and aggregate queries can overload PostgreSQL without read-model/index/caching strategy. |
-| Medium | Error handling leaks internals | Returning `str(error)` and exception class names is unsafe in production and will expose internals to clients. |
-| Medium | Operational readiness is missing | No concrete design exists for deployment, observability, recovery, CI/CD, security scanning, or performance testing. |
+| Critical | Frontend token storage violates the new security requirements | The current SPA stores access and refresh tokens in `localStorage`, which directly conflicts with `docs/specs/L2.md:364-370`. |
+| Critical | The frontend and backend contract is inconsistent on core flows | Auth bootstrap and loan creation depend on endpoints or permissions the backend design does not provide. |
+| Critical | The payment model still does not satisfy the new financial-integrity requirements | Mutable payment rows are not enough for authoritative balances, allocations, reversals, and safe retries. |
+| High | Loan governance still contradicts the revised borrower-change requirements | The designs still allow borrowers to directly edit most loan fields instead of using request/approval flow with version history. |
+| High | Notification design does not meet the revised real-time and reliability requirements | The current design is polling-centric and does not model delivery status, preferences, or reliable worker-based processing. |
+| High | Session revocation and role-change enforcement are inconsistent | Requirements call for immediate invalidation, while the backend still defers role impact to next token refresh. |
+| High | Operational-readiness requirements remain undesigned | The current design set still lacks concrete observability, recovery, and CI/CD quality-gate architecture. |
+| Medium | Visual and documentation completeness is uneven | New frontend docs reference rendered diagrams that do not exist, and some required user flows have no matching visual design artifact. |
 
 ## Detailed Feedback
 
-### 1. Requirements Traceability And Frontend Architecture
+### 1. Frontend Architecture Is Now Materially Present
 
-The highest-level mismatch is that the requirements are heavily UI-centric while the top-level design document is explicitly backend-oriented. `docs/detailed-designs/00-index.md:1` labels the set as "Backend Detailed Design Documentation", while `docs/specs/L2.md` is dominated by screen, layout, responsive, navigation, toast, and dialog behaviors.
+This is the biggest improvement in the current revision.
 
-This means the current design does not yet explain how the product will actually satisfy:
+The new frontend architecture defines:
 
-- responsive navigation and breakpoints (`docs/specs/L2.md:224-249`)
-- screen-level flows for login, users, loans, notifications, dialogs, and toasts (`docs/specs/L2.md:7-220`)
-- form validation states, error handling, loading states, and disabled states
-- route protection and role-based rendering in the React SPA
-- accessibility requirements such as keyboard behavior, focus management, screen-reader labels, and modal semantics
-- frontend performance concerns such as code splitting, asset budgets, data prefetching, caching, and hydration strategy
+- project structure and feature modules in `docs/detailed-designs/07-fe-architecture.md:47-123`
+- route map and role guards in `docs/detailed-designs/07-fe-architecture.md:125-143`
+- responsive navigation strategy in `docs/detailed-designs/07-fe-architecture.md:190-213`
+- shared UI system and design tokens in `docs/detailed-designs/07-fe-architecture.md:215-256`
 
-The presence of `docs/ui-design.pen` is useful, but it is a visual artifact, not a frontend implementation design.
+This closes a major gap from the previous audit. The design is no longer missing a frontend implementation story.
 
-Recommendation:
+The remaining issue is traceability depth:
 
-1. Add a dedicated frontend technical design document for the React SPA.
-2. Map every L2 screen/dialog/navigation requirement to routes, components, API contracts, and state transitions.
-3. Define route guards, auth bootstrap flow, token refresh behavior, caching, optimistic updates, validation, accessibility, and responsive implementation rules.
-4. Standardize on TypeScript, a generated API client from OpenAPI, route-level code splitting, and a data-fetching layer such as TanStack Query or an equivalent pattern.
-
-### 2. Authentication, Session, And Security Design
-
-The auth design has good baseline instincts:
-
-- bcrypt hashing (`docs/detailed-designs/01-authentication.md:110`)
-- hashed refresh tokens for revocation (`docs/detailed-designs/01-authentication.md:45`)
-- hashed reset tokens (`docs/detailed-designs/01-authentication.md:71-74`)
-- generic auth failures to avoid enumeration (`docs/detailed-designs/01-authentication.md:46`, `docs/detailed-designs/01-authentication.md:114`)
-
-The production gaps are still material:
-
-1. The design standardizes on bearer JWTs in the `Authorization` header (`docs/detailed-designs/00-index.md:51-53`) and shows a React SPA in front of the API (`docs/detailed-designs/diagrams/plantuml/c4_container.puml:11-24`), but it never defines where tokens live in the browser.
-2. The login response returns both access and refresh tokens directly to the SPA (`docs/detailed-designs/01-authentication.md:88-95`). If those end up in `localStorage` or `sessionStorage`, the system becomes highly exposed to XSS-driven token theft.
-3. JWT signing uses HS256 and a shared secret (`docs/detailed-designs/01-authentication.md:111`). For production, prefer asymmetric signing such as RS256 or EdDSA with `kid`, rotation policy, and issuer/audience validation.
-4. The design does not define refresh-token rotation, token family tracking, reuse detection, device/session inventory, or forced logout semantics across devices.
-5. Rate limiting is only described as 5 attempts per minute per IP (`docs/detailed-designs/01-authentication.md:115`). That is too weak on its own for credential stuffing and will also create false positives behind NAT.
-6. Signup is not clearly protected by verification or anti-abuse controls.
-7. There is no documented MFA option, email verification flow, CORS policy, CSP, secure headers, TLS posture, or secrets management approach.
+- `07-fe-architecture.md` is still scoped only to `L1-7, L2-7.1, L2-7.2, L2-7.3` at `docs/detailed-designs/07-fe-architecture.md:3`, even though the document now materially participates in `L1-10` and `L1-12`.
+- Several new cross-cutting requirements added to `L2.md` are not mapped to any detailed design module.
 
 Recommendation:
 
-1. Choose one of two explicit patterns and document it:
-   - preferred: secure `httpOnly`, `SameSite`, short-lived session/refresh cookies with CSRF protection
-   - acceptable: in-memory access token plus rotating refresh token in secure cookie, with strict CSP and replay detection
-2. Add token rotation with reuse detection and token family invalidation.
-3. Introduce `iss`, `aud`, `jti`, `iat`, `nbf`, and key-rotation metadata.
-4. Add per-account and per-IP rate limits, progressive backoff, and optional CAPTCHA after threshold breaches.
-5. Define email verification and password policy.
-6. Add structured audit logs for login, reset, logout, role changes, and suspicious activity.
+1. Update document scopes so every detailed design module explicitly names the new L2 requirements it is meant to satisfy.
+2. Add one cross-cutting design doc for security/session architecture and one for operational readiness/API governance.
 
-### 3. Error Handling Needs Production Hardening
+### 2. Session And Token Design Now Explicitly Conflicts With The Requirements
 
-The global error handler currently returns `str(error)` and the exception class name directly to clients (`docs/detailed-designs/00-index.md:68-77`). That is acceptable for local development, but it is not acceptable for production.
+The new requirements are clear:
 
-Risks:
+- `docs/specs/L2.md:364-370` requires protected session transport/storage and explicitly says sensitive session tokens must not be exposed to client-side script-readable persistent storage.
 
-- leakage of internal exception messages, stack-adjacent data, and implementation details
-- inconsistent client behavior when raw exception strings vary
-- accidental disclosure of SQL, filesystem, or third-party error details
+The frontend design does the opposite:
 
-Recommendation:
+- `docs/detailed-designs/07-fe-architecture.md:181-182` attaches access tokens from `localStorage`
+- `docs/detailed-designs/07-fe-architecture.md:279-283` retrieves refresh tokens from `localStorage`
+- `docs/detailed-designs/08-fe-authentication.md:91` saves tokens to `localStorage`
+- `docs/detailed-designs/08-fe-authentication.md:110` bootstraps auth from `localStorage`
+- `docs/detailed-designs/08-fe-authentication.md:164-165` documents both access and refresh tokens in `localStorage`
 
-1. Split exception handling into domain errors, validation errors, authz/authn errors, and unexpected faults.
-2. Return stable public error codes and user-safe messages only.
-3. Log the full exception server-side with request ID and trace context.
-4. Include correlation IDs in client responses.
+This is now a direct requirement violation, not just a best-practice concern.
 
-### 4. Loan Domain Model Is Incomplete For The Required Scheduling Rules
+There are additional auth coverage gaps:
 
-The loan model currently includes `principal`, `interest_rate`, `repayment_frequency`, and `start_date`, but it does not define the number of installments, maturity date, custom schedule payload, currency, grace-period rules, or a canonical outstanding-balance strategy (`docs/detailed-designs/03-loan-management.md:72-85`, `docs/detailed-designs/diagrams/plantuml/class_loan.puml:27-55`).
+- `docs/specs/L1.md:4` and `docs/specs/L2.md:24,51` require email verification behavior.
+- The backend auth design exposes only `login`, `signup`, `forgot-password`, `reset-password`, `refresh`, and `logout` in `docs/detailed-designs/01-authentication.md:25-30`.
+- The frontend auth API integration mirrors the same set in `docs/detailed-designs/08-fe-authentication.md:71-78`.
 
-This becomes a real problem because the schedule algorithm assumes a value `n` for number of payments (`docs/detailed-designs/03-loan-management.md:89-92`), but that input does not exist in the documented model or create-loan API.
-
-There is also a requirements mismatch:
-
-- L1 says `weekly, monthly, custom` (`docs/specs/L1.md:10`)
-- L2 says `Weekly, Bi-weekly, Monthly, Custom` (`docs/specs/L2.md:99`)
-- the algorithm shown is monthly amortization only (`docs/detailed-designs/03-loan-management.md:89-92`)
+There is no verification endpoint, verification page, verification state model, or resend-verification flow in the design set.
 
 Recommendation:
 
-1. Expand the loan terms model to include:
-   - currency
-   - installment count or end date
-   - repayment frequency enum with exact allowed values
-   - optional custom schedule definition
-   - accrual/prepayment/rounding policy
-2. Decide whether `outstanding_balance` is stored, derived, or both.
-3. Define a schedule-versioning model so edits do not destroy historical meaning.
-4. Resolve the frequency mismatch before implementation.
+1. Redesign session handling around secure cookies or another compliant storage model that satisfies `L2-8.1`.
+2. Add explicit CSRF/XSS protection strategy tied to the chosen credential transport.
+3. Add email verification endpoints, frontend flows, and account-state handling.
+4. Add session inventory and forced revocation behavior for deactivation, password reset, and role changes.
 
-### 5. Borrower Update Rules Are Too Broad For A Financial Product
+### 3. Frontend And Backend Contract Consistency Is Still A Blocking Issue
 
-The design says borrowers can update everything except principal (`docs/specs/L1.md:10`, `docs/detailed-designs/03-loan-management.md:52-55`, `docs/detailed-designs/diagrams/plantuml/seq_update_loan.puml:24-33`).
+The updated frontend design is more concrete, but that also exposes hard API mismatches.
 
-Technically that matches the stated requirement, but it is not a safe production rule without stronger domain controls. Under that rule a borrower could potentially alter:
+#### 3.1 Auth bootstrap depends on an endpoint that is not designed
 
-- interest rate
-- repayment frequency
-- start date
-- notes or descriptive terms with contractual meaning
+Frontend auth calls `GET /api/v1/users/me`:
 
-That is unusual for a lending system and creates legal, operational, and audit problems.
+- `docs/detailed-designs/08-fe-authentication.md:91`
+- `docs/detailed-designs/08-fe-authentication.md:110`
 
-Recommendation:
+The backend design does not define that endpoint:
 
-1. Revisit the requirement and define a field-level permission matrix.
-2. Prefer a workflow where borrower-requested changes are proposals requiring creditor approval.
-3. Version loan terms and schedules rather than silently mutating active contracts.
+- auth endpoints in `docs/detailed-designs/01-authentication.md:25-30`
+- user endpoints in `docs/detailed-designs/02-user-management.md:27-31`
 
-### 6. Payment Accounting Model Is Not Sufficiently Auditable
+The backend user API is admin-only and only supports `GET /users` and `GET /users/{id}`.
 
-This is the single biggest domain issue in the design.
+Result: the current login bootstrap path cannot work as designed.
 
-The documented `Payment` entity is a mutable schedule row with `amount_due`, `amount_paid`, `due_date`, `paid_date`, `status`, and `notes` (`docs/detailed-designs/04-payment-tracking.md:91-102`, `docs/detailed-designs/diagrams/plantuml/class_payment.puml:35-46`). The payment-recording flow then updates the "next due" payment and may apply excess to future payments (`docs/detailed-designs/04-payment-tracking.md:39-46`, `docs/detailed-designs/diagrams/plantuml/seq_record_payment.puml:21-41`).
+#### 3.2 Loan creation depends on an admin-only user lookup endpoint
 
-That is not a strong enough model for production finance workflows because it does not separate:
+Frontend loan creation says the borrower search box calls:
 
-- scheduled obligations
-- actual payment transactions
-- allocation of a transaction across one or more scheduled installments
-- reversals/refunds/corrections
-- payment method metadata
-- external processor references
+- `GET /api/v1/users?role=Borrower&search=...` in `docs/detailed-designs/10-fe-loan-management.md:92-99`
 
-It also conflicts with L2-4.4, which calls for payment method capture and a balance preview (`docs/specs/L2.md:148-155`), while the backend design only models amount/date/notes (`docs/detailed-designs/04-payment-tracking.md:39-46`).
+But the backend user-list endpoint is explicitly admin-only:
 
-Recommendation:
+- `docs/detailed-designs/02-user-management.md:27`
+- enforced again in `docs/detailed-designs/02-user-management.md:50`
 
-1. Split the model into at least:
-   - `payment_schedule_items`
-   - `payment_transactions`
-   - `payment_allocations`
-2. Make transactions immutable.
-3. Add idempotency keys for payment creation.
-4. Store payment method, external reference, initiated-by, source, and reversal linkage.
-5. Treat balance as a derived financial position from allocations, not as an informal side effect.
+Result: creditors cannot legally use the documented borrower picker.
 
-### 7. Transaction Boundaries, Concurrency Control, And Idempotency Are Missing
+#### 3.3 Settings is routed but not designed
 
-Several core flows perform multiple writes and side effects but do not define atomicity or retry safety:
+The frontend route map includes:
 
-- create loan: save loan, generate schedule, persist payments, notify borrower (`docs/detailed-designs/diagrams/plantuml/seq_create_loan.puml:22-32`)
-- update loan: save change log, save loan, notify counterparty (`docs/detailed-designs/diagrams/plantuml/seq_update_loan.puml:29-33`)
-- record payment: find next due, mutate schedule, update loan balance/status, save change log, notify (`docs/detailed-designs/diagrams/plantuml/seq_record_payment.puml:21-40`)
-- pause payments: loop through rows, update each, save change logs, notify (`docs/detailed-designs/diagrams/plantuml/seq_pause_payment.puml:20-31`)
+- `/settings` in `docs/detailed-designs/07-fe-architecture.md:140-141`
 
-Without defined transaction boundaries and concurrency controls, the system is exposed to:
+But there is no settings module, no settings backend design, and no settings UI in `ui-design.pen` beyond navigation labels.
 
-- double payment application on retries
-- stale reads on concurrent payment submissions
-- partial data writes
-- notifications/activity written when the main transaction failed, or vice versa
+This matters because notification preferences are now a requirement in `docs/specs/L2.md:304-310`.
 
 Recommendation:
 
-1. Wrap domain writes in explicit database transactions.
-2. Use row locking or optimistic locking for hot financial records.
-3. Require idempotency keys on money-moving or create-style POST endpoints.
-4. Use the outbox pattern for notifications and activity events rather than synchronous side effects from service methods.
+1. Publish an explicit API contract before continuing.
+2. Add `GET /users/me` or change the auth bootstrap design.
+3. Add a creditor-safe borrower lookup endpoint or redesign the create-loan flow.
+4. Design the settings/preferences module or remove the route until it exists.
 
-### 8. Notification And Background Job Design Needs A Concrete Production Topology
+### 4. Loan Terms And Borrower Governance Still Lag The Revised Requirements
 
-The notification design correctly identifies asynchronous delivery as necessary (`docs/detailed-designs/06-notifications.md:57-61`), but the system topology does not yet define how that happens.
+The revised requirements now require:
 
-The problems:
+- currency, installment count or maturity date, and custom schedule support in `docs/specs/L2.md:125-137`
+- borrower request/approval flow and terms versioning in `docs/specs/L2.md:150-157`
 
-1. The container diagram shows API, Auth, Notification, PostgreSQL, and SMTP, but no queue, broker, or worker runtime (`docs/detailed-designs/diagrams/plantuml/c4_container.puml:10-25`).
-2. The scheduled job design says "Flask-APScheduler or Celery beat" (`docs/detailed-designs/06-notifications.md:79-82`). That is not a finished design decision.
-3. Real-time UI requirements call for toast notifications for real-time events (`docs/specs/L2.md:206-212`), but the backend design only documents polling for unread count (`docs/detailed-designs/06-notifications.md:38-41`, `docs/detailed-designs/diagrams/plantuml/seq_notifications.puml:15-42`).
-4. The `Notification` entity lacks delivery status, channel, retries, dedupe key, last-attempt timestamp, and provider message ID (`docs/detailed-designs/06-notifications.md:67-75`, `docs/detailed-designs/diagrams/plantuml/class_notification.puml:30-60`).
+The backend loan design still omits key terms:
 
-Recommendation:
+- loan entity in `docs/detailed-designs/03-loan-management.md:72-85` has no currency, installment count, maturity date, or custom schedule structure
+- schedule generation still assumes `n` payments in `docs/detailed-designs/03-loan-management.md:89-92`, but `n` is not part of the documented loan model
 
-1. Pick a single production strategy:
-   - Celery plus Redis/RabbitMQ
-   - or another dedicated worker system, but not in-process APScheduler in web nodes
-2. Add an outbox table and worker consumers for email and activity delivery.
-3. Decide how "real-time" UI notifications work: SSE, WebSocket, or acceptable polling intervals.
-4. Add delivery-state tracking, retry policy, and dedupe semantics.
+The frontend loan form also omits those new required fields:
 
-### 9. Dashboard Read Paths Need Scale Planning
+- create/edit modal fields in `docs/detailed-designs/10-fe-loan-management.md:42-47`
+- validation schema in `docs/detailed-designs/10-fe-loan-management.md:124-130`
 
-The dashboard sequence aggregates multiple queries in series (`docs/detailed-designs/diagrams/plantuml/seq_dashboard.puml:21-40`) and the notification design expects frequent badge polling (`docs/detailed-designs/06-notifications.md:39`).
+Borrower governance is still based on the old rule:
 
-That is manageable for a small system, but it will become a hot path quickly because:
+- backend update contract: borrower can update all fields except principal in `docs/detailed-designs/03-loan-management.md:28,52-55`
+- frontend borrower edit restriction also only locks principal in `docs/detailed-designs/10-fe-loan-management.md:103-106`
 
-- every authenticated session hits the dashboard
-- badge counts are naturally polled often
-- activity feeds and aggregated balances are mutable, time-sensitive views
-
-There is also an inconsistency in the balance story:
-
-- dashboard DTOs expect `outstanding_balance` (`docs/detailed-designs/05-dashboard.md:41-46`, `docs/detailed-designs/diagrams/plantuml/class_dashboard.puml:31-38`)
-- the loan entity does not document such a field (`docs/detailed-designs/03-loan-management.md:72-85`, `docs/detailed-designs/diagrams/plantuml/class_loan.puml:27-55`)
-- payment flow assumes `loan_repo.update_balance(...)` exists (`docs/detailed-designs/diagrams/plantuml/seq_record_payment.puml:31-35`)
+That conflicts directly with `docs/specs/L1.md:10` and `docs/specs/L2.md:153-156`, which now require creditor-controlled terms to be non-editable by borrowers and changed through request/approval flow.
 
 Recommendation:
 
-1. Define the authoritative balance computation model.
-2. Add concrete index design for loans, payments, notifications, and activity.
-3. Consider cached/materialized read models for dashboard aggregates.
-4. Prefer cursor pagination for feeds over page/per-page on mutable activity streams.
-5. Add ETags or short-lived cache headers where practical.
+1. Expand the loan model to include currency, installment count, maturity/end date, and custom schedule definition.
+2. Replace direct borrower loan editing with a change-request workflow.
+3. Add loan-term version history and approval-state design.
+4. Update both backend and frontend route permissions to match the revised governance model.
 
-### 10. RBAC Model Needs Stronger Governance And Revocation Semantics
+### 5. The Payment Design Still Fails The New Financial-Integrity Standard
 
-The user/RBAC design has a sound baseline:
+The revised requirements are explicit:
 
-- multi-role users are supported (`docs/detailed-designs/02-user-management.md:72-74`)
-- both route-level and service-level checks are planned (`docs/detailed-designs/02-user-management.md:66-70`)
+- payment transactions must be immutable and allocated across installments in `docs/specs/L2.md:212-219`
+- schedule adjustments must preserve old and new schedules in `docs/specs/L2.md:221-228`
+- balances must derive from authoritative transaction/allocation records in `docs/specs/L2.md:399-405`
+- reversals/corrections are required in `docs/specs/L2.md:423-429`
+- write operations need safe retry/idempotency behavior in `docs/specs/L2.md:415-421` and `docs/specs/L2.md:520`
 
-The production gaps:
+The backend payment design still centers on a mutable `Payment` row:
 
-1. Role changes only take effect on next token refresh (`docs/detailed-designs/02-user-management.md:53`). That is too weak for urgent revocation.
-2. Roles carry editable permission arrays in JSON (`docs/detailed-designs/02-user-management.md:94-97`) but there is no canonical permission catalog or migration/versioning strategy.
-3. The design does not document audit requirements for admin actions such as create user, deactivate user, role changes, or permission changes.
-4. The design does not define how deactivated users are blocked if they still hold a valid access token.
+- entity definition in `docs/detailed-designs/04-payment-tracking.md:89-103`
+- record-payment behavior mutates the next due payment and recalculates balance in `docs/detailed-designs/04-payment-tracking.md:39-46`
+
+There is still no design for:
+
+- immutable payment transaction records
+- allocation records
+- reversal/correction endpoints
+- transaction identifiers exposed to clients
+- idempotency keys
+- authoritative balance derivation from a financial ledger
+
+The frontend payment design follows the same simplified model:
+
+- record-payment mutation sends `{loanId, amount, date, notes}` in `docs/detailed-designs/11-fe-payment-tracking.md:109-110`
+- even though the dialog captures payment method at `docs/detailed-designs/11-fe-payment-tracking.md:109`, the mutation contract omits it
+- no reversal or correction UX is defined anywhere in `11-fe-payment-tracking.md`
+- no allocation preview consistent with `docs/specs/L2.md:199` is defined beyond a general overpayment note in `docs/detailed-designs/11-fe-payment-tracking.md:142-146`
+
+This is still the highest-risk domain gap in the system.
 
 Recommendation:
 
-1. Add token-version or session-version invalidation on user deactivation, password reset, and sensitive role changes.
-2. Maintain a canonical permission registry in code and migrations, not only free-form JSON.
-3. Audit every administrative mutation with actor, target, timestamp, request ID, and before/after values.
+1. Redesign the backend around `payment_transactions`, `payment_allocations`, and schedule items.
+2. Add reversal/correction flows and corresponding UI/history behavior.
+3. Add idempotency-key support for payment submission.
+4. Make balances derived from authoritative records and document the exact source of truth.
 
-### 11. API Contract Discipline Needs To Be Stronger
+### 6. Notification Design Is Better On The UI Surface, But Still Not Requirement-Compliant
 
-The design uses reasonable REST patterns, but there are contract inconsistencies that will slow implementation:
+The frontend now clearly documents:
 
-- login accepts email only in the design, while L1 says email/username (`docs/specs/L1.md:4`, `docs/detailed-designs/01-authentication.md:80-85`)
-- user and loan updates are documented as partial updates, but the endpoints use `PUT` rather than `PATCH` (`docs/detailed-designs/02-user-management.md:53`, `docs/detailed-designs/03-loan-management.md:28`)
-- L2-4.3 requires pausing a single payment or date range, while the backend contract only exposes `payment_ids[]` (`docs/specs/L2.md:138-146`, `docs/detailed-designs/diagrams/plantuml/seq_pause_payment.puml:17-27`)
-- L2-4.4 requires payment method capture, which is missing from the model/API (`docs/specs/L2.md:148-155`, `docs/detailed-designs/04-payment-tracking.md:39-46`)
+- bell, dropdown, toast, and full-page notification surfaces in `docs/detailed-designs/13-fe-notifications.md:19-67`
+
+That is good progress.
+
+The remaining problem is that the revised requirements are stronger:
+
+- near-real-time event-driven updates in `docs/specs/L2.md:278-285`
+- delivery status and retry behavior in `docs/specs/L2.md:295-302`
+- user notification preferences in `docs/specs/L2.md:304-310`
+- dedicated worker infrastructure for async processing in `docs/specs/L2.md:463-469`
+
+The current design still uses polling:
+
+- backend unread count is expected to be polled at `docs/detailed-designs/06-notifications.md:38-41`
+- frontend unread count polls every 30 seconds in `docs/detailed-designs/13-fe-notifications.md:78-91`
+
+The backend notification entity still has no delivery-state fields:
+
+- `docs/detailed-designs/06-notifications.md:67-75`
+
+The backend worker topology is still unresolved:
+
+- `docs/detailed-designs/06-notifications.md:79-82` says "Flask-APScheduler or Celery beat"
+
+Notification preferences are required but not designed:
+
+- required in `docs/specs/L2.md:304-310`
+- no corresponding backend module or frontend settings page exists
 
 Recommendation:
 
-1. Publish an OpenAPI contract and generate typed clients from it.
-2. Resolve requirement ambiguities before coding.
-3. Use `PATCH` for partial updates or redefine the semantics of `PUT`.
-4. Add request/response examples for every mutable endpoint.
+1. Decide whether real-time delivery is SSE, WebSocket, or a defined polling exception.
+2. Add notification delivery-status, dedupe, retry, and preference models.
+3. Design the settings/preferences UI and API.
+4. Replace "APScheduler or Celery beat" with a concrete worker architecture.
 
-### 12. Operational Readiness Is Underdesigned
+### 7. Role Revocation And Permission Governance Remain Inconsistent
 
-The current design does not materially define:
+The revised requirements require immediate effect for deactivation and privileged role changes:
 
-- runtime topology for production
-- Gunicorn/worker model and process management for Flask
-- reverse proxy/load balancer assumptions
-- connection pooling and DB timeout strategy
+- `docs/specs/L2.md:95-100`
+
+The backend user-management design still says:
+
+- role changes take effect on next token refresh in `docs/detailed-designs/02-user-management.md:53`
+
+That is a direct contradiction.
+
+There is also still no documented controlled permission catalog in the backend data model:
+
+- roles store `permissions` as JSON in `docs/detailed-designs/02-user-management.md:94-97`
+
+This is weaker than the revised requirement for a controlled permission catalog in `docs/specs/L2.md:77-85`.
+
+Recommendation:
+
+1. Add session-version or token-version invalidation on deactivation and sensitive role changes.
+2. Replace or constrain free-form permissions JSON with a canonical permission registry.
+3. Audit role/permission changes as first-class security events.
+
+### 8. Responsive UX Has Improved, But Accessibility And Visual Coverage Are Still Uneven
+
+The frontend docs now document responsive navigation and many loading states well:
+
+- responsive nav in `docs/detailed-designs/07-fe-architecture.md:190-213`
+- dashboard skeleton/parallel loading in `docs/detailed-designs/12-fe-dashboard.md:74-82`
+
+However, the detailed designs still do not materially specify:
+
+- keyboard navigation semantics
+- focus trapping/restoration in modal implementations
+- ARIA labeling strategy
+- color-contrast validation
+- accessible error associations for all form components
+
+Those requirements are now explicit in `docs/specs/L2.md:343-360`.
+
+Visual breakpoint coverage is also uneven in `ui-design.pen`:
+
+- dashboard has desktop/mobile/tablet frames at `docs/ui-design.pen:1887`, `docs/ui-design.pen:8162`, and `docs/ui-design.pen:8968`
+- many other explicit visual designs are desktop-only, such as auth at `docs/ui-design.pen:1113`, `docs/ui-design.pen:1420`, `docs/ui-design.pen:1696`, users at `docs/ui-design.pen:3621`, loan detail at `docs/ui-design.pen:5217`, and dialogs at `docs/ui-design.pen:6523`, `docs/ui-design.pen:6833`, `docs/ui-design.pen:7061`, `docs/ui-design.pen:7301`
+
+That means responsive behavior for many non-dashboard flows is still described mostly in prose rather than backed by explicit visual design artifacts.
+
+Recommendation:
+
+1. Add an accessibility design section to the frontend architecture and shared UI docs.
+2. Expand `ui-design.pen` for the highest-risk missing flows at tablet and mobile breakpoints.
+3. Add explicit designs for full notifications page, settings/preferences, email verification, and borrower change-request flows.
+
+### 9. Operational Readiness And API Governance Are Still Largely Missing
+
+The revised requirements now explicitly require:
+
+- worker reliability in `docs/specs/L2.md:463-469`
+- logs, metrics, and tracing in `docs/specs/L2.md:471-477`
+- health, backup, and recovery in `docs/specs/L2.md:479-485`
+- quality gates in `docs/specs/L2.md:487-493`
+- machine-readable API contract and stable error semantics in `docs/specs/L2.md:497-520`
+
+The current design set still has no concrete documentation for:
+
 - health/readiness endpoints
-- structured logging, metrics, tracing, alerting
-- backup/restore, retention, and migration rollback
-- CI/CD quality gates
-- SAST/DAST/dependency scanning
-- load, resilience, accessibility, and security testing strategy
+- telemetry architecture
+- backup/restore procedures
+- recovery objectives
+- CI/CD gates
+- OpenAPI or equivalent machine-readable contract
+- deprecation/version policy
 
-The only testing statement in the stack summary is `pytest` (`docs/detailed-designs/00-index.md:15`), which is not enough as a production-readiness plan.
+The top-level backend design still stops at API conventions and a global error handler:
+
+- conventions in `docs/detailed-designs/00-index.md:47-56`
+- raw exception-to-client error handler in `docs/detailed-designs/00-index.md:68-77`
+
+That error handler also conflicts with the new requirement that client-visible errors avoid leaking internal details:
+
+- `docs/specs/L2.md:507-513`
 
 Recommendation:
 
-1. Add an operational architecture document covering deployment, observability, recovery, and security controls.
-2. Define SLOs and error budgets for core user flows.
-3. Require the following test layers before production:
-   - unit tests for services and calculators
-   - integration tests with PostgreSQL
-   - API contract tests
-   - frontend E2E tests for critical flows
-   - load tests for dashboard, notifications, and payment recording
-   - security tests for auth, authorization, and rate limiting
+1. Add an operational architecture document.
+2. Add an API contract/governance document with OpenAPI as source of truth.
+3. Replace raw exception serialization with safe public error mapping and correlation IDs.
 
-## Stack-Specific Recommendations
+### 10. Documentation Integrity Needs Cleanup
 
-### React SPA
+Two documentation-quality issues remain:
 
-- Use TypeScript throughout.
-- Generate a typed client from OpenAPI.
-- Use route guards and role-aware layouts.
-- Keep auth state out of `localStorage`.
-- Add route-level code splitting and bundle budgets.
-- Use a consistent form/validation strategy and accessible modal primitives.
-- Define CSP, XSS hardening, and error-boundary strategy early.
+#### 10.1 The top-level index is stale
 
-### Flask
+`docs/detailed-designs/00-index.md:1` still calls the set "Backend Detailed Design Documentation" and only lists modules 1 through 6 at `docs/detailed-designs/00-index.md:36-43`, even though modules 7 through 13 now exist.
 
-- Use the application-factory pattern and modular blueprints.
-- Keep service-layer orchestration, but formalize request validation and OpenAPI generation with a library such as `flask-smorest` or `apispec`.
-- Add request ID middleware, structured logging, and centralized error mapping.
-- Run the API behind Gunicorn with clearly defined worker counts and timeouts.
-- Keep background jobs outside web workers.
+#### 10.2 Frontend markdown references rendered images that do not exist
 
-### PostgreSQL And SQLAlchemy
+Examples:
 
-- Use strict `Numeric`/`Decimal` handling for all monetary fields.
-- Decide where balances are derived and enforce consistency through constraints and tests.
-- Add row-locking strategy for financial writes.
-- Use `CITEXT` or equivalent for case-insensitive unique email handling.
-- Define composite indexes for the actual query shapes used by loans, payments, dashboard, notifications, and activity.
-- Use JSONB only where schemaless storage is truly intentional, not for core financial facts.
+- `docs/detailed-designs/07-fe-architecture.md:27`, `:35`, `:147`, `:186`, `:260`, `:273`
+- `docs/detailed-designs/08-fe-authentication.md:13`, `:82`
+- `docs/detailed-designs/09-fe-user-management.md:13`, `:79`
+- `docs/detailed-designs/10-fe-loan-management.md:13`, `:87`
+- `docs/detailed-designs/11-fe-payment-tracking.md:13`, `:101`
+- `docs/detailed-designs/12-fe-dashboard.md:13`, `:70`
+- `docs/detailed-designs/13-fe-notifications.md:13`, `:84`
 
-## Requirement Ambiguities To Resolve Before Build
+The referenced `diagrams/rendered/fe_*.png` files are not present in the repo.
 
-1. Login identifier:
-   - L1 says email/username.
-   - L2 and the auth design show email only.
-2. Repayment frequencies:
-   - L1 says weekly/monthly/custom.
-   - L2 says weekly/bi-weekly/monthly/custom.
-   - the documented algorithm is monthly only.
-3. Borrower edit permissions:
-   - current rule is too broad for a finance product.
-4. Real-time notifications:
-   - requirements imply real-time toast behavior.
-   - design only documents polling and async email.
-5. Pause/reschedule semantics:
-   - the design does not define whether downstream installments shift, whether maturity changes, or how interest is recalculated.
+These are not product-logic blockers, but they reduce the usefulness of the design set and should be cleaned up.
 
 ## Recommended Next Steps
 
-1. Add a frontend technical design that maps every L2 screen/interaction to routes, components, data contracts, and responsive rules.
-2. Redesign the financial model around immutable payment transactions and allocation records.
-3. Finalize the auth/session strategy for the React SPA, including secure token handling, revocation, and rotation.
-4. Add explicit transaction, locking, idempotency, and outbox patterns to every money-moving or multi-write workflow.
-5. Choose a concrete worker/scheduler topology and update the container diagram accordingly.
-6. Publish an OpenAPI spec and use it as the source of truth for frontend/backend integration.
-7. Add an operational readiness document covering deployment, observability, backup/restore, security hardening, and test strategy.
+1. Redesign session handling first. The current token-storage model is now explicitly non-compliant with the requirements.
+2. Publish an API contract and resolve the blocking integration mismatches: `/users/me`, borrower lookup, settings/preferences, and payment submission payloads.
+3. Redesign the loan and payment domain model around governed term changes, schedule versioning, immutable transactions, allocations, reversals, and idempotency.
+4. Finalize the notification architecture: real-time delivery approach, delivery-state model, preferences, and worker topology.
+5. Add cross-cutting docs for operations, observability, health/recovery, and release quality gates.
+6. Refresh the design index and render the missing frontend diagrams.
 
 ## Bottom Line
 
-This design is a useful foundation, but it is still a foundation. The system is not yet designed to the standard expected for a secure, high-performance, production-grade financial application. The next design iteration should focus less on adding more endpoints and more on making the core flows safe, consistent, observable, and implementable end to end.
+This revision is meaningfully better than the previous one because the frontend no longer exists only as a visual artifact. But the revised requirements also raised the engineering bar, and the current designs do not yet clear it. The remaining gaps are not cosmetic. They are concentrated in security, contract consistency, financial integrity, notification reliability, and operational readiness, which are exactly the areas that determine whether this can become a safe production system.
