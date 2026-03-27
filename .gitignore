@@ -480,3 +480,17 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.venv/
+instance/
+*.db
+*.sqlite3
+.pytest_cache/
+
+# IDE
+.vscode/settings.json
