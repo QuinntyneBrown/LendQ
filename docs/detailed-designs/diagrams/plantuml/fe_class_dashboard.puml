@@ -1,0 +1,76 @@
+@startuml fe_class_dashboard
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 9
+skinparam classAttributeIconSize 0
+
+title Frontend — Dashboard Module Components
+
+package "Dashboard Module" {
+  class DashboardPage <<Page>> {
+    +summary: DashboardSummary
+    +activeTab: "creditor" | "borrower"
+    +onTabChange(tab): void
+  }
+
+  class SummaryCards <<Component>> {
+    +totalLentOut: number
+    +totalOwed: number
+    +upcomingPayments: number
+    +overduePayments: number
+  }
+
+  class SummaryCard <<Component>> {
+    +icon: ReactNode
+    +label: string
+    +value: number
+    +format: "currency" | "count"
+    +variant: "default" | "warning" | "danger"
+  }
+
+  class ActiveLoansPanel <<Component>> {
+    +activeTab: "creditor" | "borrower"
+    +loans: LoanSummary[]
+    +onTabChange(tab): void
+    +onViewLoan(id): void
+    +onRecordPayment(id): void
+  }
+
+  class ActivityFeed <<Component>> {
+    +items: ActivityItem[]
+    +onViewAll(): void
+  }
+
+  class ActivityFeedItem <<Component>> {
+    +item: ActivityItem
+    +icon based on event_type
+    +relative timestamp
+  }
+}
+
+package "Dashboard Hooks" {
+  class useDashboardSummary <<Hook>> {
+    +data: DashboardSummary
+    +isLoading: boolean
+  }
+
+  class useDashboardLoans <<Hook>> {
+    +data: LoanSummary[]
+    +isLoading: boolean
+  }
+
+  class useDashboardActivity <<Hook>> {
+    +data: ActivityItem[]
+    +isLoading: boolean
+  }
+}
+
+DashboardPage --> SummaryCards
+DashboardPage --> ActiveLoansPanel
+DashboardPage --> ActivityFeed
+SummaryCards --> SummaryCard
+ActivityFeed --> ActivityFeedItem
+DashboardPage --> useDashboardSummary
+DashboardPage --> useDashboardLoans
+DashboardPage --> useDashboardActivity
+@enduml

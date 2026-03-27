@@ -1,0 +1,48 @@
+@startuml fe_seq_responsive_nav
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 10
+skinparam sequenceMessageAlign center
+
+title Frontend — Responsive Navigation Behavior
+
+actor User
+participant "AppLayout" as layout
+participant "useBreakpoint" as bp
+participant "DesktopSidebar" as desktop
+participant "TabletSidebar" as tablet
+participant "MobileBottomNav" as mobile
+participant "React Router" as router
+
+== Initial Render ==
+layout -> bp : Get current breakpoint
+bp -> bp : window.matchMedia\ncheck viewport width
+bp --> layout : breakpoint
+
+alt Desktop (>= 1280px)
+  layout -> desktop : Render fixed sidebar
+  desktop --> User : Sidebar always visible\nwith all nav items
+else Tablet (768-1279px)
+  layout -> tablet : Render collapsible sidebar
+  tablet --> User : Hamburger icon in header
+  User -> tablet : Click hamburger
+  tablet -> tablet : Toggle isOpen
+  tablet --> User : Sidebar slides in\nwith overlay backdrop
+  User -> tablet : Click nav item
+  tablet -> router : navigate(route)
+  tablet -> tablet : Close sidebar
+else Mobile (< 768px)
+  layout -> mobile : Render bottom tab bar
+  mobile --> User : 5 tab icons:\nDashboard, Loans,\nBorrowings, Alerts, More
+  User -> mobile : Tap "More"
+  mobile --> User : Overflow menu:\nUsers, Settings, Logout
+  User -> mobile : Tap nav item
+  mobile -> router : navigate(route)
+end
+
+== Viewport Resize ==
+User -> bp : Resize window
+bp -> bp : matchMedia listener fires
+bp -> layout : breakpoint changed
+layout -> layout : Re-render with\nnew navigation component
+@enduml

@@ -1,0 +1,103 @@
+@startuml fe_class_payment
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 9
+skinparam classAttributeIconSize 0
+
+title Frontend — Payment Module Components
+
+package "Payment Module" {
+  class PaymentScheduleView <<Component>> {
+    +loanId: string
+    +payments: Payment[]
+    +userRole: string
+    +onRecordPayment(payment): void
+    +onReschedule(payment): void
+    +onPause(payments): void
+  }
+
+  class PaymentTimeline <<Component>> {
+    +payments: Payment[]
+    +renders chronological timeline
+    +highlights rescheduled/paused
+  }
+
+  class RecordPaymentDialog <<Component>> {
+    +open: boolean
+    +payment: Payment
+    +onClose(): void
+    +onSubmit(data): void
+    -amount: number (prefilled)
+    -date: string
+    -notes: string
+    -showBalancePreview(): Decimal
+  }
+
+  class ReschedulePaymentDialog <<Component>> {
+    +open: boolean
+    +payment: Payment
+    +onClose(): void
+    +onSubmit(newDate, reason): void
+    -showOriginalDate: boolean
+  }
+
+  class PausePaymentDialog <<Component>> {
+    +open: boolean
+    +payments: Payment[]
+    +onClose(): void
+    +onSubmit(paymentIds, reason): void
+    -selectionMode: "single" | "range"
+  }
+
+  class PaymentHistoryView <<Component>> {
+    +loanId: string
+    +events: PaymentEvent[]
+    +filterType: string
+    +onFilterChange(type): void
+  }
+
+  class ChangeLogEntry <<Component>> {
+    +entry: ChangeLog
+    +renders old->new values
+    +shows who/when
+  }
+}
+
+package "Payment Hooks" {
+  class usePaymentSchedule <<Hook>> {
+    +data: Payment[]
+    +isLoading: boolean
+  }
+
+  class useRecordPayment <<Hook>> {
+    +mutate(loanId, data): void
+    +isLoading: boolean
+  }
+
+  class useReschedulePayment <<Hook>> {
+    +mutate(paymentId, data): void
+    +isLoading: boolean
+  }
+
+  class usePausePayments <<Hook>> {
+    +mutate(loanId, data): void
+    +isLoading: boolean
+  }
+
+  class usePaymentHistory <<Hook>> {
+    +data: PaymentEvent[]
+    +isLoading: boolean
+  }
+}
+
+PaymentScheduleView --> PaymentTimeline
+PaymentScheduleView --> RecordPaymentDialog
+PaymentScheduleView --> ReschedulePaymentDialog
+PaymentScheduleView --> PausePaymentDialog
+PaymentScheduleView --> usePaymentSchedule
+PaymentHistoryView --> ChangeLogEntry
+PaymentHistoryView --> usePaymentHistory
+RecordPaymentDialog --> useRecordPayment
+ReschedulePaymentDialog --> useReschedulePayment
+PausePaymentDialog --> usePausePayments
+@enduml

@@ -1,0 +1,120 @@
+@startuml fe_class_layout
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 9
+skinparam classAttributeIconSize 0
+
+title Frontend — Responsive Layout & Shared UI Components
+
+package "App Shell" {
+  class AppLayout <<Component>> {
+    +children: ReactNode
+    +renders sidebar or bottom nav
+    +based on breakpoint
+  }
+
+  class DesktopSidebar <<Component>> {
+    +navItems: NavItem[]
+    +activeRoute: string
+    +userAvatar: string
+    +fixed left, always visible
+  }
+
+  class TabletSidebar <<Component>> {
+    +navItems: NavItem[]
+    +isOpen: boolean
+    +onToggle(): void
+    +collapsible with hamburger
+  }
+
+  class MobileBottomNav <<Component>> {
+    +navItems: NavItem[] (max 5)
+    +activeRoute: string
+    +onMoreMenu(): void
+  }
+
+  class useBreakpoint <<Hook>> {
+    +isMobile: boolean (< 768px)
+    +isTablet: boolean (768-1279px)
+    +isDesktop: boolean (>= 1280px)
+    +breakpoint: "mobile" | "tablet" | "desktop"
+  }
+}
+
+package "Shared UI Components" {
+  class Button <<Component>> {
+    +variant: "primary" | "secondary" | "destructive" | "ghost"
+    +size: "sm" | "md" | "lg"
+    +isLoading: boolean
+    +min 44px touch target on mobile
+  }
+
+  class Input <<Component>> {
+    +label: string
+    +error?: string
+    +type: string
+    +states: focus, error, disabled
+  }
+
+  class Modal <<Component>> {
+    +open: boolean
+    +onClose(): void
+    +title: string
+    +desktop: centered overlay
+    +mobile: full-screen / bottom sheet
+  }
+
+  class DataTable <<Component>> {
+    +columns: Column[]
+    +data: T[]
+    +sortable: boolean
+    +pagination: PaginationState
+    +responsive: hides cols on mobile
+  }
+
+  class Pagination <<Component>> {
+    +page: number
+    +totalPages: number
+    +onChange(page): void
+  }
+
+  class Badge <<Component>> {
+    +label: string
+    +color: string
+    +variant: "solid" | "outline"
+  }
+
+  class SearchInput <<Component>> {
+    +value: string
+    +onChange(value): void
+    +debounceMs: 300
+    +placeholder: string
+  }
+
+  class DatePicker <<Component>> {
+    +value: string
+    +onChange(date): void
+    +minDate?: string
+    +maxDate?: string
+  }
+
+  class CurrencyInput <<Component>> {
+    +value: number
+    +onChange(amount): void
+    +currency: "USD"
+    +formatting with commas
+  }
+
+  class EmptyState <<Component>> {
+    +icon: ReactNode
+    +title: string
+    +description: string
+    +action?: ReactNode
+  }
+}
+
+AppLayout --> DesktopSidebar : desktop
+AppLayout --> TabletSidebar : tablet
+AppLayout --> MobileBottomNav : mobile
+AppLayout --> useBreakpoint
+@enduml

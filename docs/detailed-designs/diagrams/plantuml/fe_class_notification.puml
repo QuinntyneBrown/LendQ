@@ -1,0 +1,104 @@
+@startuml fe_class_notification
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 9
+skinparam classAttributeIconSize 0
+
+title Frontend — Notification Module Components
+
+package "Notification Module" {
+  class NotificationBell <<Component>> {
+    +unreadCount: number
+    +onClick(): void
+    +renders badge if count > 0
+  }
+
+  class NotificationDropdown <<Component>> {
+    +open: boolean
+    +notifications: Notification[]
+    +onClose(): void
+    +onMarkAllRead(): void
+    +onViewAll(): void
+    +onNotificationClick(n): void
+  }
+
+  class NotificationListPage <<Page>> {
+    -page: number
+    -typeFilter: NotificationType | null
+    +onFilterChange(type): void
+    +onMarkRead(id): void
+    +onMarkAllRead(): void
+  }
+
+  class NotificationItem <<Component>> {
+    +notification: Notification
+    +onClick(): void
+    +icon based on type
+    +read/unread styling
+  }
+
+  class NotificationDateGroup <<Component>> {
+    +label: "Today" | "Yesterday" | "Earlier"
+    +notifications: Notification[]
+  }
+}
+
+package "Toast System" {
+  class ToastProvider <<Provider>> {
+    +toasts: Toast[]
+    +addToast(toast): void
+    +removeToast(id): void
+  }
+
+  class ToastContainer <<Component>> {
+    +position: "top-right" | "bottom-center"
+    +toasts: Toast[]
+    +responsive positioning
+  }
+
+  class ToastMessage <<Component>> {
+    +type: "success" | "warning" | "error" | "info"
+    +message: string
+    +autoDismiss: 5000ms
+    +onClose(): void
+  }
+
+  class useToast <<Hook>> {
+    +success(msg): void
+    +warning(msg): void
+    +error(msg): void
+    +info(msg): void
+  }
+}
+
+package "Notification Hooks" {
+  class useUnreadCount <<Hook>> {
+    +data: number
+    +polling: 30s interval
+  }
+
+  class useNotifications <<Hook>> {
+    +data: PaginatedResponse<Notification>
+    +isLoading: boolean
+  }
+
+  class useMarkRead <<Hook>> {
+    +mutate(id): void
+  }
+
+  class useMarkAllRead <<Hook>> {
+    +mutate(): void
+  }
+}
+
+NotificationBell --> useUnreadCount
+NotificationBell --> NotificationDropdown
+NotificationDropdown --> NotificationItem
+NotificationListPage --> NotificationDateGroup
+NotificationDateGroup --> NotificationItem
+NotificationListPage --> useNotifications
+NotificationListPage --> useMarkRead
+NotificationListPage --> useMarkAllRead
+ToastProvider --> ToastContainer
+ToastContainer --> ToastMessage
+@enduml

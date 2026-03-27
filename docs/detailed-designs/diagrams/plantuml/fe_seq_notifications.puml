@@ -1,0 +1,46 @@
+@startuml fe_seq_notifications
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 10
+skinparam sequenceMessageAlign center
+
+title Frontend — Notification Bell & Dropdown Flow
+
+actor User
+participant "AppLayout\n(Header)" as header
+participant "NotificationBell" as bell
+participant "Notification\nDropdown" as dropdown
+participant "useUnreadCount" as count_hook
+participant "useNotifications" as notif_hook
+participant "useMarkAllRead" as mark_hook
+participant "ApiClient" as api
+participant "React Router" as router
+
+== Polling (every 30s) ==
+count_hook -> api : GET /api/v1/notifications/count
+api --> count_hook : {unread_count: 5}
+count_hook --> bell : Update badge (5)
+
+== User opens dropdown ==
+User -> bell : Click bell icon
+bell -> dropdown : open
+dropdown -> notif_hook : fetch first page
+notif_hook -> api : GET /api/v1/notifications?page=1
+api --> notif_hook : {items, total}
+notif_hook --> dropdown : Notification[]
+dropdown --> User : Show notification list
+
+== Mark all read ==
+User -> dropdown : Click "Mark all as read"
+dropdown -> mark_hook : mutate()
+mark_hook -> api : PUT /api/v1/notifications/read-all
+api --> mark_hook : 200
+mark_hook -> count_hook : Invalidate count query
+mark_hook -> notif_hook : Invalidate list query
+bell -> bell : Badge disappears
+
+== Navigate to notification ==
+User -> dropdown : Click a notification
+dropdown -> dropdown : close
+dropdown -> router : navigate to\nrelated loan/payment
+@enduml

@@ -1,0 +1,94 @@
+@startuml fe_class_user
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 9
+skinparam classAttributeIconSize 0
+
+title Frontend — User Management Module Components
+
+package "User Management Module" {
+  class UserListPage <<Page>> {
+    -search: string
+    -page: number
+    +handleSearch(query): void
+    +handlePageChange(page): void
+    +openAddDialog(): void
+    +openEditDialog(user): void
+    +openDeleteDialog(user): void
+  }
+
+  class UserTable <<Component>> {
+    +users: User[]
+    +sortColumn: string
+    +sortDirection: "asc" | "desc"
+    +onSort(column): void
+    +onEdit(user): void
+    +onDelete(user): void
+  }
+
+  class UserCardList <<Component>> {
+    +users: User[]
+    +onEdit(user): void
+    +onDelete(user): void
+  }
+
+  class AddEditUserDialog <<Component>> {
+    +open: boolean
+    +user?: User (edit mode)
+    +onClose(): void
+    +onSave(data): void
+    -form: UserFormState
+    -validate(): errors
+  }
+
+  class DeleteUserDialog <<Component>> {
+    +open: boolean
+    +user: User
+    +onClose(): void
+    +onConfirm(): void
+  }
+
+  class RoleManagementPage <<Page>> {
+    +roles: Role[]
+    +openEditPermissions(role): void
+  }
+
+  class RolePermissionEditor <<Component>> {
+    +role: Role
+    +onSave(permissions): void
+  }
+}
+
+package "User Hooks" {
+  class useUsers <<Hook>> {
+    +data: PaginatedResponse<User>
+    +isLoading: boolean
+    +error: ApiError | null
+  }
+
+  class useCreateUser <<Hook>> {
+    +mutate(data): void
+    +isLoading: boolean
+  }
+
+  class useUpdateUser <<Hook>> {
+    +mutate(id, data): void
+    +isLoading: boolean
+  }
+
+  class useDeleteUser <<Hook>> {
+    +mutate(id): void
+    +isLoading: boolean
+  }
+}
+
+UserListPage --> UserTable : desktop/tablet
+UserListPage --> UserCardList : mobile
+UserListPage --> AddEditUserDialog
+UserListPage --> DeleteUserDialog
+UserListPage --> useUsers
+AddEditUserDialog --> useCreateUser
+AddEditUserDialog --> useUpdateUser
+DeleteUserDialog --> useDeleteUser
+RoleManagementPage --> RolePermissionEditor
+@enduml

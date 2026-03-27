@@ -1,0 +1,51 @@
+@startuml fe_seq_dashboard_load
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 10
+skinparam sequenceMessageAlign center
+
+title Frontend — Dashboard Page Load
+
+actor User
+participant "DashboardPage" as page
+participant "useDashboard\nSummary" as sum_hook
+participant "useDashboard\nLoans" as loan_hook
+participant "useDashboard\nActivity" as act_hook
+participant "ApiClient" as api
+participant "TanStack Query\nCache" as cache
+
+User -> page : Navigate to /dashboard
+page -> page : Render loading skeletons
+
+par Parallel data fetching
+  page -> sum_hook : mount
+  sum_hook -> cache : Check ["dashboard","summary"]
+  alt Cache miss or stale
+    cache -> api : GET /api/v1/dashboard/summary
+    api --> cache : DashboardSummary
+  end
+  cache --> sum_hook : DashboardSummary
+  sum_hook --> page : data ready
+else
+  page -> loan_hook : mount
+  loan_hook -> cache : Check ["dashboard","loans"]
+  alt Cache miss or stale
+    cache -> api : GET /api/v1/dashboard/loans?tab=creditor
+    api --> cache : LoanSummary[]
+  end
+  cache --> loan_hook : LoanSummary[]
+  loan_hook --> page : data ready
+else
+  page -> act_hook : mount
+  act_hook -> cache : Check ["dashboard","activity"]
+  alt Cache miss or stale
+    cache -> api : GET /api/v1/dashboard/activity?limit=20
+    api --> cache : ActivityItem[]
+  end
+  cache --> act_hook : ActivityItem[]
+  act_hook --> page : data ready
+end
+
+page -> page : Replace skeletons\nwith rendered components
+page --> User : Dashboard displayed
+@enduml

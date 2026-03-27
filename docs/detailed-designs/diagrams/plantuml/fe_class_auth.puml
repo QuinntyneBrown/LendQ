@@ -1,0 +1,72 @@
+@startuml fe_class_auth
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 9
+skinparam classAttributeIconSize 0
+
+title Frontend — Auth Module Components
+
+package "Auth Module" {
+  class LoginPage <<Page>> {
+    -form: LoginForm state
+    +handleSubmit(): void
+    +navigateToSignUp(): void
+    +navigateToForgotPassword(): void
+  }
+
+  class SignUpPage <<Page>> {
+    -form: SignUpForm state
+    +handleSubmit(): void
+    +navigateToLogin(): void
+  }
+
+  class ForgotPasswordPage <<Page>> {
+    -form: ForgotPasswordForm state
+    -submitted: boolean
+    +handleSubmit(): void
+    +navigateToLogin(): void
+  }
+
+  class ResetPasswordPage <<Page>> {
+    -token: string (from URL)
+    -form: ResetPasswordForm state
+    +handleSubmit(): void
+  }
+}
+
+package "Auth Infrastructure" {
+  class AuthContext <<Context>> {
+    +user: User | null
+    +roles: string[]
+    +isAuthenticated: boolean
+    +isLoading: boolean
+    +login(email, password): Promise
+    +signup(data): Promise
+    +logout(): void
+    +refreshToken(): Promise
+  }
+
+  class useAuth <<Hook>> {
+    +returns: AuthContext value
+  }
+
+  class ProtectedRoute <<Component>> {
+    +requiredRoles?: string[]
+    +children: ReactNode
+    -redirects to /login if unauth
+    -redirects to /403 if wrong role
+  }
+
+  class AuthInterceptor <<Service>> {
+    +attachToken(config): config
+    +handle401(error): retry | logout
+  }
+}
+
+LoginPage --> useAuth : login()
+SignUpPage --> useAuth : signup()
+ForgotPasswordPage --> "apiClient" : forgotPassword()
+ResetPasswordPage --> "apiClient" : resetPassword()
+ProtectedRoute --> useAuth : check auth
+AuthInterceptor --> AuthContext : get/refresh token
+@enduml
