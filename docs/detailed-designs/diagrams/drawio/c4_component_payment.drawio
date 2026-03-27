@@ -1,0 +1,44 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="C4 Component - Payment" id="c4pay">
+    <mxGraphModel dx="1024" dy="680" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="C4 Component — Payment Tracking &amp; Scheduling" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="200" y="15" width="400" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="boundary" value="Flask REST API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1e3a5f;dashed=1;dashPattern=5 5;verticalAlign=top;fontStyle=1;fontSize=11;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="40" y="50" width="740" height="430" as="geometry"/>
+        </mxCell>
+        <mxCell id="ctrl" value="&lt;b&gt;PaymentController&lt;/b&gt;&lt;br&gt;[Blueprint]&lt;br&gt;&lt;br&gt;schedule, record, reschedule,&lt;br&gt;pause, history" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="280" y="70" width="220" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="psvc" value="&lt;b&gt;PaymentService&lt;/b&gt;&lt;br&gt;[Service]&lt;br&gt;&lt;br&gt;Record, reschedule, pause,&lt;br&gt;balance recalculation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="140" y="200" width="200" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="ssvc" value="&lt;b&gt;ScheduleService&lt;/b&gt;&lt;br&gt;[Service]&lt;br&gt;&lt;br&gt;Generate, upcoming,&lt;br&gt;overdue detection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="440" y="200" width="180" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="prepo" value="&lt;b&gt;PaymentRepository&lt;/b&gt;&lt;br&gt;[Repository]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#ffffff;strokeColor=#6ca4d9;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="180" y="360" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="clrepo" value="&lt;b&gt;ChangeLogRepository&lt;/b&gt;&lt;br&gt;[Repository]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#ffffff;strokeColor=#6ca4d9;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="440" y="360" width="170" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="notif" value="&lt;b&gt;NotificationService&lt;/b&gt;&lt;br&gt;[External]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;fontColor=#ffffff;strokeColor=#666666;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="60" y="350" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="lrepo" value="&lt;b&gt;LoanRepository&lt;/b&gt;&lt;br&gt;[External]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;fontColor=#ffffff;strokeColor=#666666;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="650" y="350" width="110" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" style="endArrow=classic;html=1;" parent="1" source="ctrl" target="psvc" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="endArrow=classic;html=1;" parent="1" source="ctrl" target="ssvc" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="endArrow=classic;html=1;" parent="1" source="psvc" target="prepo" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="endArrow=classic;html=1;" parent="1" source="psvc" target="clrepo" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="endArrow=classic;html=1;" parent="1" source="ssvc" target="prepo" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="endArrow=classic;html=1;dashed=1;" parent="1" source="psvc" target="notif" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" style="endArrow=classic;html=1;dashed=1;" parent="1" source="psvc" target="lrepo" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

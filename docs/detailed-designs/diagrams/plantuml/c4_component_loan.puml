@@ -1,0 +1,26 @@
+@startuml c4_component_loan
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 10
+skinparam componentStyle rectangle
+
+title C4 Component — Loan Management
+
+package "Flask REST API" {
+  component "**LoanController**\n[Blueprint]\nlist, get, create,\nupdate loans" as ctrl #438DD5
+  component "**AuthMiddleware**\n[Decorator]\nRole-based access" as mw #fff2cc
+  component "**LoanService**\n[Service]\nLoan CRUD, validation,\nborrower restrictions" as svc #438DD5
+  component "**ScheduleService**\n[Service]\nGenerate payment\nschedule on creation" as ssvc #438DD5
+  component "**LoanRepository**\n[Repository]" as lrepo #85BBF0
+  component "**PaymentRepository**\n[Repository]" as prepo #85BBF0
+}
+
+component "**NotificationService**\n[External Component]" as notif #999999
+
+ctrl ..> mw
+ctrl --> svc
+svc --> lrepo
+svc --> ssvc
+ssvc --> prepo
+svc ..> notif
+@enduml

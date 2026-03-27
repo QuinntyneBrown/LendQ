@@ -1,0 +1,43 @@
+@startuml seq_notifications
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 10
+skinparam sequenceMessageAlign center
+
+title Notifications Sequence
+
+actor User
+participant "NotificationController" as ctrl
+participant "AuthMiddleware" as auth
+participant "NotificationService" as svc
+participant "NotificationRepository" as repo
+
+== Get Unread Count ==
+User -> ctrl : GET /api/notifications/count
+ctrl -> auth : verify_token
+auth --> ctrl : user_id
+ctrl -> svc : get_unread_count(user_id)
+svc -> repo : count_unread(user_id)
+repo --> svc : count
+svc --> ctrl : count
+ctrl --> User : 200 {unread_count}
+
+== List Notifications ==
+User -> ctrl : GET /api/notifications?page=1&type=
+ctrl -> auth : verify_token
+auth --> ctrl : user_id
+ctrl -> svc : list_notifications(user_id, page, type)
+svc -> repo : find_by_user(user_id, page, type)
+repo --> svc : PaginatedResult
+svc --> ctrl : PaginatedResult
+ctrl --> User : 200 {notifications, total, page}
+
+== Mark All Read ==
+User -> ctrl : PUT /api/notifications/read-all
+ctrl -> auth : verify_token
+auth --> ctrl : user_id
+ctrl -> svc : mark_all_read(user_id)
+svc -> repo : mark_all_read(user_id)
+svc --> ctrl : success
+ctrl --> User : 200
+@enduml

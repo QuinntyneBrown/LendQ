@@ -1,0 +1,33 @@
+@startuml seq_pause_payment
+!theme plain
+skinparam dpi 150
+skinparam defaultFontSize 10
+skinparam sequenceMessageAlign center
+
+title Pause Payments Sequence
+
+actor User
+participant "PaymentController" as ctrl
+participant "AuthMiddleware" as auth
+participant "PaymentService" as svc
+participant "PaymentRepository" as repo
+participant "ChangeLogRepository" as cl
+participant "NotificationService" as notif
+
+User -> ctrl : POST /api/loans/{id}/pause\n{payment_ids[], reason}
+ctrl -> auth : verify_token
+auth --> ctrl : user_id, roles
+ctrl -> svc : pause(loan_id, payment_ids, reason)
+
+loop for each payment_id
+  svc -> repo : find_by_id(payment_id)
+  repo --> svc : Payment
+  svc -> svc : Set status = PAUSED
+  svc -> repo : save(payment)
+  svc -> cl : save(ChangeLog:\nstatus change, reason)
+end
+
+svc -> notif : send_schedule_changed(\nloan_id, "Payments paused")
+svc --> ctrl : list[Payment]
+ctrl --> User : 200 {paused_payments}
+@enduml
