@@ -56,7 +56,7 @@ LendQ/
 │   │   │   ├── user.py                       # User, Role, UserRole — L2-2.1
 │   │   │   ├── loan.py                       # Loan — L2-3.1, L2-3.3
 │   │   │   ├── payment.py                    # Payment — L2-4.1
-│   │   │   ���── change_log.py                 # ChangeLog — L2-4.5, L2-9.2
+│   │   │   ├── change_log.py                 # ChangeLog — L2-4.5, L2-9.2
 │   │   │   ├── notification.py               # Notification — L2-6.1
 │   │   │   ├── activity.py                   # ActivityItem — L2-5.3
 │   │   │   ├── audit_log.py                  # AuditLog — L2-2.5, L2-8.4
@@ -259,7 +259,7 @@ LendQ/
 │   │   │   ├── DashboardPage.tsx             # Main dashboard layout — L2-5.1–L2-5.4
 │   │   │   ├── SummaryCards.tsx              # 4 metric cards (lent out, owed, upcoming, overdue) — L2-5.1
 │   │   │   ├── SummaryCard.tsx              # Single metric card component
-│   │   │   ��── ActiveLoansPanel.tsx          # Tabbed creditor/borrower loan list — L2-5.2
+│   │   │   ├── ActiveLoansPanel.tsx          # Tabbed creditor/borrower loan list — L2-5.2
 │   │   │   ├── ActivityFeed.tsx              # Recent activity timeline — L2-5.3
 │   │   │   ├── ActivityFeedItem.tsx          # Single activity entry
 │   │   │   └── hooks.ts                      # useDashboardSummary, useDashboardLoans, useDashboardActivity
@@ -282,7 +282,7 @@ LendQ/
 │   │   │
 │   │   ├── payments/
 │   │   │   ├── PaymentScheduleView.tsx       # Schedule table with actions — L2-4.1
-│   │   │   ���── PaymentTimeline.tsx           # Chronological timeline view
+│   │   │   ├── PaymentTimeline.tsx           # Chronological timeline view
 │   │   │   ├── RecordPaymentDialog.tsx       # Record/lump-sum with balance preview — L2-4.4
 │   │   │   ├── ReschedulePaymentDialog.tsx   # New date + reason — L2-4.2
 │   │   │   ├── PausePaymentDialog.tsx        # Single/range pause — L2-4.3
@@ -310,7 +310,7 @@ LendQ/
 │   │   │   ├── NotificationBell.tsx          # Bell icon + unread badge — L2-6.1
 │   │   │   ├── NotificationDropdown.tsx      # Dropdown panel — L2-6.1
 │   │   │   ├── NotificationItem.tsx          # Single notification row
-│   │   ���   ├── NotificationListPage.tsx      # Full page with filters/date groups — L2-6.3
+│   │   │   ├── NotificationListPage.tsx      # Full page with filters/date groups — L2-6.3
 │   │   │   ├── NotificationDateGroup.tsx     # Today/Yesterday/Earlier sections
 │   │   │   ├── NotificationPreferences.tsx   # Email preference toggles — L2-6.5
 │   │   │   ├── ToastProvider.tsx             # Toast context + state management — L2-6.2
@@ -329,7 +329,7 @@ LendQ/
 │   │   │   ├── DataTable.tsx                 # Sortable table with responsive column hiding
 │   │   │   ├── Badge.tsx                     # Colored status badges
 │   │   │   ├── Card.tsx                      # White card container
-│   │   │   ���── MetricCard.tsx                # Icon + label + value card
+│   │   │   ├── MetricCard.tsx                # Icon + label + value card
 │   │   │   ├── SearchInput.tsx               # Debounced search field
 │   │   │   ├── DatePicker.tsx                # Date selection input
 │   │   │   ├── CurrencyInput.tsx             # Formatted currency input
@@ -340,7 +340,7 @@ LendQ/
 │   │   │   └── Toggle.tsx                    # On/off toggle switch
 │   │   │
 │   │   │ ── Layout & Navigation ─────────────────────────────────
-│   │   ��
+│   │   │
 │   │   ├── layout/
 │   │   │   ├── AppLayout.tsx                 # Shell: sidebar or bottom nav based on breakpoint — L2-7.1
 │   │   │   ├── DesktopSidebar.tsx            # Fixed left sidebar (1280px+) — L2-7.1
@@ -529,7 +529,7 @@ LendQ/
 │   │   │   #   pageTitle, createLoanButton, searchInput, statusFilter,
 │   │   │   #   creditorTab, borrowerTab, loanTable, loanRows, loanCards,
 │   │   │   #   statusBadges, pagination
-│   ���   │   # Actions:
+│   │   │   # Actions:
 │   │   │   #   goto(), gotoCreditorView(), gotoBorrowerView(),
 │   │   │   #   search(query), filterByStatus(status), clickCreateLoan(),
 │   │   │   #   clickLoanRow(index), goToPage(n)
@@ -885,7 +885,7 @@ LendQ/
 │       │   │   #   - shows contextual action buttons per payment status
 │       │   │   #   - hides reschedule/pause on already paid payments
 │       │   │
-│       │   ├─��� record-payment.spec.ts
+│       │   ├── record-payment.spec.ts
 │       │   │   # L2-4.4: Record Payment / Lump Sum Dialog
 │       │   │   #   - opens record-payment dialog from schedule row
 │       │   │   #   - pre-fills amount from scheduled payment
@@ -1114,7 +1114,7 @@ LendQ/
 │       │   │   # L2-10.1: Client Route Protection
 │       │   │   #   - unauthenticated user is redirected to login for all protected routes
 │       │   │   #   - non-admin user is redirected to 403 for /users
-│       ��   │   #   - authenticated user is redirected away from /login
+│       │   │   #   - authenticated user is redirected away from /login
 │       │   │   #   - page refresh re-establishes session
 │       │   │   #   - no flash of protected content during initial load
 │       │   │
