@@ -1,59 +1,25 @@
-@startuml fe_c4_component_spa
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 9
-skinparam componentStyle rectangle
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "App Shell" as shell
+rectangle "Auth Feature" as auth
+rectangle "Dashboard Feature" as dash
+rectangle "Loans Feature" as loans
+rectangle "Payments Feature" as payments
+rectangle "Notifications Feature" as notif
+rectangle "Settings Feature" as settings
+rectangle "API Client" as api
 
-title C4 Component — React SPA Internal Architecture
-
-package "React SPA" {
-  component "**App Shell**\n[Component]\nLayout, routing,\nresponsive navigation" as shell #438DD5
-
-  component "**Auth Module**\n[Feature]\nLogin, SignUp,\nForgotPassword pages" as auth_mod #85BBF0
-
-  component "**Dashboard Module**\n[Feature]\nSummary, loans,\nactivity feed" as dash_mod #85BBF0
-
-  component "**Loan Module**\n[Feature]\nList, detail,\ncreate/edit forms" as loan_mod #85BBF0
-
-  component "**Payment Module**\n[Feature]\nSchedule, record,\nreschedule, pause" as pay_mod #85BBF0
-
-  component "**User Module**\n[Feature]\nUser list, roles,\nadd/edit/delete" as user_mod #85BBF0
-
-  component "**Notification Module**\n[Feature]\nBell, dropdown,\ntoasts, full page" as notif_mod #85BBF0
-
-  component "**Shared UI**\n[Library]\nButtons, inputs, modals,\ntables, cards, badges" as ui #fff2cc
-
-  component "**API Client**\n[Service]\nAxios instance,\ninterceptors, types" as api_client #d5e8d4
-
-  component "**Auth Context**\n[Provider]\nJWT storage, user state,\nrole-based guards" as auth_ctx #d5e8d4
-
-  component "**State Management**\n[TanStack Query]\nServer state cache,\nmutations, invalidation" as state #d5e8d4
-}
-
-component "**Flask REST API**" as backend #2D6E4F
-
-shell --> auth_mod
-shell --> dash_mod
-shell --> loan_mod
-shell --> pay_mod
-shell --> user_mod
-shell --> notif_mod
-
-auth_mod --> ui
-dash_mod --> ui
-loan_mod --> ui
-pay_mod --> ui
-user_mod --> ui
-notif_mod --> ui
-
-auth_mod --> auth_ctx
-loan_mod --> state
-pay_mod --> state
-dash_mod --> state
-user_mod --> state
-notif_mod --> state
-
-state --> api_client
-auth_ctx --> api_client
-api_client --> backend : REST/JSON
+shell --> auth
+shell --> dash
+shell --> loans
+shell --> payments
+shell --> notif
+shell --> settings
+auth --> api
+dash --> api
+loans --> api
+payments --> api
+notif --> api
+settings --> api
 @enduml

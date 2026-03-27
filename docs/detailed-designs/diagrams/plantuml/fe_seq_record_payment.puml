@@ -1,40 +1,13 @@
-@startuml fe_seq_record_payment
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
-skinparam sequenceMessageAlign center
-
-title Frontend — Record Payment Flow
-
+@startuml
 actor User
-participant "LoanDetailPage" as detail
-participant "RecordPayment\nDialog" as dialog
-participant "useRecordPayment\n(mutation)" as mut
-participant "ApiClient" as api
-participant "TanStack Query\nCache" as cache
-participant "useToast" as toast
+participant RecordPaymentDialog
+participant PaymentApi
+participant QueryCache
+participant Toasts
 
-User -> detail : Click "Record Payment"\non a scheduled payment
-detail -> dialog : open(payment)
-dialog -> dialog : Pre-fill amount\nfrom payment.amount_due
-
-User -> dialog : Adjust amount (lump sum)\nEnter date, notes
-dialog -> dialog : Calculate balance preview:\noutstanding - amount
-
-User -> dialog : Click "Record Payment"
-dialog -> mut : mutate({loanId, amount, date, notes})
-mut -> api : POST /api/v1/loans/{id}/payments\n{amount, date, notes}
-
-alt Success (200)
-  api --> mut : {payment, new_balance}
-  mut -> cache : Invalidate queries:\n["loans", id]\n["payments", id]\n["dashboard"]
-  mut --> dialog : onSuccess
-  dialog -> toast : success("Payment recorded")
-  dialog -> dialog : close()
-  detail -> detail : Re-render with\nupdated data from cache
-else Error
-  api --> mut : {error}
-  mut --> dialog : onError
-  dialog -> toast : error("Failed to record")
-end
+User -> RecordPaymentDialog : confirm payment
+RecordPaymentDialog -> PaymentApi : POST /payments\nIdempotency-Key
+PaymentApi --> QueryCache : invalidate loan + dashboard
+QueryCache --> RecordPaymentDialog : refreshed data
+RecordPaymentDialog -> Toasts : show transaction id
 @enduml

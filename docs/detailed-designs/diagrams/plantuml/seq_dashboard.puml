@@ -1,43 +1,13 @@
-@startuml seq_dashboard
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
-skinparam sequenceMessageAlign center
-
-title Dashboard Load Sequence
-
+@startuml
 actor User
-participant "DashboardController" as ctrl
-participant "AuthMiddleware" as auth
-participant "DashboardService" as svc
-participant "LoanRepository" as loan_repo
-participant "PaymentRepository" as pay_repo
-participant "ActivityRepository" as act_repo
+participant DashboardController
+database SummaryView
+database LoansView
+database ActivityView
 
-User -> ctrl : GET /api/dashboard
-ctrl -> auth : verify_token
-auth --> ctrl : user_id
-
-ctrl -> svc : get_summary(user_id)
-svc -> loan_repo : sum_principal_by_creditor(user_id)
-loan_repo --> svc : total_lent_out
-svc -> loan_repo : sum_outstanding_by_borrower(user_id)
-loan_repo --> svc : total_owed
-svc -> pay_repo : count_upcoming(user_id, 7_days)
-pay_repo --> svc : upcoming_count
-svc -> pay_repo : count_overdue(user_id)
-pay_repo --> svc : overdue_count
-svc --> ctrl : DashboardSummary
-
-ctrl -> svc : get_active_loans(user_id)
-svc -> loan_repo : find_active_by_user(user_id)
-loan_repo --> svc : list[LoanSummary]
-svc --> ctrl : list[LoanSummary]
-
-ctrl -> svc : get_recent_activity(user_id, 20)
-svc -> act_repo : find_by_user(user_id, 20)
-act_repo --> svc : list[ActivityItem]
-svc --> ctrl : list[ActivityItem]
-
-ctrl --> User : 200 {summary, loans, activity}
+User -> DashboardController : GET dashboard sections
+DashboardController -> SummaryView : query summary
+DashboardController -> LoansView : query loans
+DashboardController -> ActivityView : query activity
+DashboardController --> User : section payloads + generated_at
 @enduml

@@ -1,26 +1,21 @@
-@startuml c4_component_user
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
-skinparam componentStyle rectangle
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "UserController" as controller
+rectangle "UserService" as usersvc
+rectangle "RoleService" as rolesvc
+rectangle "BorrowerDirectoryService" as borrowers
+rectangle "AdminAuditService" as audit
+database "users" as users
+database "roles / permissions" as roles
+database "admin_audit_events" as auditdb
 
-title C4 Component — User Management & RBAC
-
-package "Flask REST API" {
-  component "**UserController**\n[Blueprint]\nlist, get, create,\nupdate, delete users" as uctrl #438DD5
-  component "**RoleController**\n[Blueprint]\nlist roles,\nupdate permissions" as rctrl #438DD5
-  component "**AuthMiddleware**\n[Decorator]\nJWT + RBAC check" as mw #fff2cc
-  component "**UserService**\n[Service]\nUser CRUD, role assignment" as usvc #438DD5
-  component "**RoleService**\n[Service]\nRole & permission mgmt" as rsvc #438DD5
-  component "**UserRepository**\n[Repository]" as urepo #85BBF0
-  component "**RoleRepository**\n[Repository]" as rrepo #85BBF0
-}
-
-uctrl ..> mw
-rctrl ..> mw
-uctrl --> usvc
-rctrl --> rsvc
-usvc --> urepo
-usvc ..> rrepo
-rsvc --> rrepo
+controller --> usersvc
+controller --> rolesvc
+controller --> borrowers
+usersvc --> users
+rolesvc --> roles
+usersvc --> audit
+rolesvc --> audit
+audit --> auditdb
 @enduml

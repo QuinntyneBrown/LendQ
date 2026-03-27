@@ -1,48 +1,30 @@
-@startuml class_auth
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
+@startuml
 skinparam classAttributeIconSize 0
-
-title Authentication Module — Class Diagram
-
-class AuthController {
-  +login(email, password): TokenResponse
-  +signup(payload): UserResponse
-  +forgot_password(email): MessageResponse
-  +reset_password(token, password): MessageResponse
-  +refresh_token(refresh_token): TokenResponse
-  +logout(): MessageResponse
+class User {
+  +id: UUID
+  +email: string
+  +status: ACTIVE|INACTIVE
+  +email_verified_at: datetime?
+  +session_version: int
 }
-
-class AuthService {
-  -user_repo: UserRepository
-  -token_service: TokenService
-  -email_service: EmailService
-  +authenticate(email, password): User
-  +register(name, email, password): User
-  +initiate_password_reset(email): void
-  +complete_password_reset(token, password): void
+class AuthSession {
+  +id: UUID
+  +user_id: UUID
+  +refresh_token_hash: string
+  +last_seen_at: datetime
+  +revoked_at: datetime?
 }
-
-class TokenService {
-  -secret_key: str
-  -access_ttl: int
-  -refresh_ttl: int
-  +create_access_token(user_id, roles): str
-  +create_refresh_token(user_id): str
-  +decode_token(token): dict
-  +revoke_token(jti): void
+class EmailVerificationToken {
+  +user_id: UUID
+  +token_hash: string
+  +expires_at: datetime
 }
-
-class PasswordService {
-  +hash_password(plain): str
-  +verify_password(plain, hashed): bool
-  +generate_reset_token(): str
-  +validate_reset_token(token): str
+class PasswordResetToken {
+  +user_id: UUID
+  +token_hash: string
+  +expires_at: datetime
 }
-
-AuthController --> AuthService
-AuthService --> TokenService
-AuthService --> PasswordService
+User "1" -- "*" AuthSession
+User "1" -- "*" EmailVerificationToken
+User "1" -- "*" PasswordResetToken
 @enduml

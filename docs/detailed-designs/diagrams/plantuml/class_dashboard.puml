@@ -1,59 +1,29 @@
-@startuml class_dashboard
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
+@startuml
 skinparam classAttributeIconSize 0
-
-title Dashboard Module — Class Diagram
-
-class DashboardController {
-  +get_summary(user_id): SummaryResponse
-  +get_active_loans(user_id): ActiveLoansResponse
-  +get_recent_activity(user_id): ActivityResponse
-}
-
-class DashboardService {
-  -loan_repo: LoanRepository
-  -payment_repo: PaymentRepository
-  -activity_repo: ActivityRepository
-  +get_summary(user_id): DashboardSummary
-  +get_active_loans(user_id, tab): list[LoanSummary]
-  +get_recent_activity(user_id, limit): list[ActivityItem]
-}
-
-class DashboardSummary <<DTO>> {
-  +total_lent_out: Decimal
-  +total_owed: Decimal
+class DashboardSummary {
+  +total_lent_out: decimal
+  +total_owed: decimal
   +upcoming_payments_7d: int
   +overdue_payments: int
+  +generated_at: datetime
 }
-
-class LoanSummary <<DTO>> {
+class DashboardLoanRow {
   +loan_id: UUID
-  +counterparty_name: str
-  +principal: Decimal
-  +outstanding_balance: Decimal
+  +counterparty_name: string
+  +outstanding_balance: decimal
   +next_due_date: date
-  +status: str
 }
-
-class ActivityItem <<DTO>> {
+class ActivityItem {
   +id: UUID
-  +event_type: str
-  +description: str
-  +timestamp: datetime
-  +loan_id: UUID
+  +type: string
+  +description: string
+  +created_at: datetime
 }
-
-class ActivityRepository {
-  +find_by_user(user_id, limit): list[ActivityItem]
-  +save(item): ActivityItem
+class ProjectionMetadata {
+  +generated_at: datetime
+  +lag_seconds: int
 }
-
-DashboardController --> DashboardService
-DashboardService --> ActivityRepository
-DashboardService ..> DashboardSummary
-DashboardService ..> LoanSummary
-DashboardService ..> ActivityItem
-ActivityRepository ..> ActivityItem
+DashboardSummary -- ProjectionMetadata
+DashboardLoanRow -- ProjectionMetadata
+ActivityItem -- ProjectionMetadata
 @enduml

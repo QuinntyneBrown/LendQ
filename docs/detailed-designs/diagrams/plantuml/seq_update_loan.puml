@@ -1,35 +1,15 @@
-@startuml seq_update_loan
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
-skinparam sequenceMessageAlign center
+@startuml
+actor Creditor
+participant LoanController
+participant LoanService
+participant TermsService
+participant ScheduleService
+queue Outbox
 
-title Update Loan Sequence (Role-Based)
-
-actor User
-participant "LoanController" as ctrl
-participant "AuthMiddleware" as auth
-participant "LoanService" as svc
-participant "LoanRepository" as repo
-participant "ChangeLogRepository" as cl
-participant "NotificationService" as notif
-
-User -> ctrl : PUT /api/loans/{id}\n{description, principal, ...}
-ctrl -> auth : verify_token
-auth --> ctrl : user_id, roles
-ctrl -> svc : update_loan(loan_id, user_id, role, data)
-svc -> repo : find_by_id(loan_id)
-repo --> svc : Loan
-
-alt User is Borrower
-  svc -> svc : validate_borrower_update(data)
-  note right : Reject if principal\nis being modified
-end
-
-svc -> cl : save(changes for each field)
-svc -> repo : save(updated Loan)
-repo --> svc : Loan
-svc -> notif : create_notification(\ncounterparty, LOAN_MODIFIED)
-svc --> ctrl : Loan
-ctrl --> User : 200 {loan}
+Creditor -> LoanController : PATCH /loans/{id}
+LoanController -> LoanService : update terms(expected version)
+LoanService -> TermsService : create new terms version
+LoanService -> ScheduleService : create new schedule version
+LoanService -> Outbox : loan_terms_updated
+LoanController --> Creditor : updated loan detail
 @enduml

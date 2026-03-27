@@ -1,90 +1,27 @@
-@startuml class_payment
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
+@startuml
 skinparam classAttributeIconSize 0
-
-title Payment Tracking & Scheduling — Class Diagram
-
-class PaymentController {
-  +get_schedule(loan_id): ScheduleResponse
-  +record_payment(loan_id, payload): PaymentResponse
-  +reschedule_payment(payment_id, payload): PaymentResponse
-  +pause_payments(loan_id, payload): MessageResponse
-  +get_payment_history(loan_id): HistoryResponse
-}
-
-class PaymentService {
-  -payment_repo: PaymentRepository
-  -loan_repo: LoanRepository
-  -changelog_repo: ChangeLogRepository
-  +record_payment(loan_id, amount, date, note): Payment
-  +reschedule(payment_id, new_date, reason): Payment
-  +pause(loan_id, payment_ids, reason): list[Payment]
-  +get_history(loan_id, filters): list[PaymentEvent]
-  -recalculate_balance(loan_id): Decimal
-}
-
-class ScheduleService {
-  -payment_repo: PaymentRepository
-  +generate_schedule(loan): list[Payment]
-  +get_upcoming(loan_id): list[Payment]
-  +get_overdue(): list[Payment]
-}
-
-class Payment <<Entity>> {
+class PaymentTransaction {
   +id: UUID
-  +loan_id: UUID
-  +amount_due: Decimal
-  +amount_paid: Decimal
-  +due_date: date
-  +paid_date: date
-  +original_due_date: date
-  +status: PaymentStatus
-  +notes: str
-  +created_at: datetime
+  +amount: decimal
+  +payment_method: string
+  +direction: CREDIT|DEBIT
+  +transaction_type: string
 }
-
-enum PaymentStatus {
-  SCHEDULED
-  PAID
-  PAUSED
-  RESCHEDULED
-  OVERDUE
-  PARTIAL
+class PaymentAllocation {
+  +installment_id: UUID
+  +amount: decimal
 }
-
-class ChangeLog <<Entity>> {
+class ScheduleAdjustmentEvent {
   +id: UUID
-  +entity_type: str
-  +entity_id: UUID
-  +field_name: str
-  +old_value: str
-  +new_value: str
-  +changed_by: UUID
-  +changed_at: datetime
-  +reason: str
+  +type: RESCHEDULE|PAUSE
+  +reason: string
 }
-
-class PaymentRepository {
-  +find_by_loan(loan_id): list[Payment]
-  +find_by_id(id): Payment
-  +find_overdue(): list[Payment]
-  +save(payment): Payment
-  +save_all(payments): list[Payment]
+class IdempotencyRecord {
+  +key: string
+  +request_hash: string
+  +response_hash: string
 }
-
-class ChangeLogRepository {
-  +find_by_entity(type, id): list[ChangeLog]
-  +save(entry): ChangeLog
-}
-
-PaymentController --> PaymentService
-PaymentController --> ScheduleService
-PaymentService --> PaymentRepository
-PaymentService --> ChangeLogRepository
-ScheduleService --> PaymentRepository
-PaymentRepository ..> Payment
-Payment --> PaymentStatus
-ChangeLogRepository ..> ChangeLog
+PaymentTransaction "1" -- "*" PaymentAllocation
+ScheduleAdjustmentEvent "*" -- "1" IdempotencyRecord
+PaymentTransaction "*" -- "1" IdempotencyRecord
 @enduml

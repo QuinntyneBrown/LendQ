@@ -1,43 +1,14 @@
-@startuml fe_seq_token_refresh
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
-skinparam sequenceMessageAlign center
+@startuml
+participant ApiClient
+participant AuthStore
+participant API
 
-title Frontend — Automatic Token Refresh
-
-participant "Any Component" as comp
-participant "ApiClient\n(Axios interceptor)" as api
-participant "AuthContext" as auth
-participant "TokenStorage" as store
-participant "Flask API" as backend
-
-comp -> api : GET /api/v1/loans\n(Bearer expired_token)
-api -> backend : Request with expired token
-backend --> api : 401 Unauthorized
-
-api -> api : Intercept 401 response
-api -> store : Get refresh_token
-store --> api : refresh_token
-
-alt Refresh token exists
-  api -> backend : POST /api/v1/auth/refresh\n{refresh_token}
-  alt Refresh success
-    backend --> api : {new access_token, new refresh_token}
-    api -> store : Save new tokens
-    api -> auth : Update token state
-    api -> backend : Retry original request\nwith new access_token
-    backend --> api : 200 (original response)
-    api --> comp : Resolved data
-  else Refresh failed (401)
-    backend --> api : 401 (refresh expired)
-    api -> auth : logout()
-    auth -> store : Clear tokens
-    auth -> auth : Set user=null
-    auth --> comp : Redirect to /login
-  end
-else No refresh token
-  api -> auth : logout()
-  auth --> comp : Redirect to /login
-end
+ApiClient -> API : request with in-memory token
+API --> ApiClient : 401
+ApiClient -> AuthStore : single-flight refresh
+AuthStore -> API : POST /auth/refresh\ncookie + CSRF
+API --> AuthStore : new access token + user
+AuthStore --> ApiClient : retry original request
+ApiClient -> API : retried request
+API --> ApiClient : success
 @enduml

@@ -1,46 +1,15 @@
-@startuml fe_seq_create_loan
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
-skinparam sequenceMessageAlign center
-
-title Frontend — Create Loan Flow
-
+@startuml
 actor Creditor
-participant "CreateLoanPage" as page
-participant "BorrowerSelect" as sel
-participant "useCreateLoan\n(mutation)" as mut
-participant "ApiClient" as api
-participant "TanStack Query\nCache" as cache
-participant "useToast" as toast
-participant "React Router" as router
+participant LoanForm
+participant BorrowerDirectorySelect
+participant LoanApi
+participant QueryCache
+participant Router
 
-Creditor -> page : Navigate to /loans/new
-page -> sel : Render borrower selector
-Creditor -> sel : Search for borrower
-sel -> api : GET /api/v1/users?role=Borrower&search=...
-api --> sel : User[] results
-sel --> Creditor : Show dropdown options
-Creditor -> sel : Select borrower
-
-Creditor -> page : Fill form\n(principal, rate, frequency, ...)\nClick "Save"
-page -> page : Validate form\n(required fields, formats)
-
-alt Validation fails
-  page --> Creditor : Show inline errors
-else Validation passes
-  page -> mut : mutate(formData)
-  mut -> api : POST /api/v1/loans\n{borrower_id, principal, ...}
-  alt Success (201)
-    api --> mut : Loan
-    mut -> cache : Invalidate ["loans"] query
-    mut --> page : onSuccess callback
-    page -> toast : success("Loan created")
-    page -> router : navigate("/loans/{id}")
-  else Error (422)
-    api --> mut : {error, details}
-    mut --> page : onError callback
-    page --> Creditor : Show validation errors
-  end
-end
+Creditor -> BorrowerDirectorySelect : search borrower
+BorrowerDirectorySelect -> LoanApi : GET /users/borrowers
+Creditor -> LoanForm : submit loan
+LoanForm -> LoanApi : POST /loans
+LoanApi --> QueryCache : invalidate loans
+LoanForm -> Router : go to loan detail
 @enduml

@@ -1,41 +1,14 @@
-@startuml fe_seq_login
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
-skinparam sequenceMessageAlign center
-
-title Frontend — Login Flow
-
+@startuml
 actor User
-participant "LoginPage" as page
-participant "useAuth\n(AuthContext)" as auth
-participant "ApiClient" as api
-participant "TokenStorage\n(localStorage)" as store
-participant "React Router" as router
+participant LoginPage
+participant AuthApi
+participant AuthProvider
+participant Router
 
-User -> page : Enter email + password\nClick "Sign In"
-page -> page : Validate form\n(required fields)
-alt Validation fails
-  page --> User : Show inline errors
-else Validation passes
-  page -> auth : login(email, password)
-  auth -> api : POST /api/v1/auth/login\n{email, password}
-  alt Success (200)
-    api --> auth : {access_token, refresh_token}
-    auth -> store : Save tokens
-    auth -> api : GET /api/v1/users/me\n(with access_token)
-    api --> auth : User data + roles
-    auth -> auth : Set user state\n+ isAuthenticated=true
-    auth --> page : resolved
-    page -> router : navigate("/dashboard")
-  else Error (401)
-    api --> auth : {error: "Invalid credentials"}
-    auth --> page : rejected
-    page --> User : Show error toast\n"Invalid email or password"
-  else Network Error
-    api --> auth : NetworkError
-    auth --> page : rejected
-    page --> User : Show error toast\n"Connection failed"
-  end
-end
+User -> LoginPage : submit credentials
+LoginPage -> AuthApi : POST /auth/login
+AuthApi --> LoginPage : access token + user
+LoginPage -> AuthProvider : hydrate memory state
+AuthProvider -> Router : navigate /dashboard
+Router --> User : authenticated shell
 @enduml

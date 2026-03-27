@@ -1,24 +1,18 @@
-@startuml c4_component_notification
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
-skinparam componentStyle rectangle
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "NotificationController" as controller
+rectangle "NotificationService" as service
+rectangle "PreferenceService" as prefs
+rectangle "SSE Gateway" as sse
+rectangle "DeliveryWorker" as worker
+database "notifications" as db
+cloud "Email Provider" as email
 
-title C4 Component — Notification Module
-
-package "Flask REST API" {
-  component "**NotificationController**\n[Blueprint]\nlist, count, mark-read,\nmark-all-read" as ctrl #438DD5
-  component "**NotificationService**\n[Service]\nCreate, list, mark-read,\ndispatch email alerts" as svc #438DD5
-  component "**NotificationRepository**\n[Repository]" as repo #85BBF0
-  component "**EmailService**\n[Component]\nSMTP dispatch" as email #85BBF0
-}
-
-component "**Other Services**\n[LoanService, PaymentService]\nTrigger notifications" as callers #999999
-component "**SMTP Server**\n[External]" as smtp #999999
-
-ctrl --> svc
-svc --> repo
-svc --> email
-callers ..> svc
-email --> smtp
+controller --> service
+controller --> prefs
+service --> db
+worker --> db
+worker --> sse
+worker --> email
 @enduml

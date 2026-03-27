@@ -1,35 +1,18 @@
-@startuml seq_signup
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
-skinparam sequenceMessageAlign center
-
-title Sign-Up Sequence
-
+@startuml
 actor User
-participant "AuthController" as ctrl
-participant "AuthService" as svc
-participant "UserRepository" as repo
-participant "PasswordService" as pwd
-participant "RoleRepository" as role_repo
+participant SPA
+participant AuthController
+participant AuthService
+database UserRepo
+queue Outbox
+participant EmailWorker
 
-User -> ctrl : POST /api/auth/signup\n{name, email, password}
-ctrl -> svc : register(name, email, password)
-svc -> repo : find_by_email(email)
-repo --> svc : User | None
-
-alt Email already exists
-  svc --> ctrl : ConflictError
-  ctrl --> User : 409 Email already registered
-else Email available
-  svc -> pwd : hash_password(password)
-  pwd --> svc : password_hash
-  svc -> repo : save(new User)
-  repo --> svc : User
-  svc -> role_repo : find_by_name("Borrower")
-  role_repo --> svc : Role
-  svc -> repo : assign_role(user, role)
-  svc --> ctrl : UserResponse
-  ctrl --> User : 201 {user}
-end
+User -> SPA : submit registration
+SPA -> AuthController : POST /auth/signup
+AuthController -> AuthService : register()
+AuthService -> UserRepo : create inactive user
+AuthService -> Outbox : enqueue verification event
+Outbox -> EmailWorker : verification email job
+AuthController --> SPA : 201 created
+SPA --> User : show verify-email state
 @enduml

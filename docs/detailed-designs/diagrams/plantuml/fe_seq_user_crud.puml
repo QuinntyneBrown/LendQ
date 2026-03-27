@@ -1,61 +1,13 @@
-@startuml fe_seq_user_crud
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
-skinparam sequenceMessageAlign center
-
-title Frontend — User CRUD Flow
-
+@startuml
 actor Admin
-participant "UserListPage" as page
-participant "useUsers" as hook
-participant "AddEditUser\nDialog" as dialog
-participant "DeleteUser\nDialog" as del_dialog
-participant "useCreateUser\n/ useUpdateUser" as mut
-participant "useDeleteUser" as del_mut
-participant "ApiClient" as api
-participant "TanStack Query\nCache" as cache
-participant "useToast" as toast
+participant UserListPage
+participant UserApi
+participant QueryCache
+participant Toasts
 
-== List Users ==
-Admin -> page : Navigate to /users
-page -> hook : mount (page=1, search="")
-hook -> api : GET /api/v1/users?page=1
-api --> hook : PaginatedResponse<User>
-hook --> page : Render table/cards
-
-== Search ==
-Admin -> page : Type in search bar
-page -> page : Debounce 300ms
-page -> hook : refetch(search="query")
-hook -> api : GET /api/v1/users?search=query
-api --> hook : Filtered results
-
-== Create User ==
-Admin -> page : Click "Add User"
-page -> dialog : open (no user = create mode)
-Admin -> dialog : Fill name, email, roles, status
-Admin -> dialog : Click "Save"
-dialog -> mut : mutate(data)
-mut -> api : POST /api/v1/users
-alt Success
-  api --> mut : User
-  mut -> cache : Invalidate ["users"]
-  dialog -> toast : success("User created")
-  dialog -> dialog : close()
-else Error
-  api --> mut : {error, details}
-  dialog --> Admin : Show inline errors
-end
-
-== Delete User ==
-Admin -> page : Click delete on a row
-page -> del_dialog : open(user)
-Admin -> del_dialog : Click "Delete"
-del_dialog -> del_mut : mutate(userId)
-del_mut -> api : DELETE /api/v1/users/{id}
-api --> del_mut : 204
-del_mut -> cache : Invalidate ["users"]
-del_dialog -> toast : success("User deleted")
-del_dialog -> del_dialog : close()
+Admin -> UserListPage : save user change
+UserListPage -> UserApi : PATCH /users/{id}
+UserApi --> QueryCache : invalidate users + roles
+QueryCache --> UserListPage : refetch
+UserListPage -> Toasts : show success
 @enduml

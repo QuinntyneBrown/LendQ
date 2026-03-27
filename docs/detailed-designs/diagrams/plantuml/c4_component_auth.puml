@@ -1,23 +1,20 @@
-@startuml c4_component_auth
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
-skinparam componentStyle rectangle
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "AuthController" as controller
+rectangle "AuthService" as service
+rectangle "PasswordHasher\nArgon2id" as hasher
+rectangle "SessionService" as sessions
+rectangle "AuditPublisher" as audit
+database "users" as users
+database "auth_sessions" as authdb
+queue "Outbox / Email Worker" as outbox
 
-title C4 Component — Authentication Module
-
-package "Flask REST API" {
-  component "**AuthController**\n[Blueprint]\nlogin, signup, forgot-pwd,\nreset-pwd, refresh, logout" as ctrl #438DD5
-  component "**AuthService**\n[Service]\nOrchestrates auth,\nregistration, reset" as svc #438DD5
-  component "**TokenService**\n[Component]\nJWT creation,\ndecoding, revocation" as tok #85BBF0
-  component "**PasswordService**\n[Component]\nHashing, verification,\nreset tokens" as pwd #85BBF0
-  component "**UserRepository**\n[Repository]\nCRUD on users table" as repo #85BBF0
-  component "**EmailService**\n[Component]\nSends password reset emails" as email #85BBF0
-}
-
-ctrl --> svc
-svc --> tok
-svc --> pwd
-svc --> repo
-svc --> email
+controller --> service
+service --> hasher
+service --> users
+service --> sessions
+service --> authdb
+service --> audit
+service --> outbox
 @enduml

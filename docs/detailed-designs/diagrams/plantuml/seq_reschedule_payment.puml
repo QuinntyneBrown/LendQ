@@ -1,32 +1,15 @@
-@startuml seq_reschedule_payment
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
-skinparam sequenceMessageAlign center
-
-title Reschedule Payment Sequence
-
+@startuml
 actor User
-participant "PaymentController" as ctrl
-participant "AuthMiddleware" as auth
-participant "PaymentService" as svc
-participant "PaymentRepository" as repo
-participant "ChangeLogRepository" as cl
-participant "NotificationService" as notif
+participant PaymentController
+participant AdjustmentService
+queue Outbox
 
-User -> ctrl : PUT /api/payments/{id}/reschedule\n{new_date, reason}
-ctrl -> auth : verify_token
-auth --> ctrl : user_id, roles
-ctrl -> svc : reschedule(payment_id, new_date, reason)
-svc -> repo : find_by_id(payment_id)
-repo --> svc : Payment
-
-svc -> svc : Store original_due_date\nif not already set
-svc -> svc : Set due_date = new_date
-svc -> svc : Set status = RESCHEDULED
-svc -> repo : save(payment)
-svc -> cl : save(ChangeLog:\nold_date -> new_date, reason)
-svc -> notif : send_schedule_changed(payment)
-svc --> ctrl : Payment
-ctrl --> User : 200 {payment}
+User -> PaymentController : POST /schedule-adjustments/reschedule
+alt borrower requires approval
+  PaymentController -> AdjustmentService : create pending request
+else creditor direct apply
+  PaymentController -> AdjustmentService : create new schedule version
+  AdjustmentService -> Outbox : schedule_rescheduled
+end
+PaymentController --> User : accepted
 @enduml

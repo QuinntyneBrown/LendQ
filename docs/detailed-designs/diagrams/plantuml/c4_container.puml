@@ -1,27 +1,19 @@
-@startuml c4_container
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "Browser\nReact SPA" as browser
+rectangle "Edge / Reverse Proxy\nTLS, headers, routing" as edge
+rectangle "Flask API\nAuth, loans, payments, notifications" as api
+database "PostgreSQL" as db
+queue "Redis" as redis
+rectangle "Celery Workers\nnotifications, email, projections" as worker
+rectangle "Celery Beat\nscheduled jobs" as beat
 
-title LendQ — C4 Container Diagram
-
-actor "User\n(Browser)" as user
-
-rectangle "LendQ System" {
-  rectangle "Frontend SPA\n[React / HTML]" as spa
-  rectangle "API Gateway\n[Flask REST API]" as api
-  database "PostgreSQL\nDatabase" as db
-  rectangle "Auth Service\n[JWT / Flask]" as auth
-  rectangle "Notification\nService" as notif
-}
-
-rectangle "SMTP Server" as smtp
-
-user --> spa : HTTPS
-spa --> api : REST/JSON
-api --> auth : Authenticate
-api --> db : Read/Write
-api --> notif : Trigger alerts
-notif --> smtp : Send emails
-auth --> db : Verify credentials
+browser --> edge : HTTPS
+edge --> api : proxied requests
+api --> db : OLTP data
+api --> redis : rate limit / queue publish
+worker --> redis : consume jobs
+beat --> redis : schedule jobs
+worker --> db : update projections
 @enduml

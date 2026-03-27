@@ -1,70 +1,53 @@
 # Module 5: Dashboard
 
-**Requirements**: L1-5, L2-5.1, L2-5.2, L2-5.3
+**Requirements**: L1-5, L1-9, L2-5.1, L2-5.2, L2-5.3, L2-5.4, L2-9.1
 
 ## Overview
 
-The Dashboard module aggregates data from loans, payments, and activity across both creditor and borrower roles for the authenticated user. It provides summary metrics, active loan listings, and a recent activity feed.
+The dashboard serves summary cards, active-loan panels, and recent activity using read models derived from the authoritative loan and payment system of record. It is designed for partial failure tolerance and explicit freshness reporting.
 
 ## C4 Component Diagram
 
 ![C4 Component — Dashboard](diagrams/rendered/c4_component_dashboard.png)
 
-*Source: [diagrams/drawio/c4_component_dashboard.drawio](diagrams/drawio/c4_component_dashboard.drawio)*
+*Source: [diagrams/plantuml/c4_component_dashboard.puml](diagrams/plantuml/c4_component_dashboard.puml)*
 
 ## Class Diagram
 
 ![Class Diagram — Dashboard](diagrams/rendered/class_dashboard.png)
 
-*Source: [diagrams/rendered/class_dashboard.png](diagrams/rendered/class_dashboard.png)*
+*Source: [diagrams/plantuml/class_dashboard.puml](diagrams/plantuml/class_dashboard.puml)*
 
-## REST API Endpoints
+## Public Endpoints
 
 | Method | Path | Description | Auth |
-|--------|------|-------------|------|
-| GET | `/api/v1/dashboard` | Full dashboard payload | Bearer |
-| GET | `/api/v1/dashboard/summary` | Summary cards only | Bearer |
-| GET | `/api/v1/dashboard/loans?tab=creditor\|borrower` | Active loans by role | Bearer |
-| GET | `/api/v1/dashboard/activity?limit=20` | Recent activity feed | Bearer |
+|---|---|---|---|
+| `GET` | `/api/v1/dashboard/summary` | Summary cards and freshness metadata | Bearer |
+| `GET` | `/api/v1/dashboard/loans?view=creditor|borrower` | Active-loan table rows for the selected perspective | Bearer |
+| `GET` | `/api/v1/dashboard/activity?limit=` | Recent activity feed | Bearer |
+
+## Read Models
+
+| Projection | Purpose |
+|---|---|
+| `dashboard_summary_view` | Total lent, total owed, upcoming count, overdue count, projection freshness |
+| `dashboard_loans_view` | Lightweight rows for creditor and borrower dashboard tabs |
+| `activity_feed_view` | Chronological stream of payment, schedule, loan, and notification-relevant events |
+
+Each projection is updated from outbox-driven workers. The API returns `generated_at` and optional `projection_lag_seconds` so the client can display freshness honestly.
 
 ## Sequence Diagram
 
-### Dashboard Load
-
 ![Sequence — Dashboard](diagrams/rendered/seq_dashboard.png)
 
-*Source: [diagrams/rendered/seq_dashboard.png](diagrams/rendered/seq_dashboard.png)*
+*Source: [diagrams/plantuml/seq_dashboard.puml](diagrams/plantuml/seq_dashboard.puml)*
 
-**Behavior**:
-1. The dashboard endpoint aggregates three data sets in a single response.
-2. **Summary Cards**:
-   - `total_lent_out`: Sum of principal for all active loans where user is creditor.
-   - `total_owed`: Sum of outstanding balances for all active loans where user is borrower.
-   - `upcoming_payments_7d`: Count of payments due in the next 7 days across all user loans.
-   - `overdue_payments`: Count of payments past due across all user loans.
-3. **Active Loans**: Filtered by tab (`creditor` or `borrower`). Each entry includes counterparty name, principal, outstanding balance, next due date, and status.
-4. **Recent Activity**: Chronological list of events (payments recorded, schedule changes, new loans) limited to the last 20 items.
+## Failure Handling
 
-## Data Model
+- Summary, loans, and activity are separate queries so one failing section does not blank the whole page.
+- If a projection is stale beyond the agreed threshold, the API still returns the last known good view together with lag metadata.
+- Retry is safe because the dashboard API is read-only.
 
-### DashboardSummary DTO
+## Balance Consistency
 
-| Field | Type | Description |
-|-------|------|-------------|
-| total_lent_out | Decimal | Sum of principal (as creditor) |
-| total_owed | Decimal | Sum of outstanding (as borrower) |
-| upcoming_payments_7d | int | Payments due within 7 days |
-| overdue_payments | int | Overdue payment count |
-
-### ActivityItem Entity
-
-| Column | Type | Constraints |
-|--------|------|------------|
-| id | UUID | PK |
-| user_id | UUID | FK -> users.id, NOT NULL |
-| event_type | VARCHAR(50) | NOT NULL |
-| description | VARCHAR(500) | NOT NULL |
-| loan_id | UUID | FK -> loans.id |
-| timestamp | TIMESTAMP | NOT NULL |
-
-Activity items are created as side effects by `LoanService`, `PaymentService`, and `NotificationService` whenever a significant event occurs.
+The dashboard never computes balances independently. All money values originate from the same ledger-derived projection pipeline used by loan detail and notifications.

@@ -1,61 +1,37 @@
-@startuml class_loan
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
+@startuml
 skinparam classAttributeIconSize 0
-
-title Loan Management — Class Diagram
-
-class LoanController {
-  +list_loans(filters): PaginatedResponse
-  +get_loan(loan_id): LoanDetailResponse
-  +create_loan(payload): LoanResponse
-  +update_loan(loan_id, payload): LoanResponse
-}
-
-class LoanService {
-  -loan_repo: LoanRepository
-  -user_repo: UserRepository
-  -schedule_service: ScheduleService
-  +list_loans(user_id, role, page, size): PaginatedResult
-  +get_loan_detail(loan_id, user_id): LoanDetail
-  +create_loan(creditor_id, data): Loan
-  +update_loan(loan_id, user_id, role, data): Loan
-  -validate_borrower_update(data): void
-}
-
-class Loan <<Entity>> {
+class Loan {
   +id: UUID
   +creditor_id: UUID
   +borrower_id: UUID
-  +description: str
-  +principal: Decimal
-  +interest_rate: Decimal
-  +repayment_frequency: str
-  +start_date: date
-  +status: LoanStatus
-  +notes: str
-  +created_at: datetime
-  +updated_at: datetime
+  +status: string
+  +current_terms_version: int
+  +current_schedule_version: int
 }
-
-enum LoanStatus {
-  ACTIVE
-  PAUSED
-  PAID_OFF
-  OVERDUE
-  DEFAULTED
+class LoanTermsVersion {
+  +version: int
+  +principal_amount: decimal
+  +currency: string
+  +repayment_frequency: string
+  +maturity_date: date?
 }
-
-class LoanRepository {
-  +find_by_creditor(creditor_id, page, size): PaginatedResult
-  +find_by_borrower(borrower_id, page, size): PaginatedResult
-  +find_by_id(id): Loan
-  +save(loan): Loan
+class ScheduleVersion {
+  +version: int
+  +effective_at: datetime
 }
-
-LoanController --> LoanService
-LoanService --> LoanRepository
-LoanRepository ..> Loan
-Loan --> LoanStatus
+class ScheduleInstallment {
+  +sequence: int
+  +due_date: date
+  +amount_due: decimal
+  +status: string
+}
+class LoanChangeRequest {
+  +id: UUID
+  +type: TERM_CHANGE
+  +status: PENDING|APPROVED|REJECTED
+}
+Loan "1" -- "*" LoanTermsVersion
+Loan "1" -- "*" ScheduleVersion
+ScheduleVersion "1" -- "*" ScheduleInstallment
+Loan "1" -- "*" LoanChangeRequest
 @enduml

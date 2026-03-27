@@ -1,27 +1,20 @@
-@startuml c4_component_payment
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
-skinparam componentStyle rectangle
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "PaymentController" as controller
+rectangle "LedgerService" as ledger
+rectangle "AllocationEngine" as alloc
+rectangle "ScheduleAdjustmentService" as adjust
+rectangle "IdempotencyService" as idem
+queue "Outbox Publisher" as outbox
+database "payment ledger" as db
 
-title C4 Component — Payment Tracking & Scheduling
-
-package "Flask REST API" {
-  component "**PaymentController**\n[Blueprint]\nschedule, record, reschedule,\npause, history" as ctrl #438DD5
-  component "**PaymentService**\n[Service]\nRecord, reschedule, pause,\nbalance recalculation" as psvc #438DD5
-  component "**ScheduleService**\n[Service]\nGenerate, upcoming,\noverdue detection" as ssvc #438DD5
-  component "**PaymentRepository**\n[Repository]" as prepo #85BBF0
-  component "**ChangeLogRepository**\n[Repository]" as clrepo #85BBF0
-}
-
-component "**NotificationService**\n[External]" as notif #999999
-component "**LoanRepository**\n[External]" as lrepo #999999
-
-ctrl --> psvc
-ctrl --> ssvc
-psvc --> prepo
-psvc --> clrepo
-ssvc --> prepo
-psvc ..> notif
-psvc ..> lrepo
+controller --> idem
+controller --> ledger
+controller --> adjust
+ledger --> alloc
+ledger --> db
+adjust --> db
+ledger --> outbox
+adjust --> outbox
 @enduml

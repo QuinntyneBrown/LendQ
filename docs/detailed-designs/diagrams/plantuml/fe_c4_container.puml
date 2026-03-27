@@ -1,28 +1,14 @@
-@startuml fe_c4_container
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
-skinparam componentStyle rectangle
+@startuml
+left to right direction
+skinparam shadowing false
+actor User
+rectangle "Browser\nReact SPA" as spa
+rectangle "Flask API" as api
+database "PostgreSQL" as db
+queue "Redis + Celery" as infra
 
-title LendQ — Full-Stack C4 Container Diagram
-
-actor "User\n(Browser)" as user
-
-rectangle "Frontend" {
-  component "**React SPA**\n[Container: React 18 + TypeScript]\n\nSingle-page application with\nrouting, state management,\nand responsive UI" as spa #438DD5
-}
-
-rectangle "Backend" {
-  component "**Flask REST API**\n[Container: Python/Flask]\n\nBusiness logic,\nREST endpoints" as api #2D6E4F
-  database "**PostgreSQL**\n[Container: Database]" as db #2D6E4F
-}
-
-rectangle "External" {
-  component "**SMTP Server**\n[External System]" as smtp #999999
-}
-
-user --> spa : HTTPS
-spa --> api : REST/JSON\n(Bearer JWT)
-api --> db : SQLAlchemy
-api --> smtp : Email dispatch
+User --> spa : interacts
+spa --> api : HTTPS JSON + SSE
+api --> db : persistence
+api --> infra : jobs / stream events
 @enduml

@@ -1,82 +1,65 @@
-# Module 6: Notifications
+# Module 6: Notifications & Alerts
 
-**Requirements**: L1-6, L2-6.1, L2-6.2, L2-6.3
+**Requirements**: L1-6, L1-11, L2-6.1, L2-6.2, L2-6.3, L2-6.4, L2-6.5, L2-11.1
 
 ## Overview
 
-The Notification module provides in-app notifications and email alerts for payment events, schedule changes, loan modifications, and system messages. Other service modules trigger notifications as side effects of business operations.
+The notification module delivers in-app and optional email notifications for loan and payment events. Delivery is event driven, deduplicated, retryable, and trackable. Active browser sessions receive in-app updates over Server-Sent Events rather than badge polling as the primary mechanism.
 
 ## C4 Component Diagram
 
 ![C4 Component — Notification](diagrams/rendered/c4_component_notification.png)
 
-*Source: [diagrams/drawio/c4_component_notification.drawio](diagrams/drawio/c4_component_notification.drawio)*
+*Source: [diagrams/plantuml/c4_component_notification.puml](diagrams/plantuml/c4_component_notification.puml)*
 
 ## Class Diagram
 
 ![Class Diagram — Notification](diagrams/rendered/class_notification.png)
 
-*Source: [diagrams/rendered/class_notification.png](diagrams/rendered/class_notification.png)*
+*Source: [diagrams/plantuml/class_notification.puml](diagrams/plantuml/class_notification.puml)*
 
-## REST API Endpoints
+## Public Endpoints
 
 | Method | Path | Description | Auth |
-|--------|------|-------------|------|
-| GET | `/api/v1/notifications` | List notifications (paginated, filterable) | Bearer |
-| GET | `/api/v1/notifications/count` | Get unread count | Bearer |
-| PUT | `/api/v1/notifications/{id}/read` | Mark single as read | Bearer |
-| PUT | `/api/v1/notifications/read-all` | Mark all as read | Bearer |
+|---|---|---|---|
+| `GET` | `/api/v1/notifications` | List notifications with filters and paging | Bearer |
+| `GET` | `/api/v1/notifications/unread-count` | Return unread count | Bearer |
+| `POST` | `/api/v1/notifications/{notificationId}/read` | Mark one notification read | Bearer |
+| `POST` | `/api/v1/notifications/read-all` | Mark all notifications read | Bearer |
+| `GET` | `/api/v1/notifications/stream` | Server-Sent Events stream for active sessions | Bearer |
+| `GET` | `/api/v1/notification-preferences` | Load email delivery preferences | Bearer |
+| `PUT` | `/api/v1/notification-preferences` | Update email delivery preferences | Bearer |
 
-## Sequence Diagram
+## Delivery Pipeline
 
-### Notification Operations
-
-![Sequence — Notifications](diagrams/rendered/seq_notifications.png)
-
-*Source: [diagrams/rendered/seq_notifications.png](diagrams/rendered/seq_notifications.png)*
-
-**Behavior**:
-1. **Unread Count**: Called frequently (e.g., on page load, polling) to update the bell icon badge.
-2. **List Notifications**: Paginated, filterable by type (PAYMENT_DUE, PAYMENT_OVERDUE, PAYMENT_RECEIVED, SCHEDULE_CHANGED, LOAN_MODIFIED, SYSTEM). Results are grouped by date for the full notifications page.
-3. **Mark Read**: Updates `is_read=true` for individual or all notifications.
-
-## Notification Triggers
-
-| Event | Notification Type | Recipients | Email |
-|-------|------------------|------------|-------|
-| Payment due in 3 days | PAYMENT_DUE | Borrower | Yes |
-| Payment overdue | PAYMENT_OVERDUE | Both | Yes |
-| Payment recorded | PAYMENT_RECEIVED | Creditor | Yes |
-| Payment rescheduled | SCHEDULE_CHANGED | Counterparty | No |
-| Payments paused | SCHEDULE_CHANGED | Counterparty | No |
-| Loan created | LOAN_MODIFIED | Borrower | Yes |
-| Loan terms modified | LOAN_MODIFIED | Counterparty | No |
-
-## Notification Creation Pattern
-
-Notifications are created as side effects within service layer methods. The `NotificationService` is injected into `LoanService` and `PaymentService`. When a business event occurs, the service calls `NotificationService.create_notification()` which:
-
-1. Persists the notification record in the database.
-2. For email-eligible notifications, dispatches an email via `EmailService`.
-3. The email is sent asynchronously (queued) to avoid blocking the API response.
+1. Domain services write outbox events when payments post, schedules change, loans are updated, or security events require user communication.
+2. An outbox relay publishes Celery jobs.
+3. Worker jobs materialize `notifications`, `notification_deliveries`, and channel-specific attempts.
+4. In-app notifications are stored first, then broadcast to active sessions through SSE fan-out.
+5. Email delivery is attempted only when the user preference for that category is enabled.
 
 ## Data Model
 
-### Notification Entity
+| Entity | Purpose |
+|---|---|
+| `notifications` | User-visible message, type, read state, related entity references |
+| `notification_deliveries` | Channel attempt status such as `PENDING`, `SENT`, `FAILED`, `SKIPPED` |
+| `notification_preferences` | Per-user email preference flags by category |
+| `outbox_events` | Durable handoff from domain write transactions to worker processing |
 
-| Column | Type | Constraints |
-|--------|------|------------|
-| id | UUID | PK |
-| user_id | UUID | FK -> users.id, NOT NULL |
-| type | VARCHAR(30) | NOT NULL |
-| message | VARCHAR(500) | NOT NULL |
-| loan_id | UUID | FK -> loans.id |
-| is_read | BOOLEAN | DEFAULT FALSE |
-| created_at | TIMESTAMP | NOT NULL |
+## Reliability Rules
 
-### Scheduled Notifications
+- Dedupe key is scoped by source event, user, and channel.
+- Worker retries use exponential backoff with dead-letter handling.
+- Failed email attempts do not remove the in-app notification.
+- Unread count is derived from persisted notification state and can be reconciled on reconnect or page focus.
 
-A background task (Flask-APScheduler or Celery beat) runs daily to:
-1. Detect payments due in 3 days and create PAYMENT_DUE notifications.
-2. Detect payments past their due date and create PAYMENT_OVERDUE notifications.
-3. Update loan status to OVERDUE for loans with overdue payments.
+## Sequence Diagram
+
+![Sequence — Notifications](diagrams/rendered/seq_notifications.png)
+
+*Source: [diagrams/plantuml/seq_notifications.puml](diagrams/plantuml/seq_notifications.puml)*
+
+## Concrete Worker Topology
+
+This design standardizes on Celery workers plus Celery Beat. `Flask-APScheduler` is not used for production notification delivery.

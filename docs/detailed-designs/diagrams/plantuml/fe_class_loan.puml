@@ -1,100 +1,15 @@
-@startuml fe_class_loan
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 9
+@startuml
 skinparam classAttributeIconSize 0
+class LoanListPage
+class LoanDetailPage
+class CreateEditLoanDialog
+class LoanChangeRequestDialog
+class TermsHistoryPanel
+class LoanApi
 
-title Frontend — Loan Management Module Components
-
-package "Loan Module" {
-  class LoanListPage <<Page>> {
-    -viewMode: "creditor" | "borrower"
-    -search: string
-    -statusFilter: LoanStatus[]
-    -page: number
-    +switchView(mode): void
-    +handleSearch(q): void
-    +navigateToCreate(): void
-    +navigateToDetail(id): void
-  }
-
-  class LoanTable <<Component>> {
-    +loans: Loan[]
-    +viewMode: "creditor" | "borrower"
-    +onSort(col): void
-    +onRowClick(loan): void
-  }
-
-  class LoanCardList <<Component>> {
-    +loans: Loan[]
-    +viewMode: "creditor" | "borrower"
-    +onCardClick(loan): void
-  }
-
-  class StatusBadge <<Component>> {
-    +status: LoanStatus
-    +renders colored badge
-  }
-
-  class CreateEditLoanPage <<Page>> {
-    -loanId?: string (edit mode)
-    -form: LoanFormState
-    +handleSubmit(): void
-    +handleCancel(): void
-    -validateBorrowerRestrictions(): void
-  }
-
-  class LoanDetailPage <<Page>> {
-    -loanId: string
-    +loan: Loan
-    +navigateToEdit(): void
-    +openPaymentDialog(): void
-    +openRescheduleDialog(): void
-  }
-
-  class LoanSummaryCards <<Component>> {
-    +principal: number
-    +totalPaid: number
-    +outstanding: number
-    +nextDue: string
-  }
-
-  class BorrowerSelect <<Component>> {
-    +value: string
-    +onChange(userId): void
-    -searchUsers(query): User[]
-  }
-}
-
-package "Loan Hooks" {
-  class useLoans <<Hook>> {
-    +data: PaginatedResponse<Loan>
-    +isLoading: boolean
-  }
-
-  class useLoanDetail <<Hook>> {
-    +data: LoanDetail
-    +isLoading: boolean
-  }
-
-  class useCreateLoan <<Hook>> {
-    +mutate(data): void
-    +isLoading: boolean
-  }
-
-  class useUpdateLoan <<Hook>> {
-    +mutate(id, data): void
-    +isLoading: boolean
-  }
-}
-
-LoanListPage --> LoanTable : desktop
-LoanListPage --> LoanCardList : mobile
-LoanListPage --> StatusBadge
-LoanListPage --> useLoans
-LoanDetailPage --> LoanSummaryCards
-LoanDetailPage --> useLoanDetail
-CreateEditLoanPage --> BorrowerSelect
-CreateEditLoanPage --> useCreateLoan
-CreateEditLoanPage --> useUpdateLoan
+LoanListPage --> LoanApi
+LoanDetailPage --> LoanApi
+CreateEditLoanDialog --> LoanApi
+LoanChangeRequestDialog --> LoanApi
+TermsHistoryPanel --> LoanApi
 @enduml

@@ -1,21 +1,16 @@
-@startuml c4_component_dashboard
-!theme plain
-skinparam dpi 150
-skinparam defaultFontSize 10
-skinparam componentStyle rectangle
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "DashboardController" as controller
+rectangle "SummaryProjection" as summary
+rectangle "LoansProjection" as loans
+rectangle "ActivityProjection" as activity
+database "dashboard views" as db
 
-title C4 Component — Dashboard Module
-
-package "Flask REST API" {
-  component "**DashboardController**\n[Blueprint]\nsummary, active loans,\nrecent activity" as ctrl #438DD5
-  component "**DashboardService**\n[Service]\nAggregates data from\nloans, payments, activity" as svc #438DD5
-  component "**LoanRepository**\n[Repository]" as lrepo #85BBF0
-  component "**PaymentRepository**\n[Repository]" as prepo #85BBF0
-  component "**ActivityRepository**\n[Repository]" as arepo #85BBF0
-}
-
-ctrl --> svc
-svc --> lrepo
-svc --> prepo
-svc --> arepo
+controller --> summary
+controller --> loans
+controller --> activity
+summary --> db
+loans --> db
+activity --> db
 @enduml
