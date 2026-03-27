@@ -83,7 +83,7 @@ The `useUnreadCount` hook polls `GET /api/v1/notifications/count` every 30 secon
 
 ![Sequence — Notifications](diagrams/rendered/fe_seq_notifications.png)
 
-*Source: [diagrams/plantuml/fe_seq_notifications.puml](diagrams/plantuml/fe_seq_notifications.puml)*
+*Source: [diagrams/rendered/fe_seq_notifications.png](diagrams/rendered/fe_seq_notifications.png)*
 
 **Behavior**:
 

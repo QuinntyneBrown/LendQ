@@ -16,7 +16,7 @@ The Dashboard module aggregates data from loans, payments, and activity across b
 
 ![Class Diagram — Dashboard](diagrams/rendered/class_dashboard.png)
 
-*Source: [diagrams/plantuml/class_dashboard.puml](diagrams/plantuml/class_dashboard.puml)*
+*Source: [diagrams/rendered/class_dashboard.png](diagrams/rendered/class_dashboard.png)*
 
 ## REST API Endpoints
 
@@ -33,7 +33,7 @@ The Dashboard module aggregates data from loans, payments, and activity across b
 
 ![Sequence — Dashboard](diagrams/rendered/seq_dashboard.png)
 
-*Source: [diagrams/plantuml/seq_dashboard.puml](diagrams/plantuml/seq_dashboard.puml)*
+*Source: [diagrams/rendered/seq_dashboard.png](diagrams/rendered/seq_dashboard.png)*
 
 **Behavior**:
 1. The dashboard endpoint aggregates three data sets in a single response.

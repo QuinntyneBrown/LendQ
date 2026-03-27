@@ -16,7 +16,7 @@ The Payment Tracking module manages the full lifecycle of loan payments: schedul
 
 ![Class Diagram — Payment](diagrams/rendered/class_payment.png)
 
-*Source: [diagrams/plantuml/class_payment.puml](diagrams/plantuml/class_payment.puml)*
+*Source: [diagrams/rendered/class_payment.png](diagrams/rendered/class_payment.png)*
 
 ## REST API Endpoints
 
@@ -34,7 +34,7 @@ The Payment Tracking module manages the full lifecycle of loan payments: schedul
 
 ![Sequence — Record Payment](diagrams/rendered/seq_record_payment.png)
 
-*Source: [diagrams/plantuml/seq_record_payment.puml](diagrams/plantuml/seq_record_payment.puml)*
+*Source: [diagrams/rendered/seq_record_payment.png](diagrams/rendered/seq_record_payment.png)*
 
 **Behavior**:
 1. User submits a payment with amount, date, and optional notes.
@@ -49,7 +49,7 @@ The Payment Tracking module manages the full lifecycle of loan payments: schedul
 
 ![Sequence — Reschedule Payment](diagrams/rendered/seq_reschedule_payment.png)
 
-*Source: [diagrams/plantuml/seq_reschedule_payment.puml](diagrams/plantuml/seq_reschedule_payment.puml)*
+*Source: [diagrams/rendered/seq_reschedule_payment.png](diagrams/rendered/seq_reschedule_payment.png)*
 
 **Behavior**:
 1. User selects a scheduled payment and provides a new date and optional reason.
@@ -62,7 +62,7 @@ The Payment Tracking module manages the full lifecycle of loan payments: schedul
 
 ![Sequence — Pause Payments](diagrams/rendered/seq_pause_payment.png)
 
-*Source: [diagrams/plantuml/seq_pause_payment.puml](diagrams/plantuml/seq_pause_payment.puml)*
+*Source: [diagrams/rendered/seq_pause_payment.png](diagrams/rendered/seq_pause_payment.png)*
 
 **Behavior**:
 1. User selects one or more scheduled payments to pause, with an optional reason.

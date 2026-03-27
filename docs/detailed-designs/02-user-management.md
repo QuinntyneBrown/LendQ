@@ -16,7 +16,7 @@ The User Management module provides CRUD operations for users and role-based acc
 
 ![Class Diagram — User RBAC](diagrams/rendered/class_user_rbac.png)
 
-*Source: [diagrams/plantuml/class_user_rbac.puml](diagrams/plantuml/class_user_rbac.puml)*
+*Source: [diagrams/rendered/class_user_rbac.png](diagrams/rendered/class_user_rbac.png)*
 
 ## REST API Endpoints
 
@@ -44,7 +44,7 @@ The User Management module provides CRUD operations for users and role-based acc
 
 ![Sequence — User CRUD](diagrams/rendered/seq_user_crud.png)
 
-*Source: [diagrams/plantuml/seq_user_crud.puml](diagrams/plantuml/seq_user_crud.puml)*
+*Source: [diagrams/rendered/seq_user_crud.png](diagrams/rendered/seq_user_crud.png)*
 
 **Behavior**:
 1. All user management endpoints require Admin role, enforced by `AuthMiddleware`.

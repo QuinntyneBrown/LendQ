@@ -16,7 +16,7 @@ The Authentication module handles user login, registration, password reset, JWT 
 
 ![Class Diagram — Auth](diagrams/rendered/class_auth.png)
 
-*Source: [diagrams/plantuml/class_auth.puml](diagrams/plantuml/class_auth.puml)*
+*Source: [diagrams/rendered/class_auth.png](diagrams/rendered/class_auth.png)*
 
 ## REST API Endpoints
 
@@ -35,7 +35,7 @@ The Authentication module handles user login, registration, password reset, JWT 
 
 ![Sequence — Login](diagrams/rendered/seq_login.png)
 
-*Source: [diagrams/plantuml/seq_login.puml](diagrams/plantuml/seq_login.puml)*
+*Source: [diagrams/rendered/seq_login.png](diagrams/rendered/seq_login.png)*
 
 **Behavior**:
 1. User submits email and password.
@@ -49,7 +49,7 @@ The Authentication module handles user login, registration, password reset, JWT 
 
 ![Sequence — Sign-Up](diagrams/rendered/seq_signup.png)
 
-*Source: [diagrams/plantuml/seq_signup.puml](diagrams/plantuml/seq_signup.puml)*
+*Source: [diagrams/rendered/seq_signup.png](diagrams/rendered/seq_signup.png)*
 
 **Behavior**:
 1. User submits name, email, and password.
@@ -63,7 +63,7 @@ The Authentication module handles user login, registration, password reset, JWT 
 
 ![Sequence — Forgot Password](diagrams/rendered/seq_forgot_password.png)
 
-*Source: [diagrams/plantuml/seq_forgot_password.puml](diagrams/plantuml/seq_forgot_password.puml)*
+*Source: [diagrams/rendered/seq_forgot_password.png](diagrams/rendered/seq_forgot_password.png)*
 
 **Behavior**:
 1. User submits email.

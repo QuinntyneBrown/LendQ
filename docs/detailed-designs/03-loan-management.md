@@ -16,7 +16,7 @@ The Loan Management module allows creditors to create and manage loans, and borr
 
 ![Class Diagram — Loan](diagrams/rendered/class_loan.png)
 
-*Source: [diagrams/plantuml/class_loan.puml](diagrams/plantuml/class_loan.puml)*
+*Source: [diagrams/rendered/class_loan.png](diagrams/rendered/class_loan.png)*
 
 ## REST API Endpoints
 
@@ -33,7 +33,7 @@ The Loan Management module allows creditors to create and manage loans, and borr
 
 ![Sequence — Create Loan](diagrams/rendered/seq_create_loan.png)
 
-*Source: [diagrams/plantuml/seq_create_loan.puml](diagrams/plantuml/seq_create_loan.puml)*
+*Source: [diagrams/rendered/seq_create_loan.png](diagrams/rendered/seq_create_loan.png)*
 
 **Behavior**:
 1. Only users with the Creditor role can create loans.
@@ -46,7 +46,7 @@ The Loan Management module allows creditors to create and manage loans, and borr
 
 ![Sequence — Update Loan](diagrams/rendered/seq_update_loan.png)
 
-*Source: [diagrams/plantuml/seq_update_loan.puml](diagrams/plantuml/seq_update_loan.puml)*
+*Source: [diagrams/rendered/seq_update_loan.png](diagrams/rendered/seq_update_loan.png)*
 
 **Behavior**:
 1. Creditors can update any field on their own loans.

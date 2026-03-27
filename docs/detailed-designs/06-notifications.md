@@ -16,7 +16,7 @@ The Notification module provides in-app notifications and email alerts for payme
 
 ![Class Diagram — Notification](diagrams/rendered/class_notification.png)
 
-*Source: [diagrams/plantuml/class_notification.puml](diagrams/plantuml/class_notification.puml)*
+*Source: [diagrams/rendered/class_notification.png](diagrams/rendered/class_notification.png)*
 
 ## REST API Endpoints
 
@@ -33,7 +33,7 @@ The Notification module provides in-app notifications and email alerts for payme
 
 ![Sequence — Notifications](diagrams/rendered/seq_notifications.png)
 
-*Source: [diagrams/plantuml/seq_notifications.puml](diagrams/plantuml/seq_notifications.puml)*
+*Source: [diagrams/rendered/seq_notifications.png](diagrams/rendered/seq_notifications.png)*
 
 **Behavior**:
 1. **Unread Count**: Called frequently (e.g., on page load, polling) to update the bell icon badge.
