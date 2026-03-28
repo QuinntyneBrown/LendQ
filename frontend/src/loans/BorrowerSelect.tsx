@@ -25,7 +25,7 @@ export function BorrowerSelect({ value, onChange, error }: BorrowerSelectProps) 
     timerRef.current = setTimeout(async () => {
       try {
         const data = await apiGet<{ items: User[] }>(
-          `/users?role=Borrower&search=${encodeURIComponent(search)}`,
+          `/users/borrowers?search=${encodeURIComponent(search)}`,
         );
         setResults(data.items ?? []);
         setOpen(true);

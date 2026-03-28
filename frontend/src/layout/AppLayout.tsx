@@ -5,6 +5,7 @@ import { DesktopSidebar } from "./DesktopSidebar";
 import { TabletSidebar } from "./TabletSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { MobileHeader } from "./MobileHeader";
+import { NotificationBell } from "@/notifications/NotificationBell";
 
 export function AppLayout() {
   const { isDesktop, isTablet } = useBreakpoint();
@@ -14,9 +15,14 @@ export function AppLayout() {
     return (
       <div className="flex min-h-screen">
         <DesktopSidebar />
-        <main className="flex-1 p-8 overflow-auto">
-          <Outlet />
-        </main>
+        <div className="flex-1 flex flex-col">
+          <header className="flex items-center justify-end px-8 py-4 border-b border-border bg-surface">
+            <NotificationBell />
+          </header>
+          <main className="flex-1 p-8 overflow-auto">
+            <Outlet />
+          </main>
+        </div>
       </div>
     );
   }
