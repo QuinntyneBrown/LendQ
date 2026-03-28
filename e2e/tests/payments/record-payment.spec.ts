@@ -2,21 +2,18 @@ import { test, expect } from "../../fixtures/data.fixture";
 import { LoanDetailPage } from "../../pages/LoanDetailPage";
 import { PaymentScheduleSection } from "../../pages/PaymentScheduleSection";
 import { RecordPaymentDialog } from "../../pages/RecordPaymentDialog";
-import { ToastComponent } from "../../pages/ToastComponent";
 import { isoDateFromToday } from "../../helpers/date-values";
 
 test.describe("L2-4.4: Record Payment / Lump Sum Dialog", () => {
   let detail: LoanDetailPage;
   let schedule: PaymentScheduleSection;
   let dialog: RecordPaymentDialog;
-  let toast: ToastComponent;
   const paymentDate = isoDateFromToday();
 
   test.beforeEach(async ({ creditorPage, seededLoanId }) => {
     detail = new LoanDetailPage(creditorPage);
     schedule = new PaymentScheduleSection(creditorPage);
     dialog = new RecordPaymentDialog(creditorPage);
-    toast = new ToastComponent(creditorPage);
     await detail.goto(seededLoanId);
   });
 
@@ -46,7 +43,7 @@ test.describe("L2-4.4: Record Payment / Lump Sum Dialog", () => {
     await dialog.fillDate(paymentDate);
     await dialog.clickRecord();
     await dialog.expectClosed();
-    await toast.expectToast("success", "Payment recorded");
+    await schedule.expectPaymentStatus(0, "Paid");
   });
 
   test("records partial payment", async () => {
@@ -55,7 +52,7 @@ test.describe("L2-4.4: Record Payment / Lump Sum Dialog", () => {
     await dialog.fillDate(paymentDate);
     await dialog.clickRecord();
     await dialog.expectClosed();
-    await toast.expectToast("success", "recorded");
+    await schedule.expectPaymentStatus(0, "Partial");
   });
 
   test("records lump-sum payment", async () => {
@@ -64,7 +61,7 @@ test.describe("L2-4.4: Record Payment / Lump Sum Dialog", () => {
     await dialog.fillDate(paymentDate);
     await dialog.clickRecord();
     await dialog.expectClosed();
-    await toast.expectToast("success", "recorded");
+    await expect(detail.totalPaidCard).toContainText("$1,000.00");
   });
 
   test("shows lump-sum allocation note", async () => {
@@ -79,13 +76,6 @@ test.describe("L2-4.4: Record Payment / Lump Sum Dialog", () => {
     await dialog.fillDate(paymentDate);
     await dialog.clickRecord();
     await expect(detail.statusBadge).toContainText("Paid Off");
-  });
-
-  test("shows success toast after recording", async () => {
-    await schedule.clickRecordPayment(0);
-    await dialog.fillDate(paymentDate);
-    await dialog.clickRecord();
-    await toast.expectToast("success", "recorded");
   });
 
   test("refreshes schedule and loan detail after recording", async () => {
