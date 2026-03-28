@@ -306,6 +306,7 @@ Start here for the full system picture:
 - [`docs/specs/L2.md`](./docs/specs/L2.md): detailed acceptance criteria
 - [`docs/detailed-designs/00-index.md`](./docs/detailed-designs/00-index.md): architecture index and module map
 - [`docs/api/openapi.yaml`](./docs/api/openapi.yaml): machine-readable API contract
+- [`docs/azure-cheapest-deployment.md`](./docs/azure-cheapest-deployment.md): recommended lowest-cost Azure deployment path and hosting choice
 - [`docs/local-development-workflow.md`](./docs/local-development-workflow.md): recommended local development conventions
 - [`docs/repository-structure.md`](./docs/repository-structure.md): repository structure and traceability notes
 

@@ -3,6 +3,8 @@
 **Status**: Draft
 **Last updated**: 2026-03-28
 
+> This document is the fuller production-oriented target architecture. If you want the lowest-cost Azure path with the best developer experience, start with [azure-cheapest-deployment.md](./azure-cheapest-deployment.md).
+
 ## Contents
 
 - [1. Goals and Constraints](#1-goals-and-constraints)

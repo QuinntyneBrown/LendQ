@@ -4,8 +4,9 @@ import type { TokenResponse } from "./types";
 import { ACCESS_TOKEN_KEY } from "@/utils/constants";
 
 const client = axios.create({
-  baseURL: "/api/v1",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "/api/v1",
   headers: { "Content-Type": "application/json" },
+  withCredentials: true,
 });
 
 client.interceptors.request.use((config) => {
@@ -61,7 +62,8 @@ client.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const { data } = await axios.post<TokenResponse>("/api/v1/auth/refresh", {}, {
+      const refreshBaseUrl = import.meta.env.VITE_API_BASE_URL || "/api/v1";
+      const { data } = await axios.post<TokenResponse>(`${refreshBaseUrl}/auth/refresh`, {}, {
         withCredentials: true,
       });
 

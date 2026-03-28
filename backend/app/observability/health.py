@@ -3,17 +3,21 @@ from http import HTTPStatus
 
 from flask import Blueprint, jsonify
 
-health_bp = Blueprint("health", __name__)
+from app.extensions import limiter
+
+health_bp = Blueprint("health", __name__, url_prefix="/api/v1")
 
 logger = logging.getLogger(__name__)
 
 
 @health_bp.route("/health/live", methods=["GET"])
+@limiter.exempt
 def liveness():
     return jsonify({"status": "ok"}), HTTPStatus.OK
 
 
 @health_bp.route("/health/ready", methods=["GET"])
+@limiter.exempt
 def readiness():
     checks = {}
 

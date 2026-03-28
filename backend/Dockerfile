@@ -10,6 +10,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt gunicorn
 
 COPY . .
+RUN cp alembic.ini migrations/alembic.ini
 
 EXPOSE 8000
 
