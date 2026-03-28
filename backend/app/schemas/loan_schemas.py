@@ -12,10 +12,15 @@ class LoanSchema(Schema):
     start_date = fields.Date()
     status = fields.String()
     notes = fields.String()
+    outstanding_balance = fields.Method("get_outstanding_balance")
     creditor_name = fields.Method("get_creditor_name")
     borrower_name = fields.Method("get_borrower_name")
     created_at = fields.DateTime(dump_only=True)
     updated_at = fields.DateTime(dump_only=True)
+
+    def get_outstanding_balance(self, obj):
+        from app.services.balance_service import BalanceService
+        return str(BalanceService().get_outstanding_balance(obj.id))
 
     def get_creditor_name(self, obj):
         return obj.creditor.name if obj.creditor else None

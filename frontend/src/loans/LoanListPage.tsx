@@ -97,10 +97,11 @@ export function LoanListPage() {
             placeholder="Search loans..."
           />
         </div>
-        <div className="w-full sm:w-48" data-testid="status-filter">
+        <div className="w-full sm:w-48">
           <Select
             label=""
             name="status-filter"
+            data-testid="status-filter"
             options={statusFilterOptions}
             value={statusFilter}
             onChange={(e) => {
