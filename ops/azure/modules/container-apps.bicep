@@ -339,7 +339,7 @@ resource migrationJob 'Microsoft.App/jobs@2024-03-01' = {
         {
           name: 'lendq-migrate'
           image: imageName
-          command: ['flask', 'db', 'upgrade']
+          command: ['flask', '--app', 'app:create_app', 'db', 'upgrade']
           resources: {
             cpu: json('0.25')
             memory: '0.5Gi'
