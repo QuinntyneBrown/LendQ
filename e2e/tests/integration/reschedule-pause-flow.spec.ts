@@ -1,4 +1,4 @@
-import { test, expect } from "../../fixtures/auth.fixture";
+import { test, expect } from "../../fixtures/data.fixture";
 import { LoanDetailPage } from "../../pages/LoanDetailPage";
 import { PaymentScheduleSection } from "../../pages/PaymentScheduleSection";
 import { ReschedulePaymentDialog } from "../../pages/ReschedulePaymentDialog";
@@ -7,12 +7,12 @@ import { PaymentHistorySection } from "../../pages/PaymentHistorySection";
 import { ToastComponent } from "../../pages/ToastComponent";
 
 test.describe("End-to-end: Schedule modification flow", () => {
-  test("borrower reschedules, pauses, and resumes payments", async ({ borrowerPage }) => {
+  test("borrower reschedules, pauses, and resumes payments", async ({ borrowerPage, seededLoanId }) => {
     const detail = new LoanDetailPage(borrowerPage);
     const schedule = new PaymentScheduleSection(borrowerPage);
     const toast = new ToastComponent(borrowerPage);
 
-    await detail.goto("test-loan-id");
+    await detail.goto(seededLoanId);
 
     // Step 1: Reschedule a payment
     const rescheduleDialog = new ReschedulePaymentDialog(borrowerPage);

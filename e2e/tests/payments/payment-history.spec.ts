@@ -1,4 +1,4 @@
-import { test, expect } from "../../fixtures/auth.fixture";
+import { test, expect } from "../../fixtures/data.fixture";
 import { LoanDetailPage } from "../../pages/LoanDetailPage";
 import { PaymentHistorySection } from "../../pages/PaymentHistorySection";
 
@@ -6,10 +6,10 @@ test.describe("L2-4.5: Payment History with Change Log", () => {
   let detail: LoanDetailPage;
   let history: PaymentHistorySection;
 
-  test.beforeEach(async ({ creditorPage }) => {
+  test.beforeEach(async ({ creditorPage, seededLoanId }) => {
     detail = new LoanDetailPage(creditorPage);
     history = new PaymentHistorySection(creditorPage);
-    await detail.goto("test-loan-id");
+    await detail.goto(seededLoanId);
   });
 
   test("displays payment history timeline", async () => {

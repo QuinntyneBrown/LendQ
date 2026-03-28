@@ -1,4 +1,4 @@
-import { test, expect } from "../../fixtures/auth.fixture";
+import { test, expect } from "../../fixtures/data.fixture";
 import { LoanDetailPage } from "../../pages/LoanDetailPage";
 import { PaymentScheduleSection } from "../../pages/PaymentScheduleSection";
 import { RecordPaymentDialog } from "../../pages/RecordPaymentDialog";
@@ -10,12 +10,12 @@ test.describe("L2-4.4: Record Payment / Lump Sum Dialog", () => {
   let dialog: RecordPaymentDialog;
   let toast: ToastComponent;
 
-  test.beforeEach(async ({ creditorPage }) => {
+  test.beforeEach(async ({ creditorPage, seededLoanId }) => {
     detail = new LoanDetailPage(creditorPage);
     schedule = new PaymentScheduleSection(creditorPage);
     dialog = new RecordPaymentDialog(creditorPage);
     toast = new ToastComponent(creditorPage);
-    await detail.goto("test-loan-id");
+    await detail.goto(seededLoanId);
   });
 
   test("opens record-payment dialog from schedule row", async () => {
