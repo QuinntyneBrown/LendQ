@@ -99,7 +99,8 @@ export function CreateEditLoanModal({
     }
 
     if (isEdit) {
-      const { num_payments, ...updateData } = data;
+      const { borrower_id, num_payments, ...updateData } = data;
+      void borrower_id;
       void num_payments;
       updateMutation.mutate(
         { id: loan.id, ...updateData } as Record<string, unknown> & { id: string },

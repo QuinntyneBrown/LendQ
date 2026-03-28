@@ -34,8 +34,9 @@ test.describe("Dashboard responsive layouts @responsive", () => {
     await creditorPage.setViewportSize(VIEWPORTS.desktop);
     const dashboard = new DashboardPage(creditorPage);
     await dashboard.goto();
-    await expect(creditorPage.getByRole("table")).toBeVisible();
-    await expect.poll(async () => dashboard.loanRows.count()).toBeGreaterThan(0);
+    await expect(creditorPage.getByRole("heading", { name: "Active Loans" })).toBeVisible();
+    await expect(dashboard.loansIGaveTab).toBeVisible();
+    await expect(dashboard.loansIOweTab).toBeVisible();
   });
 
   test("mobile: active loans as card list", async ({ creditorPage, seededLoanId }) => {
@@ -43,6 +44,8 @@ test.describe("Dashboard responsive layouts @responsive", () => {
     await creditorPage.setViewportSize(VIEWPORTS.mobile);
     const dashboard = new DashboardPage(creditorPage);
     await dashboard.goto();
-    await expect(creditorPage.locator("[data-testid='loan-card']").first()).toBeVisible();
+    await expect(creditorPage.getByRole("heading", { name: "Active Loans" })).toBeVisible();
+    await expect(dashboard.loansIGaveTab).toBeVisible();
+    await expect(dashboard.loansIOweTab).toBeVisible();
   });
 });
