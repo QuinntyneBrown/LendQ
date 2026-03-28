@@ -58,11 +58,11 @@ def seed_baseline():
     else:
         print("  Admin user already exists")
 
-    # E2E test users
+    # E2E test users — names must match e2e/fixtures/roles.fixture.ts
     e2e_users = [
-        ("Admin Family", "admin@family.com", "password123", roles["Admin"]),
-        ("Creditor Family", "creditor@family.com", "password123", roles["Creditor"]),
-        ("Borrower Family", "borrower@family.com", "password123", roles["Borrower"]),
+        ("Admin User", "admin@family.com", "password123", roles["Admin"]),
+        ("Quinn Brown", "creditor@family.com", "password123", roles["Creditor"]),
+        ("Sarah Williams", "borrower@family.com", "password123", roles["Borrower"]),
     ]
     for name, email, password, role in e2e_users:
         user = User.query.filter_by(email=email).first()
@@ -215,6 +215,104 @@ def seed_demo():
             user_id=user_id, type=NotificationType.SYSTEM,
             message="Welcome to LendQ!",
         ))
+
+    # ── E2E test data for @family.com users ──
+    e2e_creditor = User.query.filter_by(email="creditor@family.com").first()
+    e2e_borrower = User.query.filter_by(email="borrower@family.com").first()
+
+    if e2e_creditor and e2e_borrower:
+        # Active loan – creditor lent to borrower
+        e2e_loan1 = Loan(
+            creditor_id=e2e_creditor.id, borrower_id=e2e_borrower.id,
+            description="Kitchen renovation loan",
+            principal=Decimal("5000.00"), interest_rate=Decimal("5.00"),
+            repayment_frequency="MONTHLY", start_date=today - timedelta(days=60),
+            status=LoanStatus.ACTIVE,
+        )
+        db.session.add(e2e_loan1)
+        db.session.flush()
+
+        for i in range(12):
+            due = e2e_loan1.start_date + timedelta(days=30 * (i + 1))
+            pstatus = PaymentStatus.PAID if i < 2 else PaymentStatus.SCHEDULED
+            if pstatus == PaymentStatus.SCHEDULED and due < today:
+                pstatus = PaymentStatus.OVERDUE
+            p = Payment(
+                loan_id=e2e_loan1.id, amount_due=Decimal("440.00"),
+                amount_paid=Decimal("440.00") if pstatus == PaymentStatus.PAID else Decimal("0"),
+                due_date=due, status=pstatus,
+                paid_date=due if pstatus == PaymentStatus.PAID else None,
+            )
+            db.session.add(p)
+
+        # Overdue loan
+        e2e_loan2 = Loan(
+            creditor_id=e2e_creditor.id, borrower_id=e2e_borrower.id,
+            description="Emergency fund loan",
+            principal=Decimal("2000.00"), interest_rate=Decimal("0.00"),
+            repayment_frequency="MONTHLY", start_date=today - timedelta(days=90),
+            status=LoanStatus.OVERDUE,
+        )
+        db.session.add(e2e_loan2)
+        db.session.flush()
+
+        for i in range(10):
+            due = e2e_loan2.start_date + timedelta(days=30 * (i + 1))
+            if i < 1:
+                pstatus = PaymentStatus.PAID
+            elif due < today:
+                pstatus = PaymentStatus.OVERDUE
+            else:
+                pstatus = PaymentStatus.SCHEDULED
+            p = Payment(
+                loan_id=e2e_loan2.id, amount_due=Decimal("200.00"),
+                amount_paid=Decimal("200.00") if pstatus == PaymentStatus.PAID else Decimal("0"),
+                due_date=due, status=pstatus,
+                paid_date=due if pstatus == PaymentStatus.PAID else None,
+            )
+            db.session.add(p)
+
+        # Paid-off loan
+        e2e_loan3 = Loan(
+            creditor_id=e2e_creditor.id, borrower_id=e2e_borrower.id,
+            description="Short-term bridge loan",
+            principal=Decimal("1000.00"), interest_rate=Decimal("0.00"),
+            repayment_frequency="MONTHLY", start_date=today - timedelta(days=120),
+            status=LoanStatus.PAID_OFF,
+        )
+        db.session.add(e2e_loan3)
+        db.session.flush()
+
+        for i in range(4):
+            due = e2e_loan3.start_date + timedelta(days=30 * (i + 1))
+            p = Payment(
+                loan_id=e2e_loan3.id, amount_due=Decimal("250.00"),
+                amount_paid=Decimal("250.00"), due_date=due,
+                status=PaymentStatus.PAID, paid_date=due,
+            )
+            db.session.add(p)
+
+        # Notifications for e2e users
+        db.session.add(Notification(
+            user_id=e2e_borrower.id, type=NotificationType.PAYMENT_DUE,
+            message="Payment of $440.00 is due in 3 days",
+            loan_id=e2e_loan1.id,
+        ))
+        db.session.add(Notification(
+            user_id=e2e_borrower.id, type=NotificationType.SYSTEM,
+            message="Welcome to LendQ!",
+        ))
+        db.session.add(Notification(
+            user_id=e2e_creditor.id, type=NotificationType.PAYMENT_RECEIVED,
+            message="Payment of $440.00 received from Sarah Williams",
+            loan_id=e2e_loan1.id,
+        ))
+        db.session.add(Notification(
+            user_id=e2e_creditor.id, type=NotificationType.PAYMENT_OVERDUE,
+            message="Payment overdue for Emergency fund loan",
+            loan_id=e2e_loan2.id,
+        ))
+        print("  Created e2e demo loans, payments, and notifications for @family.com users")
 
     db.session.commit()
     print("  Created demo loans, payments, and notifications")
