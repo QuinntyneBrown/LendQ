@@ -8,6 +8,7 @@ This repository contains the application stack plus supporting project assets:
 - a React + TypeScript frontend SPA in [`frontend/`](./frontend)
 - a Playwright end-to-end suite in [`e2e/`](./e2e)
 - supporting requirements, architecture docs, UI assets, and the OpenAPI contract in [`docs/`](./docs)
+- Azure infrastructure as code (Bicep) in [`ops/azure/`](./ops/azure)
 - local development infrastructure in [`ops/`](./ops)
 
 ![LendQ documented container architecture](docs/detailed-designs/diagrams/rendered/c4_container.png)
@@ -20,6 +21,7 @@ This repository contains the application stack plus supporting project assets:
 - [Repository Layout](#repository-layout)
 - [Quick Start](#quick-start)
 - [Testing](#testing)
+- [CI/CD and Deployment](#cicd-and-deployment)
 - [Current Development Notes](#current-development-notes)
 - [Documentation Map](#documentation-map)
 - [Contributing](#contributing)
@@ -115,6 +117,12 @@ LendQ/
 |   |-- detailed-designs/
 |   `-- ui-design.pen
 |-- ops/
+|   |-- azure/
+|   |   |-- modules/
+|   |   |-- main.bicep
+|   |   |-- main.staging.bicepparam
+|   |   |-- main.production.bicepparam
+|   |   `-- github-secrets-setup.txt
 |   `-- docker-compose.dev.yml
 |-- CONTRIBUTING.md
 |-- LICENSE
@@ -287,6 +295,40 @@ Recommended usage:
 - `test:smoke` is the business-critical mutation-and-navigation path.
 - `test:full` runs the reduced full regression across the kept browser and responsive projects.
 - Use file-targeted and `--grep` Playwright commands for the tightest inner loop.
+
+## CI/CD and Deployment
+
+### GitHub Actions workflows
+
+| Workflow | Trigger | Purpose |
+| --- | --- | --- |
+| **Deploy to Staging** (`deploy-staging.yml`) | Push to `main`, manual dispatch | Builds and deploys backend + frontend to the Azure staging environment |
+| **E2E PR Fast Path** (`e2e-pr.yml`) | Pull request | Runs smoke + responsive E2E tests |
+| **E2E Full Regression** (`e2e-full.yml`) | Daily at 06:00 UTC, manual dispatch | Runs full cross-browser E2E regression |
+
+### Staging deployment pipeline
+
+On every push to `main`, the staging deploy workflow runs two parallel jobs:
+
+1. **deploy-api**: Builds the backend Docker image, pushes it to Azure Container Registry, runs database migrations via a Container Apps job, then updates the API, worker, and beat Container Apps. Finishes with an API health check.
+2. **deploy-frontend**: Builds the Vite SPA and deploys it to Azure Static Web Apps.
+
+### Azure staging environment
+
+| Resource | Service | Name |
+| --- | --- | --- |
+| Frontend | Azure Static Web Apps | `swa-lendq-staging` |
+| API | Azure Container Apps | `lendq-api-staging` |
+| Worker | Azure Container Apps | `lendq-worker-staging` |
+| Beat | Azure Container Apps | `lendq-beat-staging` |
+| Migrations | Container Apps Job | `lendq-migrate-staging` |
+| Database | PostgreSQL Flexible Server | `psql-lendq-staging` |
+| Cache/Broker | Azure Cache for Redis | `redis-lendq-staging` |
+| Container Registry | Azure Container Registry | `lendqacr` |
+| Secrets | Azure Key Vault | `kv-lendq-staging` |
+| Monitoring | Application Insights + Log Analytics | `ai-lendq-staging` |
+
+Infrastructure is defined in Bicep under [`ops/azure/`](./ops/azure). See [`ops/azure/github-secrets-setup.txt`](./ops/azure/github-secrets-setup.txt) for the GitHub secrets required by the deploy workflow.
 
 ## Current Development Notes
 
