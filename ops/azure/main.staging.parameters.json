@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": { "value": "staging" },
+    "dbSkuName": { "value": "Standard_B1ms" },
+    "dbSkuTier": { "value": "Burstable" },
+    "dbStorageSizeGb": { "value": 32 },
+    "dbBackupRetentionDays": { "value": 7 },
+    "dbGeoRedundantBackup": { "value": false },
+    "redisSku": { "value": "Basic" },
+    "redisCapacity": { "value": 0 },
+    "apiMinReplicas": { "value": 1 },
+    "apiMaxReplicas": { "value": 2 },
+    "workerMinReplicas": { "value": 1 },
+    "workerMaxReplicas": { "value": 2 },
+    "beatReplicas": { "value": 1 },
+    "customDomain": { "value": "staging.lendq.com" },
+    "logLevel": { "value": "DEBUG" },
+    "swaSku": { "value": "Free" },
+    "acrName": { "value": "lendqacr" }
+  }
+}
