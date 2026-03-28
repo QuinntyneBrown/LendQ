@@ -109,4 +109,16 @@ export class CreateEditLoanModal {
   async expectPrincipalReadOnly() {
     await expect(this.principalInput).toBeDisabled();
   }
+
+  async expectBorrowerOptionsVisible() {
+    await expect(this.borrowerOptions.first()).toBeVisible({ timeout: 5000 });
+  }
+
+  async expectBorrowerOptionCount(count: number) {
+    await expect(this.borrowerOptions).toHaveCount(count);
+  }
+
+  async expectBorrowerSelected(name: string) {
+    await expect(this.dialog.getByTestId("selected-borrower")).toContainText(name);
+  }
 }
