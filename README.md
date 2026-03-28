@@ -23,6 +23,7 @@ This repository contains the application stack plus supporting project assets:
 - [Current Integration Notes](#current-integration-notes)
 - [Documentation Map](#documentation-map)
 - [Contributing](#contributing)
+- [License](#license)
 
 ## Project Status
 
@@ -115,6 +116,8 @@ LendQ/
 |   `-- ui-design.pen
 |-- ops/
 |   `-- docker-compose.dev.yml
+|-- CONTRIBUTING.md
+|-- LICENSE
 `-- README.md
 ```
 
@@ -307,12 +310,8 @@ Detailed design modules:
 
 ## Contributing
 
-If you extend this repository:
-
-1. Keep the OpenAPI contract, backend controllers, frontend API types, and Playwright expectations aligned.
-2. Update the relevant design docs when implementation decisions shift.
-3. Prefer fixing documented integration gaps explicitly instead of letting the README overstate current behavior.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get started, submit pull requests, and report issues.
 
 ## License
 
-No license file is currently present in this repository. Add one before treating the project as open source.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
