@@ -16,11 +16,11 @@
           <mxGeometry x="60" y="145" width="700" height="360" as="geometry"/>
         </mxCell>
         <!-- Frontend SPA -->
-        <mxCell id="spa" value="&lt;b&gt;Frontend SPA&lt;/b&gt;&lt;br&gt;[Container: React]&lt;br&gt;&lt;br&gt;User interface for&lt;br&gt;all LendQ features" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=10;" parent="1" vertex="1">
+        <mxCell id="spa" value="&lt;b&gt;Frontend SPA&lt;/b&gt;&lt;br&gt;[Container: Angular]&lt;br&gt;&lt;br&gt;User interface for&lt;br&gt;all LendQ features" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=10;" parent="1" vertex="1">
           <mxGeometry x="310" y="170" width="180" height="90" as="geometry"/>
         </mxCell>
-        <!-- Flask API -->
-        <mxCell id="api" value="&lt;b&gt;Flask REST API&lt;/b&gt;&lt;br&gt;[Container: Python/Flask]&lt;br&gt;&lt;br&gt;Business logic, REST endpoints,&lt;br&gt;authorization enforcement" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=10;" parent="1" vertex="1">
+        <!-- ASP.NET Core API -->
+        <mxCell id="api" value="&lt;b&gt;ASP.NET Core REST API&lt;/b&gt;&lt;br&gt;[Container: C#/ASP.NET Core]&lt;br&gt;&lt;br&gt;Business logic, REST endpoints,&lt;br&gt;authorization enforcement" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=10;" parent="1" vertex="1">
           <mxGeometry x="290" y="320" width="220" height="90" as="geometry"/>
         </mxCell>
         <!-- Auth Service -->
@@ -28,7 +28,7 @@
           <mxGeometry x="80" y="180" width="150" height="80" as="geometry"/>
         </mxCell>
         <!-- Notification Service -->
-        <mxCell id="notif" value="&lt;b&gt;Notification Service&lt;/b&gt;&lt;br&gt;[Component: Python]&lt;br&gt;&lt;br&gt;In-app alerts &amp;&lt;br&gt;email dispatch" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=10;" parent="1" vertex="1">
+        <mxCell id="notif" value="&lt;b&gt;Notification Service&lt;/b&gt;&lt;br&gt;[Component: C#]&lt;br&gt;&lt;br&gt;In-app alerts &amp;&lt;br&gt;email dispatch" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=10;" parent="1" vertex="1">
           <mxGeometry x="570" y="180" width="160" height="80" as="geometry"/>
         </mxCell>
         <!-- Database -->

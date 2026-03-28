@@ -1,15 +1,15 @@
 @startuml
 skinparam classAttributeIconSize 0
-class DashboardPage
-class SummaryCards
-class ActiveLoansPanel
-class ActivityFeed
-class DashboardApi
+class DashboardComponent
+class SummaryCardsComponent
+class ActiveLoansPanelComponent
+class ActivityFeedComponent
+class DashboardService
 
-DashboardPage --> SummaryCards
-DashboardPage --> ActiveLoansPanel
-DashboardPage --> ActivityFeed
-SummaryCards --> DashboardApi
-ActiveLoansPanel --> DashboardApi
-ActivityFeed --> DashboardApi
+DashboardComponent --> SummaryCardsComponent
+DashboardComponent --> ActiveLoansPanelComponent
+DashboardComponent --> ActivityFeedComponent
+SummaryCardsComponent --> DashboardService
+ActiveLoansPanelComponent --> DashboardService
+ActivityFeedComponent --> DashboardService
 @enduml

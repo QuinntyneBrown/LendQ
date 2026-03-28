@@ -10,19 +10,19 @@ This document defines the production operations baseline and the API-governance 
 
 | Component | Responsibility |
 |---|---|
-| Web tier | Flask API served behind a reverse proxy with TLS termination and readiness gating |
-| Worker tier | Celery workers process email, notification, projection, and scheduled jobs |
-| Scheduler | Celery Beat schedules recurring jobs; no single-web-instance cron behavior is permitted |
+| Web tier | ASP.NET Core Web API served behind a reverse proxy (Kestrel + reverse proxy) with TLS termination and readiness gating |
+| Worker tier | .NET BackgroundService workers process email, notification, projection, and scheduled jobs |
+| Scheduler | Hangfire Recurring Jobs schedule recurring jobs; no single-web-instance cron behavior is permitted |
 | Database | PostgreSQL is the system of record for users, loans, schedules, payments, notifications, audit, and outbox tables |
-| Cache / broker | Redis handles queue brokering, rate-limit counters, and short-lived coordination state |
+| Cache / broker | Redis handles rate-limit counters, caching, and short-lived coordination state |
 | Observability | Structured logs, metrics, traces, alert routing, and dashboards |
 
 ## Health, Backup, And Recovery
 
 | Capability | Design |
 |---|---|
-| Liveness | `/health/live` checks process health only |
-| Readiness | `/health/ready` checks database, Redis, migration level, and required downstream configuration |
+| Liveness | `/health/live` checks process health only (ASP.NET Core health checks via Microsoft.Extensions.Diagnostics.HealthChecks) |
+| Readiness | `/health/ready` checks database, Redis, migration level, and required downstream configuration (ASP.NET Core health checks via Microsoft.Extensions.Diagnostics.HealthChecks) |
 | Backup | Automated PostgreSQL backups with point-in-time recovery where supported; backup retention and encryption are mandatory |
 | Restore validation | Scheduled restore drills in non-production validate recovery procedures |
 | Recovery objectives | Documented RPO and RTO targets are reviewed before production launch |
@@ -32,7 +32,7 @@ This document defines the production operations baseline and the API-governance 
 
 ### Logs
 
-- JSON structured logs
+- JSON structured logs via Serilog with structured JSON sink
 - mandatory `request_id`, `user_id` when known, `session_id` when known, endpoint, status code, and latency
 - no raw secrets, passwords, refresh tokens, or full access tokens
 
@@ -46,11 +46,11 @@ This document defines the production operations baseline and the API-governance 
 
 ### Traces
 
-OpenTelemetry traces link:
+OpenTelemetry for .NET traces link:
 
 - browser request to API
 - API transaction to outbox event
-- outbox relay to Celery worker
+- outbox relay to .NET BackgroundService worker
 - worker execution to notification or email delivery
 
 ## Quality Gates

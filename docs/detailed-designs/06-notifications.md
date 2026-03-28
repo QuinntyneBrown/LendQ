@@ -33,7 +33,7 @@ The notification module delivers in-app and optional email notifications for loa
 ## Delivery Pipeline
 
 1. Domain services write outbox events when payments post, schedules change, loans are updated, or security events require user communication.
-2. An outbox relay publishes Celery jobs.
+2. An outbox relay publishes jobs to the .NET BackgroundService workers (or Hangfire workers).
 3. Worker jobs materialize `notifications`, `notification_deliveries`, and channel-specific attempts.
 4. In-app notifications are stored first, then broadcast to active sessions through SSE fan-out.
 5. Email delivery is attempted only when the user preference for that category is enabled.
@@ -62,4 +62,4 @@ The notification module delivers in-app and optional email notifications for loa
 
 ## Concrete Worker Topology
 
-This design standardizes on Celery workers plus Celery Beat. `Flask-APScheduler` is not used for production notification delivery.
+This design standardizes on .NET BackgroundService workers plus Hangfire Recurring Jobs. In-process timer-based scheduling is not used for production notification delivery.

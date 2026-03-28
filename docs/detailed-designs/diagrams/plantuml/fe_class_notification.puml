@@ -1,17 +1,17 @@
 @startuml
 skinparam classAttributeIconSize 0
-class NotificationBell
-class NotificationDropdown
-class NotificationListPage
-class NotificationStreamHook
-class ToastProvider
-class PreferencesPage
-class NotificationApi
+class NotificationBellComponent
+class NotificationDropdownComponent
+class NotificationListComponent
+class NotificationStreamService
+class SnackBarService
+class PreferencesComponent
+class NotificationService
 
-NotificationBell --> NotificationStreamHook
-NotificationDropdown --> NotificationApi
-NotificationListPage --> NotificationApi
-NotificationStreamHook --> NotificationApi
-PreferencesPage --> NotificationApi
-ToastProvider --> NotificationStreamHook
+NotificationBellComponent --> NotificationStreamService
+NotificationDropdownComponent --> NotificationService
+NotificationListComponent --> NotificationService
+NotificationStreamService --> NotificationService
+PreferencesComponent --> NotificationService
+SnackBarService --> NotificationStreamService
 @enduml

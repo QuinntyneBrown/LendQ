@@ -2,15 +2,15 @@
 participant DomainService
 database Outbox
 participant Relay
-participant Worker
+participant BackgroundService
 database NotificationStore
 participant SSE
 participant Email
 
 DomainService -> Outbox : write event in tx
 Relay -> Outbox : read pending events
-Relay -> Worker : enqueue notification job
-Worker -> NotificationStore : create notification + deliveries
-Worker -> SSE : push in-app event
-Worker -> Email : send email if enabled
+Relay -> BackgroundService : enqueue notification job
+BackgroundService -> NotificationStore : create notification + deliveries
+BackgroundService -> SSE : push in-app event
+BackgroundService -> Email : send email if enabled
 @enduml

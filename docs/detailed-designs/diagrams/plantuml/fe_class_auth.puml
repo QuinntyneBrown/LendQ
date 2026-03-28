@@ -1,16 +1,16 @@
 @startuml
 skinparam classAttributeIconSize 0
-class AuthProvider
-class AuthBootstrapBoundary
-class LoginPage
-class SignUpPage
-class VerifyEmailPage
-class SessionExpiredDialog
+class AuthService
+class AuthGuard
+class LoginComponent
+class SignUpComponent
+class VerifyEmailComponent
+class SessionExpiredDialogComponent
 class AuthApi
 
-AuthBootstrapBoundary --> AuthProvider
-LoginPage --> AuthApi
-SignUpPage --> AuthApi
-VerifyEmailPage --> AuthApi
-SessionExpiredDialog --> AuthProvider
+AuthGuard --> AuthService
+LoginComponent --> AuthApi
+SignUpComponent --> AuthApi
+VerifyEmailComponent --> AuthApi
+SessionExpiredDialogComponent --> AuthService
 @enduml

@@ -4,8 +4,8 @@ LendQ is a lending management platform for tracking private, family, and small-c
 
 This repository contains the application stack plus supporting project assets:
 
-- a Flask backend API in [`backend/`](./backend)
-- a React + TypeScript frontend SPA in [`frontend/`](./frontend)
+- an ASP.NET Core backend API in [`backend/`](./backend)
+- an Angular + TypeScript frontend SPA in [`frontend/`](./frontend)
 - a Playwright end-to-end suite in [`e2e/`](./e2e)
 - supporting requirements, architecture docs, UI assets, and the OpenAPI contract in [`docs/`](./docs)
 - local development infrastructure in [`ops/`](./ops)
@@ -33,12 +33,12 @@ LendQ is now a full-stack repository with implemented backend and frontend found
 
 | Area | Status | Notes |
 | --- | --- | --- |
-| Backend API | Implemented | Flask app factory, controllers, services, repositories, models, migrations, seeding, health checks, and Celery wiring |
-| Frontend SPA | Implemented | Vite + React app covering authentication, dashboard, loans, payments, users, notifications, and settings |
+| Backend API | Implemented | ASP.NET Core Web API with controllers, services, repositories, EF Core models, migrations, seeding, health checks, and Hangfire wiring |
+| Frontend SPA | Implemented | Angular app covering authentication, dashboard, loans, payments, users, notifications, and settings |
 | Local dev infrastructure | Implemented | Docker Compose file for PostgreSQL, Redis, and Mailpit |
 | API contract | Implemented | OpenAPI source of truth lives in [`docs/api/openapi.yaml`](./docs/api/openapi.yaml) |
 | Requirements and architecture docs | Implemented | L1/L2 specs and detailed design modules live in [`docs/`](./docs) |
-| Backend tests | Implemented | Unit, integration, and security coverage under [`backend/tests/`](./backend/tests) |
+| Backend tests | Implemented | Unit, integration, and security coverage under [`backend/LendQ.Tests/`](./backend/LendQ.Tests) |
 | End-to-end tests | Implemented | Playwright coverage for auth, dashboard, loans, payments, notifications, responsive states, accessibility, and security |
 | Full frontend/backend contract alignment | In progress | Some frontend and E2E assumptions still target older auth and seed-data conventions |
 
@@ -52,7 +52,7 @@ The codebase currently includes implementation across the main product domains:
 - Payment tracking: schedule view, history, record payment, reschedule, and pause flows
 - Dashboard: summary metrics, active loans, and activity feed
 - Notifications: list, unread count, mark read, mark all read, notification preferences, and SSE stream endpoint
-- Operations: migrations, seed data, health endpoints, request IDs, security headers, rate limiting, Redis/Celery dependencies, and observability scaffolding
+- Operations: migrations, seed data, health endpoints, request IDs, security headers, rate limiting, Redis/Hangfire dependencies, and observability scaffolding
 
 The requirements and design baseline for these areas live in:
 
@@ -66,15 +66,17 @@ The requirements and design baseline for these areas live in:
 
 | Layer | Technology |
 | --- | --- |
-| Backend API | Flask 3 |
-| ORM and migrations | SQLAlchemy, Flask-SQLAlchemy, Flask-Migrate |
-| Validation and serialization | Marshmallow, Flask-Marshmallow |
+| Backend API | ASP.NET Core 8 Web API |
+| ORM and migrations | Entity Framework Core 8, EF Core Migrations |
+| Validation | FluentValidation |
+| Serialization | System.Text.Json |
 | Database | PostgreSQL |
-| Background jobs | Redis, Celery |
-| Frontend | React 19, TypeScript, Vite 8 |
-| Styling | Tailwind CSS |
-| Client state and forms | TanStack Query, React Hook Form, Zod |
-| HTTP client | Axios |
+| Background jobs | .NET BackgroundService, Hangfire |
+| Frontend | Angular 18, TypeScript 5, Angular CLI |
+| UI Library | Angular Material (Material Design 3) |
+| Forms | Reactive Forms |
+| Styling | Angular Material theme + SCSS |
+| HTTP client | Angular HttpClient |
 | E2E testing | Playwright |
 | Contract governance | OpenAPI 3.1 |
 | Design assets | Pencil `.pen`, PlantUML, draw.io |
@@ -83,8 +85,8 @@ The requirements and design baseline for these areas live in:
 
 | Service | Port | Purpose |
 | --- | --- | --- |
-| Frontend | `5173` | Vite dev server |
-| Backend API | `5000` | Flask API |
+| Frontend | `4200` | Angular dev server |
+| Backend API | `5001` | ASP.NET Core API (HTTPS) |
 | PostgreSQL | `5432` | Primary database |
 | Redis | `6379` | Rate limiting, broker/backend infrastructure |
 | Mailpit SMTP | `1025` | Local mail capture SMTP |
@@ -95,15 +97,17 @@ The requirements and design baseline for these areas live in:
 ```text
 LendQ/
 |-- backend/
-|   |-- app/
-|   |-- migrations/
-|   |-- tests/
-|   |-- pyproject.toml
-|   `-- requirements-dev.txt
+|   |-- LendQ.Api/
+|   |-- LendQ.Core/
+|   |-- LendQ.Application/
+|   |-- LendQ.Infrastructure/
+|   |-- LendQ.Tests/
+|   `-- LendQ.sln
 |-- frontend/
 |   |-- src/
+|   |-- angular.json
 |   |-- package.json
-|   `-- vite.config.ts
+|   `-- tsconfig.json
 |-- e2e/
 |   |-- tests/
 |   |-- fixtures/
@@ -125,7 +129,7 @@ LendQ/
 
 ### Prerequisites
 
-- Python 3.11+
+- .NET 8 SDK
 - Node.js 20+
 - npm
 - Docker Desktop
@@ -138,41 +142,25 @@ docker compose -f ops/docker-compose.dev.yml up -d
 
 This starts PostgreSQL, Redis, and Mailpit.
 
-### 2. Create a Python virtual environment and install backend dependencies
+### 2. Restore backend dependencies and build
+
+From the repository root:
 
 ```bash
-python -m venv .venv
-```
-
-Windows PowerShell:
-
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
-macOS/Linux:
-
-```bash
-source .venv/bin/activate
-```
-
-Install backend dependencies:
-
-```bash
-pip install -r backend/requirements-dev.txt
+dotnet restore backend/LendQ.sln
+dotnet build backend/LendQ.sln
 ```
 
 ### 3. Run database migrations
 
 ```bash
-cd backend
-python -m flask --app app:create_app db upgrade
+dotnet ef database update --project backend/LendQ.Infrastructure --startup-project backend/LendQ.Api
 ```
 
 ### 4. Seed demo data
 
 ```bash
-python -m app.seed --profile demo
+dotnet run --project backend/LendQ.Api -- --seed demo
 ```
 
 Demo accounts created by the seed script:
@@ -189,14 +177,14 @@ Demo accounts created by the seed script:
 From the `backend/` directory:
 
 ```bash
-python -m flask --app app:create_app --debug run --host 0.0.0.0 --port 5000
+dotnet run --project LendQ.Api
 ```
 
 Useful endpoints:
 
-- API base: `http://localhost:5000/api/v1`
-- Liveness: `http://localhost:5000/health/live`
-- Readiness: `http://localhost:5000/health/ready`
+- API base: `https://localhost:5001/api/v1`
+- Liveness: `https://localhost:5001/health/live`
+- Readiness: `https://localhost:5001/health/ready`
 
 ### 6. Start the frontend
 
@@ -204,10 +192,17 @@ From the repository root in a new terminal:
 
 ```bash
 npm --prefix frontend install
-npm --prefix frontend run dev
+npm --prefix frontend start
 ```
 
-The frontend runs at `http://localhost:5173`.
+Or using the Angular CLI directly:
+
+```bash
+cd frontend
+ng serve
+```
+
+The frontend runs at `http://localhost:4200`.
 
 ### 7. Inspect email traffic
 
@@ -219,17 +214,30 @@ It captures verification and password-reset emails sent by the backend.
 
 ### Backend tests
 
-From the `backend/` directory with the virtual environment active:
+From the repository root:
 
 ```bash
-pytest
+dotnet test backend/LendQ.sln
 ```
 
 The backend test suite includes:
 
-- unit tests under [`backend/tests/unit/`](./backend/tests/unit)
-- integration tests under [`backend/tests/integration/`](./backend/tests/integration)
-- security-focused tests under [`backend/tests/security/`](./backend/tests/security)
+- unit tests under [`backend/LendQ.Tests/Unit/`](./backend/LendQ.Tests/Unit)
+- integration tests under [`backend/LendQ.Tests/Integration/`](./backend/LendQ.Tests/Integration)
+- security-focused tests under [`backend/LendQ.Tests/Security/`](./backend/LendQ.Tests/Security)
+
+### Frontend tests
+
+```bash
+npm --prefix frontend test
+```
+
+Or using the Angular CLI:
+
+```bash
+cd frontend
+ng test
+```
 
 ### Frontend checks
 
@@ -258,21 +266,36 @@ npm --prefix e2e run test:mobile
 
 ## Current Integration Notes
 
-The backend is implemented, but there are still a few practical alignment issues worth knowing before you expect turnkey full-stack behavior:
+The backend and frontend are implemented independently and communicate over HTTP. There are a few practical integration details worth knowing before you expect turnkey full-stack behavior:
 
-- The frontend API client uses a same-origin base path of `/api/v1`, while the backend dev server runs on `http://localhost:5000`.
-- The current Vite config does not proxy `/api` to the backend.
-- The backend auth flow now uses an `HttpOnly` session cookie plus an access token response, while the current frontend client still stores refresh-token state in `localStorage`.
-- The backend demo seed creates `@lendq.local` accounts, while the current Playwright fixtures still reference `@family.com` users.
+- The Angular frontend makes API calls to `/api/v1`, while the ASP.NET Core backend runs on `https://localhost:5001`. CORS is configured in the backend's `Program.cs` to allow the Angular dev server origin (`http://localhost:4200`).
+- For local development, the Angular CLI proxy is the recommended approach. A `proxy.conf.json` file in the `frontend/` directory forwards `/api` requests to the backend, avoiding CORS issues during development.
+- The backend uses JWT Bearer authentication. The Angular `AuthService` stores the access token in memory and the `authInterceptor` attaches it to outgoing requests.
+- The backend demo seed creates `@lendq.local` accounts, while the current Playwright fixtures may still reference older user conventions.
 
-For local browser development, you will likely want to proxy API traffic from Vite to Flask. A minimal example in [`frontend/vite.config.ts`](./frontend/vite.config.ts) would look like:
+**Angular CLI proxy configuration** (`frontend/proxy.conf.json`):
 
-```ts
-server: {
-  port: 5173,
-  proxy: {
-    "/api": "http://localhost:5000",
-  },
+```json
+{
+  "/api": {
+    "target": "https://localhost:5001",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
+```
+
+Start the Angular dev server with the proxy:
+
+```bash
+ng serve --proxy-config proxy.conf.json
+```
+
+Or configure the proxy in `angular.json` under the `serve` target's `options`:
+
+```json
+"options": {
+  "proxyConfig": "proxy.conf.json"
 }
 ```
 

@@ -1,14 +1,14 @@
 @startuml
-participant ApiClient
-participant AuthStore
+participant HttpInterceptor
+participant AuthService
 participant API
 
-ApiClient -> API : request with in-memory token
-API --> ApiClient : 401
-ApiClient -> AuthStore : single-flight refresh
-AuthStore -> API : POST /auth/refresh\ncookie + CSRF
-API --> AuthStore : new access token + user
-AuthStore --> ApiClient : retry original request
-ApiClient -> API : retried request
-API --> ApiClient : success
+HttpInterceptor -> API : request with in-memory token
+API --> HttpInterceptor : 401
+HttpInterceptor -> AuthService : single-flight refresh
+AuthService -> API : POST /auth/refresh\ncookie + CSRF
+API --> AuthService : new access token + user
+AuthService --> HttpInterceptor : retry original request
+HttpInterceptor -> API : retried request
+API --> HttpInterceptor : success
 @enduml

@@ -7,10 +7,10 @@
         <mxCell id="title" value="C4 Component — Payment Tracking &amp; Scheduling" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="200" y="15" width="400" height="25" as="geometry"/>
         </mxCell>
-        <mxCell id="boundary" value="Flask REST API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1e3a5f;dashed=1;dashPattern=5 5;verticalAlign=top;fontStyle=1;fontSize=11;strokeWidth=2;" parent="1" vertex="1">
+        <mxCell id="boundary" value="ASP.NET Core REST API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1e3a5f;dashed=1;dashPattern=5 5;verticalAlign=top;fontStyle=1;fontSize=11;strokeWidth=2;" parent="1" vertex="1">
           <mxGeometry x="40" y="50" width="740" height="430" as="geometry"/>
         </mxCell>
-        <mxCell id="ctrl" value="&lt;b&gt;PaymentController&lt;/b&gt;&lt;br&gt;[Blueprint]&lt;br&gt;&lt;br&gt;schedule, record, reschedule,&lt;br&gt;pause, history" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
+        <mxCell id="ctrl" value="&lt;b&gt;PaymentController&lt;/b&gt;&lt;br&gt;[Controller]&lt;br&gt;&lt;br&gt;schedule, record, reschedule,&lt;br&gt;pause, history" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
           <mxGeometry x="280" y="70" width="220" height="80" as="geometry"/>
         </mxCell>
         <mxCell id="psvc" value="&lt;b&gt;PaymentService&lt;/b&gt;&lt;br&gt;[Service]&lt;br&gt;&lt;br&gt;Record, reschedule, pause,&lt;br&gt;balance recalculation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">

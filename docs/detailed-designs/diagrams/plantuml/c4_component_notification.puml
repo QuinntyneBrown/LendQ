@@ -5,7 +5,7 @@ rectangle "NotificationController" as controller
 rectangle "NotificationService" as service
 rectangle "PreferenceService" as prefs
 rectangle "SSE Gateway" as sse
-rectangle "DeliveryWorker" as worker
+rectangle "DeliveryBackgroundService" as worker
 database "notifications" as db
 cloud "Email Provider" as email
 

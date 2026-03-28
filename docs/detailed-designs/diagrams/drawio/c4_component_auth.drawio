@@ -7,10 +7,10 @@
         <mxCell id="title" value="C4 Component — Authentication Module" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="220" y="15" width="360" height="25" as="geometry"/>
         </mxCell>
-        <mxCell id="boundary" value="Flask REST API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1e3a5f;dashed=1;dashPattern=5 5;verticalAlign=top;fontStyle=1;fontSize=11;strokeWidth=2;" parent="1" vertex="1">
+        <mxCell id="boundary" value="ASP.NET Core REST API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1e3a5f;dashed=1;dashPattern=5 5;verticalAlign=top;fontStyle=1;fontSize=11;strokeWidth=2;" parent="1" vertex="1">
           <mxGeometry x="60" y="50" width="700" height="420" as="geometry"/>
         </mxCell>
-        <mxCell id="ctrl" value="&lt;b&gt;AuthController&lt;/b&gt;&lt;br&gt;[Flask Blueprint]&lt;br&gt;&lt;br&gt;login, signup, forgot-password,&lt;br&gt;reset-password, refresh, logout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
+        <mxCell id="ctrl" value="&lt;b&gt;AuthController&lt;/b&gt;&lt;br&gt;[ASP.NET Core Controller]&lt;br&gt;&lt;br&gt;login, signup, forgot-password,&lt;br&gt;reset-password, refresh, logout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
           <mxGeometry x="280" y="75" width="230" height="85" as="geometry"/>
         </mxCell>
         <mxCell id="svc" value="&lt;b&gt;AuthService&lt;/b&gt;&lt;br&gt;[Service]&lt;br&gt;&lt;br&gt;Orchestrates authentication,&lt;br&gt;registration, password reset" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">

@@ -13,7 +13,7 @@ This document defines the security baseline for the LendQ application. It resolv
 | Browser to API | HTTPS only, HSTS enabled, strict origin and CORS policy |
 | SPA runtime | Access token stored in memory only; no sensitive token is persisted in `localStorage`, `sessionStorage`, or IndexedDB |
 | Refresh session | Opaque refresh identifier in `Secure`, `HttpOnly`, `SameSite=Strict` cookie with server-side session record |
-| Async processing | Celery workers consume only internal jobs produced from a transactional outbox; end-user clients cannot enqueue jobs directly |
+| Async processing | .NET BackgroundService workers consume only internal jobs produced from a transactional outbox; end-user clients cannot enqueue jobs directly |
 | Secrets | Rotated through external secret management; never stored in source control or emitted to logs |
 
 ## Session Model

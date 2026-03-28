@@ -2,10 +2,10 @@
 left to right direction
 skinparam shadowing false
 actor User
-rectangle "React SPA\nBrowser Client" as spa
-rectangle "Flask API\nHTTPS + JSON + SSE" as api
+rectangle "Angular SPA\nBrowser Client" as spa
+rectangle "ASP.NET Core API\nHTTPS + JSON + SSE" as api
 database "PostgreSQL\nSystem of Record" as db
-queue "Redis + Celery\nQueue and Workers" as queue
+queue "Redis + Background Services\nQueue and Workers" as queue
 cloud "Email Provider" as email
 
 User --> spa : uses

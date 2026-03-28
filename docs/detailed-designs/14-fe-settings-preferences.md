@@ -8,25 +8,25 @@
 
 The settings area closes the previous gap between routed navigation and actual design coverage. It contains two authenticated screens:
 
-- `PreferencesPage` at `/settings/preferences`
-- `SecurityPage` at `/settings/security`
+- `PreferencesComponent` at `/settings/preferences`
+- `SecurityComponent` at `/settings/security`
 
-Both screens use the shared app shell, share the responsive breakpoints defined in Module 7, and follow the same loading, empty, success, and error-state rules as the rest of the SPA.
+Both screens use the shared app shell, share the responsive breakpoints defined in Module 7, and follow the same loading, empty, success, and error-state rules as the rest of the SPA. Components are Angular standalone components using Angular Material, Reactive Forms, and `@Injectable` services.
 
 ## Screen Responsibilities
 
 | Screen | Purpose |
 |---|---|
-| `PreferencesPage` | Manage email notification preferences by category while keeping in-app notifications enabled |
-| `SecurityPage` | View active sessions, revoke a specific session, log out all other sessions, and review key account-security state such as email verification and last password change |
+| `PreferencesComponent` | Manage email notification preferences by category using `mat-slide-toggle` while keeping in-app notifications enabled |
+| `SecurityComponent` | View active sessions in `mat-table`, revoke a specific session, log out all other sessions, and review key account-security state such as email verification and last password change |
 
-## Preferences Page
+## Preferences Component
 
 ### Layout
 
-- Desktop: two-column content area with a preference form card and a help/status card
-- Tablet: stacked cards with inline save status
-- Mobile: single-column layout with full-width toggles and sticky save bar
+- Desktop: two-column content area with a `mat-card` preference form and a `mat-card` help/status card
+- Tablet: stacked `mat-card` elements with inline save status
+- Mobile: single-column layout with full-width `mat-slide-toggle` elements and sticky save bar
 
 ### Notification Preference Categories
 
@@ -39,16 +39,44 @@ Both screens use the shared app shell, share the responsive breakpoints defined 
 | `loan_modified_email` | Loan term change updates | Enabled |
 | `system_email` | System notices | Disabled |
 
+### Preferences Form
+
+The `PreferencesComponent` uses Reactive Forms with `mat-slide-toggle` for each preference:
+
+```typescript
+this.preferencesForm = new FormGroup({
+  payment_due_email: new FormControl(true),
+  payment_overdue_email: new FormControl(true),
+  payment_received_email: new FormControl(true),
+  schedule_changed_email: new FormControl(true),
+  loan_modified_email: new FormControl(true),
+  system_email: new FormControl(false),
+});
+```
+
+Template binds each toggle:
+
+```html
+<mat-slide-toggle formControlName="payment_due_email">Payment due reminders</mat-slide-toggle>
+<mat-slide-toggle formControlName="payment_overdue_email">Overdue payment alerts</mat-slide-toggle>
+```
+
 ### UX Rules
 
 - In-app notifications are always on for supported events and are not toggleable.
-- Toggle changes update a dirty-state banner and enable the primary `Save preferences` action.
-- A successful save updates local query cache and shows a non-blocking success toast.
-- Recoverable save failures keep form state intact and render inline error messaging.
+- Toggle changes update a dirty-state banner (tracked via `this.preferencesForm.dirty`) and enable the primary `Save preferences` `mat-raised-button`.
+- A successful save shows a non-blocking success toast via `MatSnackBar`.
+- Recoverable save failures keep form state intact and render inline `mat-error` messaging.
 
-## Security Page
+## Security Component
 
 ### Session Inventory
+
+The `SecurityComponent` displays active sessions in a `mat-table`:
+
+```typescript
+displayedColumns = ['device', 'location', 'created', 'lastUsed', 'status', 'actions'];
+```
 
 Each active session row shows:
 
@@ -56,33 +84,56 @@ Each active session row shows:
 - IP-derived geo hint when available
 - created time
 - last used time
-- current-session badge
-- revoke action
+- current-session badge (`mat-chip`)
+- revoke action (`mat-icon-button` with `delete` icon)
+
+### SecurityService
+
+`SecurityService` is an `@Injectable({ providedIn: 'root' })` service:
+
+```typescript
+@Injectable({ providedIn: 'root' })
+export class SecurityService {
+  constructor(private http: HttpClient) {}
+
+  getSessions(): Observable<Session[]> {
+    return this.http.get<Session[]>('/api/v1/auth/sessions');
+  }
+
+  revokeSession(sessionId: string): Observable<void> {
+    return this.http.delete<void>(`/api/v1/auth/sessions/${sessionId}`);
+  }
+
+  logoutAll(): Observable<void> {
+    return this.http.post<void>('/api/v1/auth/logout-all', {});
+  }
+}
+```
 
 ### Security Actions
 
 | Action | Behavior |
 |---|---|
-| Revoke session | Calls `DELETE /api/v1/auth/sessions/{sessionId}` and immediately removes the row on success |
-| Log out all other sessions | Calls `POST /api/v1/auth/logout-all`, preserves the current session, and invalidates every other refresh session |
-| Resend verification email | Available when `user.email_verified_at` is null; triggers the auth resend-verification flow |
+| Revoke session | Calls `DELETE /api/v1/auth/sessions/{sessionId}` via `SecurityService` and immediately removes the row from the `mat-table` data source on success |
+| Log out all other sessions | Calls `POST /api/v1/auth/logout-all` via `SecurityService`, preserves the current session, and invalidates every other refresh session |
+| Resend verification email | Available when `user.email_verified_at` is null; triggers the auth resend-verification flow via `AuthService` |
 
 If the current session is revoked from another browser or by an administrator, the page receives the normal session-expired flow described in Module 8 and returns the user to the login screen without flashing protected content.
 
 ## API Integration
 
-| Action | Hook | Endpoint |
+| Action | Service Method | Endpoint |
 |---|---|---|
-| Load notification preferences | `useNotificationPreferences` | `GET /api/v1/notification-preferences` |
-| Save notification preferences | `useUpdateNotificationPreferences` | `PUT /api/v1/notification-preferences` |
-| Load sessions | `useSessions` | `GET /api/v1/auth/sessions` |
-| Revoke session | `useRevokeSession` | `DELETE /api/v1/auth/sessions/{sessionId}` |
-| Log out all other sessions | `useLogoutAllSessions` | `POST /api/v1/auth/logout-all` |
-| Resend verification | `useResendVerification` | `POST /api/v1/auth/email-verification/resend` |
+| Load notification preferences | `PreferencesService.getPreferences()` | `GET /api/v1/notification-preferences` |
+| Save notification preferences | `PreferencesService.updatePreferences()` | `PUT /api/v1/notification-preferences` |
+| Load sessions | `SecurityService.getSessions()` | `GET /api/v1/auth/sessions` |
+| Revoke session | `SecurityService.revokeSession()` | `DELETE /api/v1/auth/sessions/{sessionId}` |
+| Log out all other sessions | `SecurityService.logoutAll()` | `POST /api/v1/auth/logout-all` |
+| Resend verification | `AuthService.resendVerification()` | `POST /api/v1/auth/email-verification/resend` |
 
 ## Accessibility & Resilience
 
-- Toggle groups use fieldsets and accessible labels.
-- Session revoke buttons include device details in their accessible names.
-- Save and revoke actions expose progress state and disable duplicate submission.
-- Both screens render skeletons during initial load and inline retry affordances on recoverable failures.
+- Toggle groups use `mat-slide-toggle` within Angular Material `mat-list` with accessible labels via `aria-label`.
+- Session revoke buttons include device details in their accessible names via `[attr.aria-label]`.
+- Save and revoke actions expose progress state via `mat-spinner` and disable duplicate submission with `[disabled]="submitting()"`.
+- Both screens render skeleton placeholders (`mat-progress-bar`) during initial load and inline retry affordances (`mat-button`) on recoverable failures.

@@ -2,10 +2,10 @@
 left to right direction
 skinparam shadowing false
 actor User
-rectangle "Browser\nReact SPA" as spa
-rectangle "Flask API" as api
+rectangle "Browser\nAngular SPA" as spa
+rectangle "ASP.NET Core API" as api
 database "PostgreSQL" as db
-queue "Redis + Celery" as infra
+queue "Redis + Background Services" as infra
 
 User --> spa : interacts
 spa --> api : HTTPS JSON + SSE

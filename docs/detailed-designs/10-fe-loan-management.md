@@ -6,7 +6,7 @@
 
 ## Overview
 
-The loan feature covers loan list views, loan detail, creditor create and edit flows, terms history, and borrower change-request flows. It removes the prior borrower direct-edit path and aligns all creation and edit behavior to the new contract.
+The loan feature covers loan list views, loan detail, creditor create and edit flows, terms history, and borrower change-request flows. It removes the prior borrower direct-edit path and aligns all creation and edit behavior to the new contract. All components are Angular standalone components using Angular Material, Reactive Forms with validators, and `@Injectable` services for API communication.
 
 ## Class Diagram
 
@@ -18,28 +18,75 @@ The loan feature covers loan list views, loan detail, creditor create and edit f
 
 | Screen | Purpose |
 |---|---|
-| `LoanListPage` | Creditor and borrower tabs with search and status filters |
-| `LoanDetailPage` | Summary, terms, schedule, history, and contextual actions |
-| `CreateEditLoanDialog` | Creditor-only create/edit form with schedule builder and preview |
-| `LoanChangeRequestDialog` | Borrower request flow for creditor-controlled term changes |
-| `TermsHistoryPanel` | Side-by-side view of previous and current terms versions |
+| `LoanListComponent` | Creditor and borrower tabs (`mat-tab-group`) with search and status filters (`mat-select`, `mat-form-field`) |
+| `LoanDetailComponent` | Summary, terms, schedule, history, and contextual actions using `mat-card` sections |
+| `CreateEditLoanDialogComponent` | Creditor-only create/edit `MatDialog` with schedule builder and preview |
+| `LoanChangeRequestDialogComponent` | Borrower request flow for creditor-controlled term changes via `MatDialog` |
+| `TermsHistoryPanelComponent` | Side-by-side view of previous and current terms versions |
+
+## LoanService
+
+`LoanService` is an `@Injectable({ providedIn: 'root' })` service that wraps `HttpClient` calls:
+
+```typescript
+@Injectable({ providedIn: 'root' })
+export class LoanService {
+  private readonly apiUrl = '/api/v1';
+
+  constructor(private http: HttpClient) {}
+
+  getLoans(params: LoanListParams): Observable<PaginatedResponse<Loan>> {
+    return this.http.get<PaginatedResponse<Loan>>(`${this.apiUrl}/loans`, { params: toHttpParams(params) });
+  }
+
+  getLoan(id: string): Observable<Loan> {
+    return this.http.get<Loan>(`${this.apiUrl}/loans/${id}`);
+  }
+
+  createLoan(data: CreateLoanRequest): Observable<Loan> {
+    return this.http.post<Loan>(`${this.apiUrl}/loans`, data);
+  }
+
+  updateLoan(id: string, data: UpdateLoanRequest): Observable<Loan> {
+    return this.http.patch<Loan>(`${this.apiUrl}/loans/${id}`, data);
+  }
+}
+```
 
 ## Create/Edit Form
 
+The `CreateEditLoanDialogComponent` uses Reactive Forms with validators and dynamic form arrays for custom schedule rows:
+
 Required fields now include:
 
-- borrower
+- borrower (autocomplete via `mat-autocomplete` bound to `UserService.searchBorrowers()`)
 - description
 - principal amount
 - currency
 - interest rate
-- repayment frequency
-- installment count or maturity date
-- start date
-- optional custom schedule rows
+- repayment frequency (`mat-select`)
+- installment count or maturity date (`mat-datepicker`)
+- start date (`mat-datepicker`)
+- optional custom schedule rows (`FormArray`)
 - notes
 
-The form renders a generated schedule preview and summary before submission.
+```typescript
+this.loanForm = new FormGroup({
+  borrower_id: new FormControl('', [Validators.required]),
+  description: new FormControl('', [Validators.required, Validators.maxLength(500)]),
+  principal_amount: new FormControl(null, [Validators.required, Validators.min(0.01)]),
+  currency: new FormControl('', [Validators.required, currencyCodeValidator]),
+  interest_rate: new FormControl(null, [Validators.required, Validators.min(0)]),
+  repayment_frequency: new FormControl('', [Validators.required]),
+  installment_count: new FormControl(null),
+  maturity_date: new FormControl(null),
+  start_date: new FormControl(null, [Validators.required]),
+  custom_schedule: new FormArray([]),
+  notes: new FormControl(''),
+});
+```
+
+The form renders a generated schedule preview and summary before submission using a computed signal or Observable pipeline.
 
 ## API Integration
 
@@ -64,16 +111,16 @@ The form renders a generated schedule preview and summary before submission.
 ## Governance Rules In The UI
 
 - Borrowers can view full loan details but do not see the general edit route or edit button.
-- Borrowers get `Request change` actions that open `LoanChangeRequestDialog`.
-- Creditor edits include `expected_terms_version` in the payload and show a conflict dialog if the server returns `409`.
-- Approved requests update the terms history panel and trigger query invalidation for loan detail, schedule, dashboard, and notifications.
+- Borrowers get `Request change` actions that open `LoanChangeRequestDialogComponent`.
+- Creditor edits include `expected_terms_version` in the payload and show a conflict dialog (`MatDialog`) if the server returns `409`.
+- Approved requests update the terms history panel and trigger Observable re-fetch for loan detail, schedule, dashboard, and notifications.
 
 ## Validation
 
-The loan schema validates:
+The loan form uses custom cross-field validators:
 
-- currency as ISO 4217
+- currency as ISO 4217 via a custom `currencyCodeValidator`
 - supported repayment frequency
-- exactly one of installment count, maturity date, or custom schedule strategy
+- exactly one of installment count, maturity date, or custom schedule strategy (cross-field validator on the `FormGroup`)
 - positive currency-formatted principal
-- consistent custom schedule totals and dates
+- consistent custom schedule totals and dates (custom `FormArray` validator)

@@ -7,13 +7,13 @@
         <mxCell id="title" value="C4 Component — User Management &amp; RBAC" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="210" y="15" width="380" height="25" as="geometry"/>
         </mxCell>
-        <mxCell id="boundary" value="Flask REST API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1e3a5f;dashed=1;dashPattern=5 5;verticalAlign=top;fontStyle=1;fontSize=11;strokeWidth=2;" parent="1" vertex="1">
+        <mxCell id="boundary" value="ASP.NET Core REST API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1e3a5f;dashed=1;dashPattern=5 5;verticalAlign=top;fontStyle=1;fontSize=11;strokeWidth=2;" parent="1" vertex="1">
           <mxGeometry x="60" y="50" width="700" height="400" as="geometry"/>
         </mxCell>
-        <mxCell id="uctrl" value="&lt;b&gt;UserController&lt;/b&gt;&lt;br&gt;[Blueprint]&lt;br&gt;&lt;br&gt;list, get, create,&lt;br&gt;update, delete users" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
+        <mxCell id="uctrl" value="&lt;b&gt;UserController&lt;/b&gt;&lt;br&gt;[Controller]&lt;br&gt;&lt;br&gt;list, get, create,&lt;br&gt;update, delete users" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
           <mxGeometry x="140" y="75" width="170" height="80" as="geometry"/>
         </mxCell>
-        <mxCell id="rctrl" value="&lt;b&gt;RoleController&lt;/b&gt;&lt;br&gt;[Blueprint]&lt;br&gt;&lt;br&gt;list roles,&lt;br&gt;update permissions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
+        <mxCell id="rctrl" value="&lt;b&gt;RoleController&lt;/b&gt;&lt;br&gt;[Controller]&lt;br&gt;&lt;br&gt;list roles,&lt;br&gt;update permissions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
           <mxGeometry x="490" y="75" width="170" height="80" as="geometry"/>
         </mxCell>
         <mxCell id="usvc" value="&lt;b&gt;UserService&lt;/b&gt;&lt;br&gt;[Service]&lt;br&gt;&lt;br&gt;User CRUD, role assignment" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
@@ -28,7 +28,7 @@
         <mxCell id="rrepo" value="&lt;b&gt;RoleRepository&lt;/b&gt;&lt;br&gt;[Repository]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#ffffff;strokeColor=#6ca4d9;arcSize=8;" parent="1" vertex="1">
           <mxGeometry x="500" y="350" width="150" height="50" as="geometry"/>
         </mxCell>
-        <mxCell id="mw" value="&lt;b&gt;AuthMiddleware&lt;/b&gt;&lt;br&gt;[Decorator]&lt;br&gt;JWT + RBAC check" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;arcSize=8;" parent="1" vertex="1">
+        <mxCell id="mw" value="&lt;b&gt;AuthMiddleware&lt;/b&gt;&lt;br&gt;[Filter]&lt;br&gt;JWT + RBAC check" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;arcSize=8;" parent="1" vertex="1">
           <mxGeometry x="320" y="75" width="150" height="60" as="geometry"/>
         </mxCell>
         <mxCell id="e1" style="endArrow=classic;html=1;" parent="1" source="uctrl" target="usvc" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>

@@ -1,6 +1,6 @@
 @startuml
 skinparam classAttributeIconSize 0
-class ApiClient {
+class ApiService {
   +request()
   +refreshSession()
 }
@@ -14,7 +14,7 @@ class UserSummary {
 }
 class LoanSummary {
   +id: string
-  +outstanding_balance: string
+  +outstandingBalance: string
 }
 class PaymentTransaction {
   +id: string
@@ -22,8 +22,8 @@ class PaymentTransaction {
 }
 class Notification {
   +id: string
-  +is_read: boolean
+  +isRead: boolean
 }
-ApiClient --> AuthState
+ApiService --> AuthState
 AuthState --> UserSummary
 @enduml

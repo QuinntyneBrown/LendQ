@@ -1,15 +1,15 @@
 @startuml
 actor Creditor
-participant LoanForm
-participant BorrowerDirectorySelect
-participant LoanApi
+participant LoanFormComponent
+participant BorrowerDirectorySelectComponent
+participant LoanService
 participant QueryCache
 participant Router
 
-Creditor -> BorrowerDirectorySelect : search borrower
-BorrowerDirectorySelect -> LoanApi : GET /users/borrowers
-Creditor -> LoanForm : submit loan
-LoanForm -> LoanApi : POST /loans
-LoanApi --> QueryCache : invalidate loans
-LoanForm -> Router : go to loan detail
+Creditor -> BorrowerDirectorySelectComponent : search borrower
+BorrowerDirectorySelectComponent -> LoanService : GET /users/borrowers
+Creditor -> LoanFormComponent : submit loan
+LoanFormComponent -> LoanService : POST /loans
+LoanService --> QueryCache : invalidate loans
+LoanFormComponent -> Router : go to loan detail
 @enduml

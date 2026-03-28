@@ -7,13 +7,13 @@
         <mxCell id="title" value="C4 Component — Loan Management" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="250" y="15" width="300" height="25" as="geometry"/>
         </mxCell>
-        <mxCell id="boundary" value="Flask REST API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1e3a5f;dashed=1;dashPattern=5 5;verticalAlign=top;fontStyle=1;fontSize=11;strokeWidth=2;" parent="1" vertex="1">
+        <mxCell id="boundary" value="ASP.NET Core REST API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1e3a5f;dashed=1;dashPattern=5 5;verticalAlign=top;fontStyle=1;fontSize=11;strokeWidth=2;" parent="1" vertex="1">
           <mxGeometry x="60" y="50" width="700" height="420" as="geometry"/>
         </mxCell>
-        <mxCell id="ctrl" value="&lt;b&gt;LoanController&lt;/b&gt;&lt;br&gt;[Blueprint]&lt;br&gt;&lt;br&gt;list, get, create,&lt;br&gt;update loans" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
+        <mxCell id="ctrl" value="&lt;b&gt;LoanController&lt;/b&gt;&lt;br&gt;[Controller]&lt;br&gt;&lt;br&gt;list, get, create,&lt;br&gt;update loans" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
           <mxGeometry x="310" y="75" width="170" height="80" as="geometry"/>
         </mxCell>
-        <mxCell id="mw" value="&lt;b&gt;AuthMiddleware&lt;/b&gt;&lt;br&gt;[Decorator]&lt;br&gt;Role-based access" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;arcSize=8;" parent="1" vertex="1">
+        <mxCell id="mw" value="&lt;b&gt;AuthMiddleware&lt;/b&gt;&lt;br&gt;[Filter]&lt;br&gt;Role-based access" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;arcSize=8;" parent="1" vertex="1">
           <mxGeometry x="100" y="80" width="150" height="55" as="geometry"/>
         </mxCell>
         <mxCell id="svc" value="&lt;b&gt;LoanService&lt;/b&gt;&lt;br&gt;[Service]&lt;br&gt;&lt;br&gt;Loan CRUD, validation,&lt;br&gt;borrower restrictions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">

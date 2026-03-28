@@ -1,13 +1,13 @@
 @startuml
 left to right direction
 skinparam shadowing false
-rectangle "Browser\nReact SPA" as browser
+rectangle "Browser\nAngular SPA" as browser
 rectangle "Edge / Reverse Proxy\nTLS, headers, routing" as edge
-rectangle "Flask API\nAuth, loans, payments, notifications" as api
+rectangle "ASP.NET Core API\nAuth, loans, payments, notifications" as api
 database "PostgreSQL" as db
 queue "Redis" as redis
-rectangle "Celery Workers\nnotifications, email, projections" as worker
-rectangle "Celery Beat\nscheduled jobs" as beat
+rectangle "Background Services\nnotifications, email, projections" as worker
+rectangle "Scheduled Tasks\nrecurring jobs" as beat
 
 browser --> edge : HTTPS
 edge --> api : proxied requests
