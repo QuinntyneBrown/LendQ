@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { apiGet, apiPost } from "@/api/client";
 import type { TokenResponse } from "@/api/types";
 import type { User } from "@/api/types";
-import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/utils/constants";
+import { ACCESS_TOKEN_KEY } from "@/utils/constants";
 import { AuthContext } from "./auth-context";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -15,20 +15,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const clearTokens = useCallback(() => {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
   }, []);
 
   const fetchUser = useCallback(async () => {
-    const profile = await apiGet<User>("/users/me");
+    const profile = await apiGet<User>("/auth/me");
     setUser(profile);
   }, []);
 
   const refreshToken = useCallback(async () => {
-    const token = localStorage.getItem(REFRESH_TOKEN_KEY);
-    if (!token) throw new Error("No refresh token");
-    const data = await apiPost<TokenResponse>("/auth/refresh", { refresh_token: token });
+    const data = await apiPost<TokenResponse>("/auth/refresh", {});
     localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
-    localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
   }, []);
 
   useEffect(() => {
@@ -59,7 +55,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (email: string, password: string) => {
       const data = await apiPost<TokenResponse>("/auth/login", { email, password });
       localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
-      localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
       await fetchUser();
     },
     [fetchUser],

@@ -12,6 +12,7 @@ from app.schemas.auth_schemas import (
     SignUpRequestSchema,
     TokenResponseSchema,
 )
+from app.schemas.user_schemas import UserSchema
 from app.services.auth_service import AuthService
 from app.services.email_service import EmailService
 
@@ -166,9 +167,8 @@ def refresh():
 @auth_bp.route("/me", methods=["GET"])
 @require_auth
 def get_me():
-    auth_service = AuthService()
-    user_data = auth_service.get_me(g.current_user)
-    return jsonify(user_data), 200
+    user_schema = UserSchema()
+    return jsonify(user_schema.dump(g.current_user)), 200
 
 
 @auth_bp.route("/logout", methods=["POST"])

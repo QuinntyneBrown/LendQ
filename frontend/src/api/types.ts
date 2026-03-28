@@ -73,9 +73,15 @@ export interface ApiError {
 
 export interface TokenResponse {
   access_token: string;
-  refresh_token: string;
-  token_type: string;
-  expires_in: number;
+  expires_in_seconds: number;
+  csrf_token: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    roles: string[];
+    email_verified: boolean;
+  };
 }
 
 export interface DashboardSummary {

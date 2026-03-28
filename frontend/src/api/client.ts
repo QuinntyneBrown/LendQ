@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { AxiosRequestConfig } from "axios";
 import type { TokenResponse } from "./types";
-import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/utils/constants";
+import { ACCESS_TOKEN_KEY } from "@/utils/constants";
 
 const client = axios.create({
   baseURL: "/api/v1",
@@ -57,23 +57,12 @@ client.interceptors.response.use(
     originalRequest._retry = true;
     isRefreshing = true;
 
-    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-    if (!refreshToken) {
-      isRefreshing = false;
-      processQueue(error, null);
-      localStorage.removeItem(ACCESS_TOKEN_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
-      window.location.href = "/login";
-      return Promise.reject(error);
-    }
-
     try {
-      const { data } = await axios.post<TokenResponse>("/api/v1/auth/refresh", {
-        refresh_token: refreshToken,
+      const { data } = await axios.post<TokenResponse>("/api/v1/auth/refresh", {}, {
+        withCredentials: true,
       });
 
       localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
-      localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
 
       processQueue(null, data.access_token);
 
@@ -85,7 +74,6 @@ client.interceptors.response.use(
     } catch (refreshError) {
       processQueue(refreshError, null);
       localStorage.removeItem(ACCESS_TOKEN_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
       window.location.href = "/login";
       return Promise.reject(refreshError);
     } finally {
