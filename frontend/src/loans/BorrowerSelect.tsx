@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
 import { apiGet } from "@/api/client";
 import type { User } from "@/api/types";
 
@@ -58,6 +59,13 @@ export function BorrowerSelect({ value, onChange, error }: BorrowerSelectProps) 
     setResults([]);
   };
 
+  const handleClear = () => {
+    onChange("", "");
+    setDisplayName("");
+    setSearch("");
+    setResults([]);
+  };
+
   return (
     <div className="flex flex-col gap-1.5" ref={containerRef}>
       <label
@@ -66,41 +74,58 @@ export function BorrowerSelect({ value, onChange, error }: BorrowerSelectProps) 
       >
         Borrower
       </label>
-      <div className="relative">
-        <input
-          id="borrower-select"
-          type="text"
-          value={value ? displayName : search}
-          onChange={(e) => {
-            if (value) {
-              onChange("", "");
-              setDisplayName("");
-            }
-            const newSearch = e.target.value;
-            setSearch(newSearch);
-            if (!newSearch.trim()) {
-              setResults([]);
-            }
-          }}
-          placeholder="Select a family member"
-          className={`w-full rounded-input border border-border-strong px-4 py-3 font-body text-[15px] text-text-primary placeholder:text-text-muted outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors ${error ? "border-danger-text" : ""}`}
-        />
-        {open && results.length > 0 && (
-          <div className="absolute z-20 mt-1 w-full bg-surface border border-border rounded-card shadow-modal max-h-48 overflow-y-auto">
-            {results.map((user) => (
-              <button
-                key={user.id}
-                type="button"
-                data-testid="borrower-option"
-                onClick={() => handleSelect(user)}
-                className="w-full text-left px-4 py-2.5 font-body text-sm text-text-primary hover:bg-background transition-colors"
-              >
-                {user.name}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+
+      {value && displayName ? (
+        <div
+          data-testid="selected-borrower"
+          className="flex items-center justify-between rounded-input border border-border-strong px-4 py-3 bg-background"
+        >
+          <span className="font-body text-[15px] text-text-primary">
+            {displayName}
+          </span>
+          <button
+            type="button"
+            onClick={handleClear}
+            className="text-text-muted hover:text-text-primary transition-colors"
+            aria-label="Clear borrower"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      ) : (
+        <div className="relative">
+          <input
+            id="borrower-select"
+            type="text"
+            value={search}
+            onChange={(e) => {
+              const newSearch = e.target.value;
+              setSearch(newSearch);
+              if (!newSearch.trim()) {
+                setResults([]);
+              }
+            }}
+            placeholder="Select a family member"
+            className={`w-full rounded-input border border-border-strong px-4 py-3 font-body text-[15px] text-text-primary placeholder:text-text-muted outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors ${error ? "border-danger-text" : ""}`}
+          />
+          {open && results.length > 0 && (
+            <div className="absolute z-20 mt-1 w-full bg-surface border border-border rounded-card shadow-modal max-h-48 overflow-y-auto">
+              {results.map((user) => (
+                <button
+                  key={user.id}
+                  type="button"
+                  data-testid="borrower-option"
+                  onClick={() => handleSelect(user)}
+                  className="w-full text-left px-4 py-2.5 font-body text-sm text-text-primary hover:bg-background transition-colors"
+                >
+                  {user.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {error && (
         <p
           data-testid="error-borrower_id"

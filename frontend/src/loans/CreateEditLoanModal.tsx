@@ -146,7 +146,7 @@ export function CreateEditLoanModal({
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <BorrowerSelect
           value={borrowerId}
-          onChange={(userId) => {
+          onChange={(userId, _userName) => {
             setValue("borrower_id", userId, { shouldValidate: true });
           }}
           error={errors.borrower_id?.message}
