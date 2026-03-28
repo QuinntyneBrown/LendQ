@@ -149,12 +149,7 @@ export function LoanDetailPage() {
         </div>
       </div>
 
-      <div data-testid="payment-history">
-        <h2 className="font-heading text-lg font-bold text-text-primary mb-4">
-          Payment History
-        </h2>
-        <PaymentHistoryView loanId={loan.id} />
-      </div>
+      <PaymentHistoryView loanId={loan.id} />
 
       <CreateEditLoanModal
         open={editOpen}
