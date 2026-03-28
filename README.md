@@ -31,7 +31,7 @@ This repository contains the application stack plus supporting project assets:
 
 ## Project Status
 
-LendQ is an active full-stack repository with a working backend, frontend, seeded demo data, and end-to-end coverage. It is not a polished production release yet; the main remaining work is around auth-storage cleanup, async worker bootstrapping, and keeping older planning documents aligned with the implemented code.
+LendQ is a full-stack lending management application deployed to Azure with automated CI/CD. The backend, frontend, infrastructure, and end-to-end test suite are all implemented and actively maintained. Pushes to `main` auto-deploy to the staging environment.
 
 ### What exists today
 
@@ -39,12 +39,14 @@ LendQ is an active full-stack repository with a working backend, frontend, seede
 | --- | --- | --- |
 | Backend API | Implemented | Flask app factory, controllers, services, repositories, models, migrations, seeding, health checks, and Celery wiring |
 | Frontend SPA | Implemented | Vite + React app covering authentication, dashboard, loans, payments, users, notifications, and settings |
+| Azure staging environment | Deployed | Container Apps (API, worker, beat), Static Web App (SPA), PostgreSQL Flexible Server, Redis, Key Vault, Application Insights |
+| CI/CD pipeline | Implemented | Push-to-main deploys to staging; PR and nightly E2E regression workflows |
 | Local dev infrastructure | Implemented | Docker Compose file for PostgreSQL, Redis, and Mailpit |
+| Infrastructure as code | Implemented | Bicep modules under [`ops/azure/`](./ops/azure) covering all Azure resources |
 | API contract | Implemented | OpenAPI source of truth lives in [`docs/api/openapi.yaml`](./docs/api/openapi.yaml) |
 | Requirements and architecture docs | Implemented | L1/L2 specs and detailed design modules live in [`docs/`](./docs) |
 | Backend tests | Implemented | Unit, integration, and security coverage under [`backend/tests/`](./backend/tests) |
-| End-to-end tests | Implemented | Playwright coverage for auth, dashboard, loans, payments, notifications, responsive states, accessibility, and security |
-| Frontend/backend operational alignment | In progress | Local proxying and seed-data alignment are in place, but auth storage and async worker startup still need cleanup |
+| End-to-end tests | Implemented | Playwright coverage for auth, loans, payments, responsive states, and security |
 
 ## Feature Coverage
 
@@ -80,6 +82,9 @@ The requirements and design baseline for these areas live in:
 | Client state and forms | TanStack Query, React Hook Form, Zod |
 | HTTP client | Axios |
 | E2E testing | Playwright |
+| CI/CD | GitHub Actions |
+| Cloud hosting | Azure (Container Apps, Static Web Apps, PostgreSQL Flexible Server, Redis, Key Vault, Application Insights) |
+| Infrastructure as code | Bicep |
 | Contract governance | OpenAPI 3.1 |
 | Design assets | Pencil `.pen`, PlantUML, draw.io |
 
@@ -334,13 +339,11 @@ Infrastructure is defined in Bicep under [`ops/azure/`](./ops/azure). See [`ops/
 
 ## Current Development Notes
 
-A few repo-level details are worth knowing before you assume everything is production-ready:
-
-- Local browser development already works through the checked-in proxy in [`frontend/vite.config.ts`](./frontend/vite.config.ts), so the SPA can call `/api/v1` while Flask runs on `http://localhost:5000`.
+- Local browser development uses the checked-in Vite proxy in [`frontend/vite.config.ts`](./frontend/vite.config.ts), so the SPA calls `/api/v1` while Flask runs on `http://localhost:5000`.
 - `python -m app.seed --profile demo` creates both the `@lendq.local` demo accounts and the `@family.com` accounts used by the Playwright fixtures.
 - The backend refresh flow is session/cookie-based, but the frontend still keeps the short-lived access token in `localStorage`, so auth storage is only partially aligned with the target design.
-- Redis and Celery wiring exist in the backend, but [`ops/docker-compose.dev.yml`](./ops/docker-compose.dev.yml) currently boots only PostgreSQL, Redis, and Mailpit. Worker and beat processes are not part of the default local startup yet.
-- Some planning documents, especially [`docs/local-development-workflow.md`](./docs/local-development-workflow.md), were written before implementation landed and are better read as architecture/convention guidance than exact current commands.
+- Redis and Celery wiring exist in the backend, but [`ops/docker-compose.dev.yml`](./ops/docker-compose.dev.yml) boots only PostgreSQL, Redis, and Mailpit. Worker and beat processes are not part of the default local startup yet.
+- The staging Azure PostgreSQL instance uses B1ms (Burstable) with ~50 max connections. The production config limits SQLAlchemy pool sizes to stay within this budget.
 
 ## Documentation Map
 
