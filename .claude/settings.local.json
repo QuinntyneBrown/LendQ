@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import ast; [ast.parse\\(open\\(f\\).read\\(\\)\\) for f in [''app/controllers/user_controller.py'', ''app/controllers/role_controller.py'', ''app/controllers/notification_controller.py'', ''app/controllers/admin_controller.py'', ''app/__init__.py'', ''app/extensions.py'', ''app/observability/health.py'', ''app/services/role_service.py'']]\")",
+      "Bash(python -c \"import py_compile; files=[''backend/tests/factories.py'',''backend/tests/integration/test_auth_endpoints.py'',''backend/tests/integration/test_user_endpoints.py'',''backend/tests/integration/test_loan_endpoints.py'',''backend/tests/integration/test_payment_endpoints.py'',''backend/tests/integration/test_notification_endpoints.py'',''backend/tests/integration/test_dashboard_endpoints.py'',''backend/tests/integration/test_role_endpoints.py'',''backend/tests/security/test_role_enforcement.py'',''backend/tests/security/test_security_headers.py'']; [py_compile.compile\\(f, doraise=True\\) for f in files]; print\\(''All 10 files compile successfully''\\)\")",
+      "Bash(python -c \"import ast; import os; errors = []; [errors.append\\(f\\) for f in [os.path.join\\(r,f\\) for r,d,files in os.walk\\(''''backend/app''''\\) for f in files if f.endswith\\(''''.py''''\\)] if not \\(lambda p: \\(ast.parse\\(open\\(p\\).read\\(\\)\\), True\\)[-1]\\)\\(f\\)]; print\\(''''All app files parse OK''''\\)\")",
+      "Bash(python -c \":*)"
+    ]
+  }
+}

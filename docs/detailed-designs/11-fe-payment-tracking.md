@@ -10,7 +10,7 @@ The payment feature renders the active schedule, immutable transaction history, 
 
 ## Class Diagram
 
-![Class — Payment Module](diagrams/rendered/fe_class_payment.png)
+![Class - Payment Module](diagrams/rendered/fe_class_payment.png)
 
 *Source: [diagrams/plantuml/fe_class_payment.puml](diagrams/plantuml/fe_class_payment.puml)*
 
@@ -38,7 +38,7 @@ The payment feature renders the active schedule, immutable transaction history, 
 
 ## Sequence Diagram
 
-![Sequence — Record Payment](diagrams/rendered/fe_seq_record_payment.png)
+![Sequence - Record Payment](diagrams/rendered/fe_seq_record_payment.png)
 
 *Source: [diagrams/plantuml/fe_seq_record_payment.puml](diagrams/plantuml/fe_seq_record_payment.puml)*
 

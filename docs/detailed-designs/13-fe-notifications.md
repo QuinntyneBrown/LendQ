@@ -10,7 +10,7 @@ The notification feature renders the bell badge, dropdown, full notifications pa
 
 ## Class Diagram
 
-![Class — Notification Module](diagrams/rendered/fe_class_notification.png)
+![Class - Notification Module](diagrams/rendered/fe_class_notification.png)
 
 *Source: [diagrams/plantuml/fe_class_notification.puml](diagrams/plantuml/fe_class_notification.puml)*
 
@@ -27,7 +27,7 @@ The notification feature renders the bell badge, dropdown, full notifications pa
 
 ## Sequence Diagram
 
-![Sequence — Notifications](diagrams/rendered/fe_seq_notifications.png)
+![Sequence - Notifications](diagrams/rendered/fe_seq_notifications.png)
 
 *Source: [diagrams/plantuml/fe_seq_notifications.puml](diagrams/plantuml/fe_seq_notifications.puml)*
 

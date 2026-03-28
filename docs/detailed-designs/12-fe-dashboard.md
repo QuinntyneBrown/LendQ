@@ -10,7 +10,7 @@ The dashboard UI is composed from three independently loaded sections: summary c
 
 ## Class Diagram
 
-![Class — Dashboard](diagrams/rendered/fe_class_dashboard.png)
+![Class - Dashboard](diagrams/rendered/fe_class_dashboard.png)
 
 *Source: [diagrams/plantuml/fe_class_dashboard.puml](diagrams/plantuml/fe_class_dashboard.puml)*
 
@@ -24,7 +24,7 @@ The dashboard UI is composed from three independently loaded sections: summary c
 
 ## Sequence Diagram
 
-![Sequence — Dashboard Load](diagrams/rendered/fe_seq_dashboard_load.png)
+![Sequence - Dashboard Load](diagrams/rendered/fe_seq_dashboard_load.png)
 
 *Source: [diagrams/plantuml/fe_seq_dashboard_load.puml](diagrams/plantuml/fe_seq_dashboard_load.puml)*
 

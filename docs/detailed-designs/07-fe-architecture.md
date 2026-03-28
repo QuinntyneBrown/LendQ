@@ -22,13 +22,13 @@ The LendQ frontend is a React SPA built with TypeScript, Vite, React Router, Tan
 
 ## C4 Container Diagram
 
-![C4 Container — Full Stack](diagrams/rendered/fe_c4_container.png)
+![C4 Container - Full Stack](diagrams/rendered/fe_c4_container.png)
 
 *Source: [diagrams/plantuml/fe_c4_container.puml](diagrams/plantuml/fe_c4_container.puml)*
 
 ## C4 Component Diagram
 
-![C4 Component — SPA](diagrams/rendered/fe_c4_component_spa.png)
+![C4 Component - SPA](diagrams/rendered/fe_c4_component_spa.png)
 
 *Source: [diagrams/plantuml/fe_c4_component_spa.puml](diagrams/plantuml/fe_c4_component_spa.puml)*
 
@@ -83,7 +83,7 @@ Borrowers do not receive a direct loan-edit route. Borrower-initiated term or sc
 
 ## API Client And Session Bootstrap
 
-![Class — API Types](diagrams/rendered/fe_class_api_types.png)
+![Class - API Types](diagrams/rendered/fe_class_api_types.png)
 
 *Source: [diagrams/plantuml/fe_class_api_types.puml](diagrams/plantuml/fe_class_api_types.puml)*
 
@@ -102,7 +102,7 @@ Protected routes render behind an `AuthBootstrapBoundary`:
 
 ## Responsive Shell
 
-![Class — Layout](diagrams/rendered/fe_class_layout.png)
+![Class - Layout](diagrams/rendered/fe_class_layout.png)
 
 *Source: [diagrams/plantuml/fe_class_layout.puml](diagrams/plantuml/fe_class_layout.puml)*
 
@@ -131,12 +131,12 @@ Protected routes render behind an `AuthBootstrapBoundary`:
 
 ### Responsive Navigation
 
-![Sequence — Responsive Nav](diagrams/rendered/fe_seq_responsive_nav.png)
+![Sequence - Responsive Nav](diagrams/rendered/fe_seq_responsive_nav.png)
 
 *Source: [diagrams/plantuml/fe_seq_responsive_nav.puml](diagrams/plantuml/fe_seq_responsive_nav.puml)*
 
 ### Token Refresh
 
-![Sequence — Token Refresh](diagrams/rendered/fe_seq_token_refresh.png)
+![Sequence - Token Refresh](diagrams/rendered/fe_seq_token_refresh.png)
 
 *Source: [diagrams/plantuml/fe_seq_token_refresh.puml](diagrams/plantuml/fe_seq_token_refresh.puml)*

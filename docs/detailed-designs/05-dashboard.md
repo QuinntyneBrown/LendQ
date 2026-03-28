@@ -8,13 +8,13 @@ The dashboard serves summary cards, active-loan panels, and recent activity usin
 
 ## C4 Component Diagram
 
-![C4 Component — Dashboard](diagrams/rendered/c4_component_dashboard.png)
+![C4 Component - Dashboard](diagrams/rendered/c4_component_dashboard.png)
 
 *Source: [diagrams/plantuml/c4_component_dashboard.puml](diagrams/plantuml/c4_component_dashboard.puml)*
 
 ## Class Diagram
 
-![Class Diagram — Dashboard](diagrams/rendered/class_dashboard.png)
+![Class Diagram - Dashboard](diagrams/rendered/class_dashboard.png)
 
 *Source: [diagrams/plantuml/class_dashboard.puml](diagrams/plantuml/class_dashboard.puml)*
 
@@ -38,7 +38,7 @@ Each projection is updated from outbox-driven workers. The API returns `generate
 
 ## Sequence Diagram
 
-![Sequence — Dashboard](diagrams/rendered/seq_dashboard.png)
+![Sequence - Dashboard](diagrams/rendered/seq_dashboard.png)
 
 *Source: [diagrams/plantuml/seq_dashboard.puml](diagrams/plantuml/seq_dashboard.puml)*
 

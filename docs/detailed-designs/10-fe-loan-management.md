@@ -10,7 +10,7 @@ The loan feature covers loan list views, loan detail, creditor create and edit f
 
 ## Class Diagram
 
-![Class — Loan Management](diagrams/rendered/fe_class_loan.png)
+![Class - Loan Management](diagrams/rendered/fe_class_loan.png)
 
 *Source: [diagrams/plantuml/fe_class_loan.puml](diagrams/plantuml/fe_class_loan.puml)*
 
@@ -57,7 +57,7 @@ The form renders a generated schedule preview and summary before submission.
 
 ## Sequence Diagram
 
-![Sequence — Create Loan](diagrams/rendered/fe_seq_create_loan.png)
+![Sequence - Create Loan](diagrams/rendered/fe_seq_create_loan.png)
 
 *Source: [diagrams/plantuml/fe_seq_create_loan.puml](diagrams/plantuml/fe_seq_create_loan.puml)*
 
