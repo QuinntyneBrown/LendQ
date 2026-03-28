@@ -6,7 +6,7 @@
 
 ## Overview
 
-The payment feature renders the active schedule, immutable transaction history, allocation previews, reversal actions, and schedule-adjustment flows. It aligns the UI to the ledger-based backend instead of the old mutable payment-row model.
+The payment feature renders the active schedule, immutable transaction history, allocation previews, reversal actions, and schedule-adjustment flows. It aligns the UI to the ledger-based backend instead of the old mutable payment-row model. The frontend is built with Blazor WebAssembly (.NET 8, C# 12), using Razor components, injectable services via DI, and `EditForm` with `DataAnnotationsValidator` for form handling.
 
 ## Class Diagram
 
@@ -18,13 +18,15 @@ The payment feature renders the active schedule, immutable transaction history, 
 
 | Component | Purpose |
 |---|---|
-| `PaymentScheduleView` | Show current schedule version, original dates, and status badges |
-| `RecordPaymentDialog` | Collect amount, date, method, and notes, then display allocation preview |
-| `ScheduleAdjustmentDialog` | Reschedule or pause installments, either direct apply or request mode |
-| `PaymentHistoryView` | Immutable transaction timeline including reversals and schedule events |
-| `ReversePaymentDialog` | Confirm compensating reversal with reason capture |
+| `PaymentScheduleView.razor` | Show current schedule version, original dates, and status badges |
+| `RecordPaymentDialog.razor` | `EditForm` with `DataAnnotationsValidator` to collect amount, date, method, and notes, then display allocation preview |
+| `ScheduleAdjustmentDialog.razor` | Reschedule or pause installments, either direct apply or request mode |
+| `PaymentHistoryView.razor` | Immutable transaction timeline including reversals and schedule events |
+| `ReversePaymentDialog.razor` | Confirm compensating reversal with reason capture |
 
 ## API Integration
+
+All HTTP calls are made through `IPaymentService`, which wraps an injected `HttpClient` instance.
 
 | Action | Endpoint |
 |---|---|
@@ -44,10 +46,10 @@ The payment feature renders the active schedule, immutable transaction history, 
 
 ## Payment UX Rules
 
-- Record-payment submit is disabled after the first click until the request resolves.
-- Each submit generates an idempotency key before calling the API.
-- The dialog sends `amount`, `posted_at`, `payment_method`, and `notes`; payment method is never omitted from the payload.
-- Success feedback includes the transaction id and refreshed allocation results.
+- Record-payment submit is disabled after the first click until the service call resolves; the component tracks a `_isSubmitting` flag and re-renders via `StateHasChanged`.
+- Each submit generates an idempotency key (`Guid.NewGuid()`) before calling the API through `IPaymentService`.
+- The `RecordPaymentDialog.razor` `EditForm` submits a `RecordPaymentModel` containing `Amount`, `PostedAt`, `PaymentMethod`, and `Notes`; payment method is never omitted from the payload.
+- Success feedback includes the transaction id and refreshed allocation results. The service raises a state-change notification that triggers `StateHasChanged` in dependent components (schedule view, history, dashboard).
 
 ## Role Behavior
 
@@ -57,6 +59,6 @@ The payment feature renders the active schedule, immutable transaction history, 
 
 ## Resilience
 
-- Recoverable failures keep form input in place.
-- Conflict or stale-version responses show an actionable refresh-and-review state.
+- Recoverable failures keep `EditForm` input in place; the model binding preserves all field values so the user can retry.
+- Conflict or stale-version responses show an actionable refresh-and-review state, handled by the service returning a typed error that the component renders as a prompt to reload.
 - Balance preview labels itself as projected until the authoritative response returns.

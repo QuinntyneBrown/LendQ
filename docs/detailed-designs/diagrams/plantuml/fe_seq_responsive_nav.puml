@@ -1,14 +1,14 @@
 @startuml
 actor User
 participant AppLayout
-participant BreakpointStore
-participant Router
+participant BreakpointService
+participant NavigationManager
 
 User -> AppLayout : open app
-AppLayout -> BreakpointStore : read viewport
-BreakpointStore --> AppLayout : mobile / tablet / desktop
-AppLayout -> Router : render route shell
+AppLayout -> BreakpointService : read viewport
+BreakpointService --> AppLayout : mobile / tablet / desktop
+AppLayout -> NavigationManager : render route shell
 User -> AppLayout : resize / navigate
-AppLayout -> BreakpointStore : recalculate
+AppLayout -> BreakpointService : recalculate
 AppLayout --> User : adaptive nav UI
 @enduml

@@ -1,13 +1,13 @@
 @startuml
 actor User
 participant RecordPaymentDialog
-participant PaymentApi
-participant QueryCache
+participant PaymentService
+participant StateService
 participant Toasts
 
 User -> RecordPaymentDialog : confirm payment
-RecordPaymentDialog -> PaymentApi : POST /payments\nIdempotency-Key
-PaymentApi --> QueryCache : invalidate loan + dashboard
-QueryCache --> RecordPaymentDialog : refreshed data
+RecordPaymentDialog -> PaymentService : POST /payments\nIdempotency-Key
+PaymentService --> StateService : invalidate loan + dashboard
+StateService --> RecordPaymentDialog : refreshed data
 RecordPaymentDialog -> Toasts : show transaction id
 @enduml

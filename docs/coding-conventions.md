@@ -22,7 +22,7 @@ Official coding standards for the LendQ codebase. All new code must follow these
   - [Background Tasks](#background-tasks)
   - [Testing](#testing)
   - [Code Style](#code-style)
-- [Frontend Conventions (TypeScript / React)](#frontend-conventions-typescript--react)
+- [Frontend Conventions (C# / Blazor WebAssembly)](#frontend-conventions-c--blazor-webassembly)
   - [Project Structure](#frontend-project-structure)
   - [Components](#components)
   - [State Management](#state-management)
@@ -475,262 +475,388 @@ return "", 204
 
 ---
 
-## Frontend Conventions (TypeScript / React)
+## Frontend Conventions (C# / Blazor WebAssembly)
 
 ### Frontend Project Structure
 
 ```
-frontend/src/
-├── main.tsx                 # Entry point (StrictMode + createRoot)
-├── App.tsx                  # Provider stack (QueryClient, Router, Auth, Toast)
-├── routes.tsx               # Route definitions with lazy loading
-├── index.css                # Tailwind directives and global styles
-├── api/                     # HTTP client and shared types
-│   ├── client.ts            # Axios instance, interceptors, apiGet/apiPost/etc.
-│   └── types.ts             # Shared API response types
-├── auth/                    # Authentication feature
-│   ├── AuthContext.tsx       # AuthProvider (context + state)
-│   ├── auth-context.ts      # AuthContextValue type + createContext
-│   ├── useAuth.ts           # useAuth() hook
-│   ├── ProtectedRoute.tsx   # Route guard component
-│   ├── LoginPage.tsx        # Page component (default export)
+frontend/
+├── Program.cs                   # Entry point (WebAssemblyHostBuilder, DI registration)
+├── App.razor                    # Root component (Router, CascadingAuthenticationState)
+├── _Imports.razor               # Global @using directives
+├── wwwroot/
+│   ├── index.html               # Host HTML page
+│   ├── css/                     # Tailwind output and global styles
+│   └── appsettings.json         # Client-side configuration
+├── Pages/                       # Routable page components (@page directive)
+│   ├── Login.razor
+│   ├── Dashboard.razor
+│   ├── LoanList.razor
+│   ├── LoanDetail.razor
 │   └── ...
-├── dashboard/               # Dashboard feature
-│   ├── DashboardPage.tsx
-│   ├── hooks.ts             # useDashboardSummary, useDashboardLoans, etc.
+├── Components/                  # Reusable non-page components
+│   ├── Button.razor
+│   ├── InputField.razor
+│   ├── Modal.razor
+│   ├── Badge.razor
+│   ├── Pagination.razor
+│   ├── EmptyState.razor
+│   ├── LoadingSkeleton.razor
 │   └── ...
-├── loans/                   # Loan management feature
-│   ├── LoanListPage.tsx
-│   ├── LoanDetailPage.tsx
-│   ├── hooks.ts             # useLoans, useLoanDetail, useCreateLoan, etc.
+├── Services/                    # Injectable HttpClient wrappers and business logic
+│   ├── ILoanService.cs
+│   ├── LoanService.cs
+│   ├── IAuthService.cs
+│   ├── AuthService.cs
 │   └── ...
-├── payments/                # Payment feature components
-├── users/                   # User management (Admin)
-├── notifications/           # Notification feature + toast system
-│   ├── hooks.ts
-│   ├── ToastProvider.tsx
-│   ├── ToastContainer.tsx
+├── Models/                      # DTOs and form model classes
+│   ├── LoanDto.cs
+│   ├── CreateLoanRequest.cs
+│   ├── PaginatedResponse.cs
 │   └── ...
-├── settings/                # User settings/preferences
-├── layout/                  # AppLayout, Sidebar, Header
-├── ui/                      # Shared UI primitives
-│   ├── Button.tsx
-│   ├── Input.tsx
-│   ├── Select.tsx
-│   ├── Modal.tsx
-│   ├── Badge.tsx
-│   ├── Pagination.tsx
-│   ├── EmptyState.tsx
-│   ├── LoadingSkeleton.tsx
-│   └── ...
-└── utils/                   # Shared utilities and constants
-    ├── constants.ts
-    └── formatters.ts
+├── Layout/                      # Layout components
+│   ├── MainLayout.razor
+│   ├── Sidebar.razor
+│   ├── Header.razor
+│   └── NavMenu.razor
+├── Auth/                        # Authentication components and handlers
+│   ├── CustomAuthStateProvider.cs
+│   ├── AuthorizationMessageHandler.cs
+│   └── RedirectToLogin.razor
+└── Shared/                      # Shared utilities, constants, and extensions
+    ├── Constants.cs
+    └── Formatters.cs
 ```
 
 **Rules:**
 
-- Features are organized by domain (`auth/`, `loans/`, `payments/`, `notifications/`), not by technical type.
-- Each feature directory contains its pages, hooks, and sub-components.
-- Shared UI primitives live in `ui/`. These are generic, reusable, and unaware of business logic.
-- API types and the HTTP client live in `api/`. Feature-specific hooks import from `api/client.ts`.
-- No barrel files (`index.ts` re-exporting everything). Import directly from the source file.
+- Pages live in `Pages/` and contain an `@page` directive. Reusable components live in `Components/`.
+- Services are defined as interface + implementation pairs (`ILoanService` / `LoanService`) and registered in `Program.cs`.
+- DTOs and form models live in `Models/`. These are plain C# classes with data annotation attributes.
+- Layout components (`MainLayout`, `Sidebar`, `Header`) live in `Layout/`.
+- Authentication infrastructure (custom `AuthenticationStateProvider`, message handlers) lives in `Auth/`.
+- No "god" files. Each component, service, and model gets its own file.
 
 ### Components
 
 **Rules:**
 
-- All components are **functional components** using hooks. No class components.
-- Page components use `default export` (required for `React.lazy()`).
-- Non-page components use **named exports**: `export function Button(...)`.
-- Props are typed with **TypeScript interfaces** defined in the same file (or `api/types.ts` for shared types).
-- Prop interfaces are named `<Component>Props` (e.g., `ButtonProps`, `LoanTableProps`).
-- Components that need to forward refs use `forwardRef` (e.g., `Input`, `Select`).
+- All UI is built with **Razor components** (`.razor` files). No raw JavaScript UI.
+- Page components include an `@page "/path"` directive at the top of the file.
+- Component parameters are declared as public properties with the `[Parameter]` attribute:
+  ```razor
+  @code {
+      [Parameter] public string Title { get; set; } = "";
+      [Parameter] public RenderFragment? ChildContent { get; set; }
+  }
+  ```
+- Use `[CascadingParameter]` to receive authentication state:
+  ```razor
+  @code {
+      [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; } = default!;
+  }
+  ```
+- Child-to-parent communication uses `EventCallback<T>`:
+  ```razor
+  @code {
+      [Parameter] public EventCallback<string> OnSearch { get; set; }
+
+      private async Task HandleInput(ChangeEventArgs e)
+      {
+          await OnSearch.InvokeAsync(e.Value?.ToString());
+      }
+  }
+  ```
+- Component lifecycle methods are used in this order: `OnInitializedAsync` for initial data loading, `OnParametersSetAsync` for reacting to parameter changes.
+- Components that hold disposable resources (timers, event subscriptions) must implement `IDisposable` via `@implements IDisposable`.
+- One component per `.razor` file. File name matches the component name (`LoanTable.razor` contains the `LoanTable` component).
 
 **Component structure:**
 
-```typescript
-// 1. Imports
-import { useState } from "react";
-import type { LucideIcon } from "lucide-react";
+```razor
+@* 1. Directives *@
+@page "/loans"
+@using LendQ.Models
+@inject ILoanService LoanService
+@inject NavigationManager Navigation
 
-// 2. Types/interfaces
-interface CardProps {
-  title: string;
-  icon?: LucideIcon;
-  children: ReactNode;
+@* 2. Markup *@
+<PageTitle>Loans</PageTitle>
+
+<div class="p-6">
+    @if (_loans is null)
+    {
+        <LoadingSkeleton />
+    }
+    else
+    {
+        <LoanTable Loans="_loans" OnRowClick="HandleRowClick" />
+    }
+</div>
+
+@* 3. Code block *@
+@code {
+    private List<LoanDto>? _loans;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loans = await LoanService.GetLoansAsync();
+    }
+
+    private void HandleRowClick(string loanId)
+    {
+        Navigation.NavigateTo($"/loans/{loanId}");
+    }
 }
-
-// 3. Constants (variant maps, config)
-const sizeClasses: Record<string, string> = { ... };
-
-// 4. Component
-export function Card({ title, icon: Icon, children }: CardProps) {
-  return ( ... );
-}
-
-// 5. Default export (pages only)
-export default Card;
 ```
 
 **Naming:**
 
 | Element | Convention | Example |
 |---|---|---|
-| Component files | `PascalCase.tsx` | `LoanDetailPage.tsx` |
-| Hook files | `camelCase.ts` or `hooks.ts` | `useAuth.ts`, `hooks.ts` |
-| Utility files | `camelCase.ts` | `formatters.ts` |
-| Type files | `camelCase.ts` | `types.ts` |
+| Component files | `PascalCase.razor` | `LoanDetailPage.razor` |
+| Service files | `PascalCase.cs` | `LoanService.cs` |
+| Model files | `PascalCase.cs` | `LoanDto.cs` |
 | Components | `PascalCase` | `LoanTable`, `SummaryCards` |
-| Hooks | `use` prefix | `useAuth`, `useLoans`, `useDashboardSummary` |
-| Event handlers | `handle` prefix | `handleSubmit`, `handleTabChange` |
-| Boolean props | `is` / `has` prefix | `isLoading`, `isOpen`, `hasError` |
+| Public members | `PascalCase` | `Title`, `OnSearch`, `GetLoansAsync()` |
+| Private fields | `_camelCase` | `_loans`, `_isLoading` |
+| Event callbacks | `On` prefix | `OnSearch`, `OnRowClick`, `OnSubmit` |
+| Boolean parameters | `Is` / `Has` prefix | `IsLoading`, `IsOpen`, `HasError` |
 
 ### State Management
 
 **Hierarchy (prefer top to bottom):**
 
-1. **URL state** (`useSearchParams`) — for filters, tabs, pagination that should survive navigation.
-2. **Server state** (TanStack Query) — for all data fetched from the API.
-3. **Local component state** (`useState`) — for UI-only state (modals, form inputs).
-4. **Context** (`useContext`) — only for truly global state (auth, toast). Do not overuse.
+1. **URL state** (`NavigationManager`, query strings) — for filters, tabs, pagination that should survive navigation.
+2. **Server state** (injectable `HttpClient` services with caching) — for all data fetched from the API. Services may cache responses in memory where appropriate.
+3. **Component state** (`@code` block fields, `StateHasChanged()`) — for UI-only state (modals, form inputs, loading flags).
+4. **App-wide state** (scoped/singleton DI services with events) — only for truly global state (auth, toast, notification count). Do not overuse.
 
-**TanStack Query rules:**
+**Service-based data access rules:**
 
-- Every API call goes through a custom hook in the feature's `hooks.ts` file.
-- `queryKey` must be a structured array that includes all parameters affecting the query:
-  ```typescript
-  queryKey: ["loans", { view, page, search, status }]
-  ```
-- Mutations use `onSuccess` to invalidate affected queries:
-  ```typescript
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ["loans"] });
-    queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+- Every API call goes through an injectable service registered in `Program.cs`.
+- Services expose async methods that return typed DTOs:
+  ```csharp
+  public interface ILoanService
+  {
+      Task<List<LoanDto>> GetLoansAsync(LoanFilter? filter = null);
+      Task<LoanDto> GetLoanByIdAsync(string id);
+      Task<LoanDto> CreateLoanAsync(CreateLoanRequest request);
   }
   ```
-- Use `staleTime` to prevent unnecessary refetches (default: 30 seconds for most data).
-- Use `enabled: !!id` for queries that depend on a parameter being present.
-- Use `refetchInterval` only for polling (e.g., notification count).
+- Services that need to notify components of state changes expose events:
+  ```csharp
+  public event Action? OnChange;
+  ```
+  Components subscribe in `OnInitializedAsync` and unsubscribe in `Dispose`.
 
-**Auth context:**
+**Auth state:**
 
-- `AuthProvider` in `App.tsx` manages login, logout, signup, token refresh, and user state.
-- Access via `useAuth()` hook. Never access `AuthContext` directly.
-- Tokens are stored in `localStorage`. The Axios interceptor handles automatic refresh on 401.
+- `CustomAuthStateProvider` extends `AuthenticationStateProvider` and manages login, logout, and token state.
+- Access auth state via `[CascadingParameter] Task<AuthenticationState>` or `@inject AuthenticationStateProvider`.
+- Tokens are stored in `localStorage` via JS interop. The `AuthorizationMessageHandler` handles automatic Bearer injection.
 
 ### API Client
 
 **Rules:**
 
-- All HTTP calls go through `apiGet`, `apiPost`, `apiPut`, `apiDelete` from `api/client.ts`.
-- These functions are typed with generics: `apiGet<Loan>("/loans/123")`.
-- The Axios instance handles:
-  - Automatic `Authorization: Bearer` header injection.
-  - Automatic token refresh on 401 (with request queuing).
-  - Base URL: `/api/v1`.
-- API response types are defined in `api/types.ts` and shared across all features.
+- A typed `HttpClient` is registered in `Program.cs` using `builder.Services.AddHttpClient<ILoanService, LoanService>(...)`.
+- `AuthorizationMessageHandler` is registered as a `DelegatingHandler` to inject `Authorization: Bearer` headers automatically:
+  ```csharp
+  builder.Services.AddTransient<AuthorizationMessageHandler>();
+
+  builder.Services.AddHttpClient<ILoanService, LoanService>(client =>
+  {
+      client.BaseAddress = new Uri("http://localhost:5000/api/v1/");
+  })
+  .AddHttpMessageHandler<AuthorizationMessageHandler>();
+  ```
+- A custom `RequestIdHandler` (also a `DelegatingHandler`) adds an `X-Request-Id` header to every outbound request.
+- Services use the generic JSON methods from `System.Net.Http.Json`:
+  ```csharp
+  var loans = await _httpClient.GetFromJsonAsync<List<LoanDto>>("loans");
+  var response = await _httpClient.PostAsJsonAsync("loans", request);
+  ```
+- API response types are defined in `Models/` and shared across all services.
 - Paginated responses use `PaginatedResponse<T>`:
-  ```typescript
-  interface PaginatedResponse<T> {
-    items: T[];
-    total: number;
-    page: number;
-    per_page: number;
-    pages: number;
+  ```csharp
+  public class PaginatedResponse<T>
+  {
+      public List<T> Items { get; set; } = new();
+      public int Total { get; set; }
+      public int Page { get; set; }
+      public int PerPage { get; set; }
+      public int Pages { get; set; }
   }
   ```
 
 ### Forms and Validation
 
-**Stack:** React Hook Form + Zod.
+**Stack:** EditForm + DataAnnotationsValidator for standard rules, FluentValidation for complex rules.
 
 **Rules:**
 
-- Define a Zod schema for every form. The schema is the source of truth for validation.
-- Use `@hookform/resolvers/zod` to connect Zod to React Hook Form.
-- Form inputs use `forwardRef` and are registered via `{...register("fieldName")}`.
-- Error messages are displayed inline below each field.
-- Submit buttons show a loading state during submission (`isLoading` / `isSubmitting`).
+- Every form uses `<EditForm>` with a model class and `<DataAnnotationsValidator />`:
+  ```razor
+  <EditForm Model="_formModel" OnValidSubmit="HandleSubmit">
+      <DataAnnotationsValidator />
+      ...
+  </EditForm>
+  ```
+- Form model classes define validation via data annotations:
+  ```csharp
+  public class LoginFormModel
+  {
+      [Required(ErrorMessage = "Email is required")]
+      [EmailAddress(ErrorMessage = "Invalid email")]
+      public string Email { get; set; } = "";
+
+      [Required(ErrorMessage = "Password is required")]
+      [StringLength(128, MinimumLength = 8, ErrorMessage = "Must be at least 8 characters")]
+      public string Password { get; set; } = "";
+  }
+  ```
+- For complex cross-field or async validation, use **FluentValidation** with the `FluentValidationValidator` component.
+- Use the built-in input components: `InputText`, `InputNumber`, `InputDate`, `InputSelect`, `InputCheckbox`.
+- Display per-field errors with `<ValidationMessage For="@(() => _formModel.Email)" />`.
+- Submit buttons show a loading state during submission using a `_isSubmitting` flag.
 
 **Example pattern:**
 
-```typescript
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+```razor
+@page "/login"
+@inject IAuthService AuthService
 
-const schema = z.object({
-  email: z.string().email("Invalid email"),
-  password: z.string().min(8, "Must be at least 8 characters"),
-});
+<EditForm Model="_formModel" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
 
-type FormData = z.infer<typeof schema>;
+    <div class="mb-4">
+        <label class="text-text-primary">Email</label>
+        <InputText @bind-Value="_formModel.Email" class="input" />
+        <ValidationMessage For="@(() => _formModel.Email)" />
+    </div>
 
-export default function LoginPage() {
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
-    resolver: zodResolver(schema),
-  });
+    <div class="mb-4">
+        <label class="text-text-primary">Password</label>
+        <InputText @bind-Value="_formModel.Password" type="password" class="input" />
+        <ValidationMessage For="@(() => _formModel.Password)" />
+    </div>
 
-  const onSubmit = async (data: FormData) => { ... };
+    <Button Type="submit" IsLoading="_isSubmitting">Log in</Button>
+</EditForm>
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Input label="Email" {...register("email")} error={errors.email?.message} />
-      <Input label="Password" type="password" {...register("password")} error={errors.password?.message} />
-      <Button type="submit" isLoading={isSubmitting}>Log in</Button>
-    </form>
-  );
+@code {
+    private LoginFormModel _formModel = new();
+    private bool _isSubmitting;
+
+    private async Task HandleSubmit()
+    {
+        _isSubmitting = true;
+        await AuthService.LoginAsync(_formModel.Email, _formModel.Password);
+        _isSubmitting = false;
+    }
 }
 ```
 
 ### Styling
 
-**Stack:** Tailwind CSS with custom design tokens.
+**Stack:** Tailwind CSS with custom design tokens, plus CSS isolation for component-specific styles.
 
 **Rules:**
 
-- All styling uses **Tailwind utility classes**. No external CSS files except `index.css` (Tailwind directives and font imports).
+- All styling uses **Tailwind utility classes**. Global styles and Tailwind directives live in `wwwroot/css/`.
 - Custom design tokens are defined in `tailwind.config.js`: colors (`primary`, `surface`, `text-primary`, etc.), fonts (`heading`, `body`), border radii (`button`, `card`, `modal`), and shadows.
 - Use semantic token names in classes: `text-text-primary`, `bg-background`, `border-border-strong`, `rounded-card`.
-- Variant/size classes are defined as `Record` maps for components with multiple visual states:
-  ```typescript
-  const variantClasses: Record<ButtonProps["variant"], string> = {
-    primary: "bg-primary text-white hover:bg-primary-hover",
-    secondary: "bg-background text-text-primary border border-border-strong",
-  };
+- Component-specific styles use **CSS isolation** (`.razor.css` files). A file named `LoanTable.razor.css` is automatically scoped to `LoanTable.razor`:
+  ```css
+  /* LoanTable.razor.css */
+  .loan-row:hover {
+      @apply bg-surface;
+  }
   ```
 - Responsive design uses Tailwind breakpoints: `sm:`, `md:`, `lg:`. Mobile-first.
-- For complex responsive behavior, use the `useBreakpoint()` hook to conditionally render different component trees (e.g., table on desktop, card list on mobile).
+- For complex responsive behavior, use a `BreakpointService` (backed by JS interop and `window.matchMedia`) to conditionally render different component trees (e.g., table on desktop, card list on mobile).
 
 ### Routing and Navigation
 
 **Rules:**
 
-- All routes are defined in `src/routes.tsx`.
-- Page components are lazy-loaded: `const DashboardPage = lazy(() => import("@/dashboard/DashboardPage"))`.
-- Protected routes use `<ProtectedRoute>` which checks `isAuthenticated` and optionally `requiredRoles`.
-- The authenticated layout (`<AppLayout>`) wraps all protected routes via a layout route with `<Outlet />`.
-- Navigation uses `useNavigate()` for programmatic navigation and `<Link>` / `<NavLink>` for declarative links.
-- Filter state (tabs, search, status) is persisted in URL search params via `useSearchParams`.
+- Page components declare their route with `@page "/path"` at the top of the file. Multiple `@page` directives are allowed for route aliases.
+- The root `App.razor` uses `<CascadingAuthenticationState>` and `<AuthorizeRouteView>` to enforce auth on protected routes:
+  ```razor
+  <CascadingAuthenticationState>
+      <Router AppAssembly="@typeof(App).Assembly">
+          <Found Context="routeData">
+              <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                  <NotAuthorized>
+                      <RedirectToLogin />
+                  </NotAuthorized>
+              </AuthorizeRouteView>
+          </Found>
+          <NotFound>
+              <LayoutView Layout="@typeof(MainLayout)">
+                  <p>Page not found.</p>
+              </LayoutView>
+          </NotFound>
+      </Router>
+  </CascadingAuthenticationState>
+  ```
+- Role-based access uses `[Authorize]` and `[Authorize(Roles = "Admin")]` attributes on page components:
+  ```razor
+  @page "/admin/users"
+  @attribute [Authorize(Roles = "Admin")]
+  ```
+- Programmatic navigation uses `NavigationManager.NavigateTo("/path")`.
+- Query string parameters are captured using `[SupplyParameterFromQuery]` or parsed manually from `NavigationManager.Uri`.
 
 ### Error Handling (Frontend)
 
 **Rules:**
 
-- API errors from the backend follow the `{ code, message, request_id, details }` envelope.
-- The `ApiError` type in `api/types.ts` models this structure.
-- Mutations surface errors via the toast system: `toast.error(error.response?.data?.message || "Something went wrong")`.
-- Query errors are handled per-component with `isError` / `error` from the query hook, rendering an inline error state with a retry button.
-- Network errors (no response) show a generic connectivity message.
-- 401 errors are handled globally by the Axios interceptor (token refresh or redirect to login).
+- All service calls are wrapped in try-catch blocks. Services throw typed exceptions or return result objects for expected error cases.
+- User-facing errors are displayed via `IToastService` (injected into components):
+  ```csharp
+  try
+  {
+      await LoanService.CreateLoanAsync(request);
+      ToastService.ShowSuccess("Loan created successfully.");
+  }
+  catch (HttpRequestException ex)
+  {
+      ToastService.ShowError(ex.Message ?? "Something went wrong.");
+  }
+  ```
+- Unhandled exceptions in the component tree are caught by `<ErrorBoundary>`:
+  ```razor
+  <ErrorBoundary @ref="_errorBoundary">
+      <ChildContent>
+          @Body
+      </ChildContent>
+      <ErrorContent>
+          <p class="text-red-600">An unexpected error occurred. <button @onclick="Recover">Retry</button></p>
+      </ErrorContent>
+  </ErrorBoundary>
+  ```
+- API errors from the backend follow the `{ code, message, request_id, details }` envelope. Services parse this into a typed `ApiError` model.
+- 401 responses are handled by the `AuthorizationMessageHandler`, which triggers a token refresh or redirects to login.
 
 ### Testing (Frontend)
 
-**Stack:** Playwright for E2E tests (in `e2e/`). Vite build (`tsc -b && vite build`) serves as a type-check gate.
+**Stack:** bUnit for component unit tests, Playwright for E2E tests (in `e2e/`). `dotnet build` serves as the compilation gate.
 
 **Rules:**
 
+- Component unit tests use **bUnit** and live in a separate test project (`frontend.Tests/`).
+- bUnit tests verify rendering, parameter binding, event callbacks, and service interactions via mocked dependencies:
+  ```csharp
+  [Fact]
+  public void LoanTable_RendersAllRows()
+  {
+      var loans = new List<LoanDto> { new() { Id = "1", Description = "Test" } };
+      var cut = RenderComponent<LoanTable>(p => p.Add(x => x.Loans, loans));
+      cut.FindAll("tr").Count.Should().Be(2); // header + 1 data row
+  }
+  ```
 - All pages and critical user flows must have Playwright coverage in `e2e/`.
 - Tests are organized by feature: `e2e/tests/auth/`, `e2e/tests/loans/`, etc.
 - Page objects live in `e2e/pages/` and abstract selectors away from test logic.
@@ -739,22 +865,44 @@ export default function LoginPage() {
 
 ### Code Style (Frontend)
 
-**TypeScript:**
+**C# conventions:**
 
-- Strict mode enabled (`"strict": true` in `tsconfig.app.json`).
-- Use `interface` for object shapes and component props. Use `type` for unions, intersections, and utility types.
-- Prefer `X | null` over `X | undefined` for explicitly absent values.
-- Use `as const` for literal arrays and objects used as type sources.
+- **PascalCase** for all public members: properties, methods, parameters, events, components (`Title`, `GetLoansAsync`, `OnSearch`).
+- **_camelCase** for private fields: `_loans`, `_isLoading`, `_httpClient`.
+- Interfaces are prefixed with `I`: `ILoanService`, `IAuthService`, `IToastService`.
+- One component per `.razor` file. The file name matches the component name.
+- Use `@inject` for dependency injection in Razor components:
+  ```razor
+  @inject ILoanService LoanService
+  @inject NavigationManager Navigation
+  @inject IToastService ToastService
+  ```
+- Use `@implements IDisposable` when the component subscribes to events or holds unmanaged resources:
+  ```razor
+  @implements IDisposable
 
-**Formatting and linting:**
+  @code {
+      protected override void OnInitialized()
+      {
+          NotificationService.OnChange += StateHasChanged;
+      }
 
-- **ESLint** with `typescript-eslint`, `react-hooks`, and `react-refresh` plugins.
-- Formatting is enforced by the project's ESLint + Prettier configuration.
-- Import paths use the `@/` alias (mapped to `src/`): `import { useAuth } from "@/auth/useAuth"`.
+      public void Dispose()
+      {
+          NotificationService.OnChange -= StateHasChanged;
+      }
+  }
+  ```
 
-**General:**
+**File organization:**
 
-- Prefer named functions (`function Foo()`) over arrow functions for components.
-- Use `type` imports where possible: `import type { User } from "@/api/types"`.
-- Destructure props in the function signature.
-- Avoid inline object/array literals in JSX props that cause unnecessary re-renders. Extract to constants or `useMemo`.
+- Service interfaces and implementations are in separate files (`ILoanService.cs`, `LoanService.cs`).
+- Model/DTO classes are one-per-file in `Models/`.
+- Use file-scoped namespaces (`namespace LendQ.Models;`) instead of block-scoped.
+
+**Formatting and analysis:**
+
+- **Analyzer**: `dotnet format` with the project's `.editorconfig` settings.
+- **Nullable reference types** are enabled (`<Nullable>enable</Nullable>` in the `.csproj`).
+- Prefer `var` for local variables when the type is obvious from the right-hand side.
+- Use `async`/`await` consistently. Never use `.Result` or `.Wait()` — these deadlock in Blazor WASM.

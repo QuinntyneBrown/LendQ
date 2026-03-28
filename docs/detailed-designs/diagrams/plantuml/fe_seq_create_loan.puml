@@ -2,14 +2,14 @@
 actor Creditor
 participant LoanForm
 participant BorrowerDirectorySelect
-participant LoanApi
-participant QueryCache
-participant Router
+participant LoanService
+participant StateService
+participant NavigationManager
 
 Creditor -> BorrowerDirectorySelect : search borrower
-BorrowerDirectorySelect -> LoanApi : GET /users/borrowers
+BorrowerDirectorySelect -> LoanService : GET /users/borrowers
 Creditor -> LoanForm : submit loan
-LoanForm -> LoanApi : POST /loans
-LoanApi --> QueryCache : invalidate loans
-LoanForm -> Router : go to loan detail
+LoanForm -> LoanService : POST /loans
+LoanService --> StateService : invalidate loans
+LoanForm -> NavigationManager : go to loan detail
 @enduml

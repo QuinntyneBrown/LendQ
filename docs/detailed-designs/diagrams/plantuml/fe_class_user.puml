@@ -1,15 +1,15 @@
 @startuml
 skinparam classAttributeIconSize 0
-class UserListPage
-class AddEditUserDialog
-class RoleManagementPage
-class AuditEventPanel
-class BorrowerDirectorySelect
-class UserApi
+class UserListPage <<razor>>
+class AddEditUserDialog <<razor>>
+class RoleManagementPage <<razor>>
+class AuditEventPanel <<razor>>
+class BorrowerDirectorySelect <<razor>>
+interface IUserService
 
-UserListPage --> UserApi
-AddEditUserDialog --> UserApi
-RoleManagementPage --> UserApi
-AuditEventPanel --> UserApi
-BorrowerDirectorySelect --> UserApi
+UserListPage --> IUserService
+AddEditUserDialog --> IUserService
+RoleManagementPage --> IUserService
+AuditEventPanel --> IUserService
+BorrowerDirectorySelect --> IUserService
 @enduml

@@ -1,15 +1,15 @@
 @startuml
 skinparam classAttributeIconSize 0
-class LoanListPage
-class LoanDetailPage
-class CreateEditLoanDialog
-class LoanChangeRequestDialog
-class TermsHistoryPanel
-class LoanApi
+class LoanListPage <<razor>>
+class LoanDetailPage <<razor>>
+class CreateEditLoanDialog <<razor>>
+class LoanChangeRequestDialog <<razor>>
+class TermsHistoryPanel <<razor>>
+interface ILoanService
 
-LoanListPage --> LoanApi
-LoanDetailPage --> LoanApi
-CreateEditLoanDialog --> LoanApi
-LoanChangeRequestDialog --> LoanApi
-TermsHistoryPanel --> LoanApi
+LoanListPage --> ILoanService
+LoanDetailPage --> ILoanService
+CreateEditLoanDialog --> ILoanService
+LoanChangeRequestDialog --> ILoanService
+TermsHistoryPanel --> ILoanService
 @enduml

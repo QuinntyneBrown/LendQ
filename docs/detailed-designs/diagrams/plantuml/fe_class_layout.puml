@@ -1,15 +1,15 @@
 @startuml
 skinparam classAttributeIconSize 0
-class AppLayout
-class DesktopSidebar
-class TabletSidebar
-class MobileTabBar
-class Modal
-class FormField
-class DataTable
-class BreakpointStore
+class AppLayout <<razor>>
+class DesktopSidebar <<razor>>
+class TabletSidebar <<razor>>
+class MobileTabBar <<razor>>
+class Modal <<razor>>
+class FormField <<razor>>
+class DataTable <<razor>>
+class BreakpointService
 
-AppLayout --> BreakpointStore
+AppLayout --> BreakpointService
 AppLayout --> DesktopSidebar
 AppLayout --> TabletSidebar
 AppLayout --> MobileTabBar

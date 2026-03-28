@@ -1,13 +1,13 @@
 @startuml
 actor Admin
 participant UserListPage
-participant UserApi
-participant QueryCache
+participant UserService
+participant StateService
 participant Toasts
 
 Admin -> UserListPage : save user change
-UserListPage -> UserApi : PATCH /users/{id}
-UserApi --> QueryCache : invalidate users + roles
-QueryCache --> UserListPage : refetch
+UserListPage -> UserService : PATCH /users/{id}
+UserService --> StateService : invalidate users + roles
+StateService --> UserListPage : refetch
 UserListPage -> Toasts : show success
 @enduml

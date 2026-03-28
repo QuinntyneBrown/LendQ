@@ -1,29 +1,29 @@
 @startuml
 skinparam classAttributeIconSize 0
-class ApiClient {
-  +request()
-  +refreshSession()
+interface IApiClient {
+  +SendAsync()
+  +RefreshSessionAsync()
 }
 class AuthState {
-  +accessToken: string?
-  +user: UserSummary?
+  +AccessToken: string?
+  +User: UserSummary?
 }
 class UserSummary {
-  +id: string
-  +roles: string[]
+  +Id: string
+  +Roles: List<string>
 }
 class LoanSummary {
-  +id: string
-  +outstanding_balance: string
+  +Id: string
+  +OutstandingBalance: string
 }
 class PaymentTransaction {
-  +id: string
-  +amount: string
+  +Id: string
+  +Amount: string
 }
 class Notification {
-  +id: string
-  +is_read: boolean
+  +Id: string
+  +IsRead: bool
 }
-ApiClient --> AuthState
+IApiClient --> AuthState
 AuthState --> UserSummary
 @enduml

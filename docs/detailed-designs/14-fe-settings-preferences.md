@@ -6,12 +6,12 @@
 
 ## Overview
 
-The settings area closes the previous gap between routed navigation and actual design coverage. It contains two authenticated screens:
+The settings area closes the previous gap between routed navigation and actual design coverage. It contains two authenticated Razor component screens:
 
-- `PreferencesPage` at `/settings/preferences`
-- `SecurityPage` at `/settings/security`
+- `PreferencesPage.razor` at `/settings/preferences`
+- `SecurityPage.razor` at `/settings/security`
 
-Both screens use the shared app shell, share the responsive breakpoints defined in Module 7, and follow the same loading, empty, success, and error-state rules as the rest of the SPA.
+Both screens use the shared app shell, share the responsive breakpoints defined in Module 7, and follow the same loading, empty, success, and error-state rules as the rest of the Blazor WebAssembly application.
 
 ## Screen Responsibilities
 
@@ -42,8 +42,9 @@ Both screens use the shared app shell, share the responsive breakpoints defined 
 ### UX Rules
 
 - In-app notifications are always on for supported events and are not toggleable.
+- The preferences form uses an `EditForm` bound to a preferences model with `InputCheckbox` components for each toggle. `DataAnnotationsValidator` ensures model validity before submission.
 - Toggle changes update a dirty-state banner and enable the primary `Save preferences` action.
-- A successful save updates local query cache and shows a non-blocking success toast.
+- A successful save updates the `ISettingsService` state and calls `StateHasChanged`, then shows a non-blocking success toast via `IToastService`.
 - Recoverable save failures keep form state intact and render inline error messaging.
 
 ## Security Page
@@ -71,14 +72,14 @@ If the current session is revoked from another browser or by an administrator, t
 
 ## API Integration
 
-| Action | Hook | Endpoint |
+| Action | Service Method | Endpoint |
 |---|---|---|
-| Load notification preferences | `useNotificationPreferences` | `GET /api/v1/notification-preferences` |
-| Save notification preferences | `useUpdateNotificationPreferences` | `PUT /api/v1/notification-preferences` |
-| Load sessions | `useSessions` | `GET /api/v1/auth/sessions` |
-| Revoke session | `useRevokeSession` | `DELETE /api/v1/auth/sessions/{sessionId}` |
-| Log out all other sessions | `useLogoutAllSessions` | `POST /api/v1/auth/logout-all` |
-| Resend verification | `useResendVerification` | `POST /api/v1/auth/email-verification/resend` |
+| Load notification preferences | `ISettingsService.GetPreferencesAsync` | `GET /api/v1/notification-preferences` |
+| Save notification preferences | `ISettingsService.UpdatePreferencesAsync` | `PUT /api/v1/notification-preferences` |
+| Load sessions | `ISessionService.GetSessionsAsync` | `GET /api/v1/auth/sessions` |
+| Revoke session | `ISessionService.RevokeSessionAsync` | `DELETE /api/v1/auth/sessions/{sessionId}` |
+| Log out all other sessions | `ISessionService.LogoutAllAsync` | `POST /api/v1/auth/logout-all` |
+| Resend verification | `ISessionService.ResendVerificationAsync` | `POST /api/v1/auth/email-verification/resend` |
 
 ## Accessibility & Resilience
 

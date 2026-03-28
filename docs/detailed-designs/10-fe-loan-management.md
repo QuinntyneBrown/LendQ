@@ -6,7 +6,7 @@
 
 ## Overview
 
-The loan feature covers loan list views, loan detail, creditor create and edit flows, terms history, and borrower change-request flows. It removes the prior borrower direct-edit path and aligns all creation and edit behavior to the new contract.
+The loan feature covers loan list views, loan detail, creditor create and edit flows, terms history, and borrower change-request flows. It removes the prior borrower direct-edit path and aligns all creation and edit behavior to the new contract. The frontend is built with Blazor WebAssembly (.NET 8, C# 12), using Razor components, injectable services via DI, and `EditForm` with `DataAnnotationsValidator` and FluentValidation for form handling.
 
 ## Class Diagram
 
@@ -18,17 +18,17 @@ The loan feature covers loan list views, loan detail, creditor create and edit f
 
 | Screen | Purpose |
 |---|---|
-| `LoanListPage` | Creditor and borrower tabs with search and status filters |
-| `LoanDetailPage` | Summary, terms, schedule, history, and contextual actions |
-| `CreateEditLoanDialog` | Creditor-only create/edit form with schedule builder and preview |
-| `LoanChangeRequestDialog` | Borrower request flow for creditor-controlled term changes |
-| `TermsHistoryPanel` | Side-by-side view of previous and current terms versions |
+| `LoanListPage.razor` | Creditor and borrower tabs with search and status filters |
+| `LoanDetailPage.razor` | Summary, terms, schedule, history, and contextual actions |
+| `CreateEditLoanDialog.razor` | Creditor-only create/edit `EditForm` with `DataAnnotationsValidator`, schedule builder, and preview |
+| `LoanChangeRequestDialog.razor` | Borrower request flow for creditor-controlled term changes |
+| `TermsHistoryPanel.razor` | Side-by-side view of previous and current terms versions |
 
 ## Create/Edit Form
 
-Required fields now include:
+The `CreateEditLoanDialog.razor` component uses an `EditForm` bound to a `LoanFormModel` with `DataAnnotationsValidator` for field-level rules and a FluentValidation `IValidator<LoanFormModel>` registered in DI for cross-field logic. Required fields now include:
 
-- borrower
+- borrower (selected via `BorrowerDirectorySelect.razor` component)
 - description
 - principal amount
 - currency
@@ -39,9 +39,11 @@ Required fields now include:
 - optional custom schedule rows
 - notes
 
-The form renders a generated schedule preview and summary before submission.
+The form renders a generated schedule preview and summary before submission. Form state is held in the component and submitted through `ILoanService`, an injectable service registered in the DI container. On successful submission the service raises a state-change notification that triggers `StateHasChanged` in dependent components (loan list, loan detail, dashboard).
 
 ## API Integration
+
+All HTTP calls are made through `ILoanService`, which wraps an injected `HttpClient` instance.
 
 | Action | Endpoint |
 |---|---|
@@ -64,13 +66,13 @@ The form renders a generated schedule preview and summary before submission.
 ## Governance Rules In The UI
 
 - Borrowers can view full loan details but do not see the general edit route or edit button.
-- Borrowers get `Request change` actions that open `LoanChangeRequestDialog`.
+- Borrowers get `Request change` actions that open `LoanChangeRequestDialog.razor`.
 - Creditor edits include `expected_terms_version` in the payload and show a conflict dialog if the server returns `409`.
-- Approved requests update the terms history panel and trigger query invalidation for loan detail, schedule, dashboard, and notifications.
+- Approved requests update the terms history panel and trigger service-level cache invalidation with `StateHasChanged` callbacks on the loan detail, schedule, dashboard, and notification components via cascading parameters or injected notification services.
 
 ## Validation
 
-The loan schema validates:
+The `LoanFormModel` uses `DataAnnotations` attributes for simple rules and a FluentValidation `LoanFormModelValidator` for complex cross-field logic. The validator enforces:
 
 - currency as ISO 4217
 - supported repayment frequency

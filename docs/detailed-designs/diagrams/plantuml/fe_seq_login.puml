@@ -1,14 +1,14 @@
 @startuml
 actor User
 participant LoginPage
-participant AuthApi
-participant AuthProvider
-participant Router
+participant AuthService
+participant AuthStateProvider
+participant NavigationManager
 
 User -> LoginPage : submit credentials
-LoginPage -> AuthApi : POST /auth/login
-AuthApi --> LoginPage : access token + user
-LoginPage -> AuthProvider : hydrate memory state
-AuthProvider -> Router : navigate /dashboard
-Router --> User : authenticated shell
+LoginPage -> AuthService : POST /auth/login
+AuthService --> LoginPage : access token + user
+LoginPage -> AuthStateProvider : hydrate memory state
+AuthStateProvider -> NavigationManager : navigate /dashboard
+NavigationManager --> User : authenticated shell
 @enduml

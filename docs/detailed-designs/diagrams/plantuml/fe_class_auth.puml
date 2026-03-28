@@ -1,16 +1,16 @@
 @startuml
 skinparam classAttributeIconSize 0
-class AuthProvider
-class AuthBootstrapBoundary
-class LoginPage
-class SignUpPage
-class VerifyEmailPage
-class SessionExpiredDialog
-class AuthApi
+class CustomAuthStateProvider
+class CascadingAuthenticationState
+class LoginPage <<razor>>
+class SignUpPage <<razor>>
+class VerifyEmailPage <<razor>>
+class SessionExpiredDialog <<razor>>
+interface IAuthService
 
-AuthBootstrapBoundary --> AuthProvider
-LoginPage --> AuthApi
-SignUpPage --> AuthApi
-VerifyEmailPage --> AuthApi
-SessionExpiredDialog --> AuthProvider
+CascadingAuthenticationState --> CustomAuthStateProvider
+LoginPage --> IAuthService
+SignUpPage --> IAuthService
+VerifyEmailPage --> IAuthService
+SessionExpiredDialog --> CustomAuthStateProvider
 @enduml

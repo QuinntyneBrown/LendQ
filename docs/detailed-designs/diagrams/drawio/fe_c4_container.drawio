@@ -14,7 +14,7 @@
         <mxCell id="fe_bound" value="Frontend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#438DD5;dashed=1;dashPattern=5 5;verticalAlign=top;fontStyle=1;fontSize=11;strokeWidth=2;" parent="1" vertex="1">
           <mxGeometry x="200" y="130" width="420" height="110" as="geometry"/>
         </mxCell>
-        <mxCell id="spa" value="&lt;b&gt;React SPA&lt;/b&gt;&lt;br&gt;[React 18 + TypeScript]&lt;br&gt;&lt;br&gt;Responsive UI, routing,&lt;br&gt;state management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=10;" parent="1" vertex="1">
+        <mxCell id="spa" value="&lt;b&gt;Blazor WASM SPA&lt;/b&gt;&lt;br&gt;[Blazor WebAssembly + C#]&lt;br&gt;&lt;br&gt;Responsive UI, routing,&lt;br&gt;state management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=10;" parent="1" vertex="1">
           <mxGeometry x="300" y="150" width="220" height="75" as="geometry"/>
         </mxCell>
         <!-- Backend boundary -->

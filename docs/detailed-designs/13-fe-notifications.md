@@ -6,7 +6,7 @@
 
 ## Overview
 
-The notification feature renders the bell badge, dropdown, full notifications page, and toast surface. It now uses Server-Sent Events as the primary live-update path, with on-focus reconciliation rather than periodic polling as the default mechanism.
+The notification feature renders the bell badge, dropdown, full notifications page, and toast surface. It now uses Server-Sent Events as the primary live-update path, with on-focus reconciliation rather than periodic polling as the default mechanism. SSE connectivity is handled through a `NotificationStreamService` that uses JS interop to bridge browser `EventSource` events into C#.
 
 ## Class Diagram
 
@@ -33,12 +33,17 @@ The notification feature renders the bell badge, dropdown, full notifications pa
 
 ## Live Update Rules
 
-- `useNotificationStream` opens one SSE connection per authenticated browser session.
-- Incoming notification events update unread count, dropdown cache, and optional toast presentation in one reducer path.
-- If the stream disconnects, the client backs off and reconnects. On reconnect or tab focus, it revalidates unread count and the newest page of notifications.
+- `NotificationStreamService` is registered as a scoped, `IDisposable` service. It opens one SSE connection per authenticated browser session using JS interop: a JavaScript wrapper instantiates `EventSource` against the stream endpoint and forwards incoming events to C# via `DotNetObjectReference` callbacks.
+- Incoming notification events update the service state (unread count, cached notification list, and optional toast presentation) and raise an `OnNotificationReceived` event. Subscribing Razor components call `StateHasChanged` in response to re-render.
+- If the stream disconnects, the JS interop layer backs off and reconnects. On reconnect or tab focus, the service revalidates unread count and the newest page of notifications via `HttpClient`.
+
+## Toast Service
+
+- Toast presentation is managed by a scoped `IToastService` registered via dependency injection. Components inject `IToastService` to enqueue toast messages.
+- The `ToastContainer` Razor component subscribes to `IToastService.OnToastAdded` and renders active toasts. It replaces the React Context/Provider pattern with standard Blazor DI scoping.
+- Toast dedupe is keyed by notification id or source event id to prevent repeated user-visible effects during retries or reconnects.
 
 ## Preferences And Navigation
 
 - Notification settings are linked directly to `/settings/preferences`.
 - Disabling email delivery does not suppress in-app notifications.
-- Toast dedupe is keyed by notification id or source event id to prevent repeated user-visible effects during retries or reconnects.

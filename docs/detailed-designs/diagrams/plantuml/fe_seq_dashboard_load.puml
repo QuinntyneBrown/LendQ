@@ -1,13 +1,13 @@
 @startuml
 participant DashboardPage
-participant SummaryQuery
-participant LoansQuery
-participant ActivityQuery
+participant SummaryService
+participant LoansService
+participant ActivityService
 
-DashboardPage -> SummaryQuery : load summary
-DashboardPage -> LoansQuery : load loans tab
-DashboardPage -> ActivityQuery : load activity
-SummaryQuery --> DashboardPage : summary + freshness
-LoansQuery --> DashboardPage : loan rows
-ActivityQuery --> DashboardPage : activity items
+DashboardPage -> SummaryService : load summary
+DashboardPage -> LoansService : load loans tab
+DashboardPage -> ActivityService : load activity
+SummaryService --> DashboardPage : summary + freshness
+LoansService --> DashboardPage : loan rows
+ActivityService --> DashboardPage : activity items
 @enduml
