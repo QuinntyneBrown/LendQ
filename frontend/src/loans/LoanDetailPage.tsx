@@ -12,6 +12,8 @@ import { CreateEditLoanModal } from "./CreateEditLoanModal";
 import { useLoanDetail } from "./hooks";
 import { PaymentScheduleView } from "@/payments/PaymentScheduleView";
 import { PaymentHistoryView } from "@/payments/PaymentHistoryView";
+import { RecordPaymentDialog } from "@/payments/RecordPaymentDialog";
+import { usePaymentSchedule } from "@/payments/hooks";
 
 export function LoanDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,9 +22,20 @@ export function LoanDetailPage() {
   const { data: loan, isLoading } = useLoanDetail(id!);
 
   const [editOpen, setEditOpen] = useState(false);
+  const [recordOpen, setRecordOpen] = useState(false);
+  const { data: payments } = usePaymentSchedule(id!);
 
   const isBorrower =
     roles.length === 1 && roles[0] === "Borrower";
+
+  const pendingStatuses = ["SCHEDULED", "OVERDUE", "RESCHEDULED"];
+  const nextPendingPayment = payments?.find((p) =>
+    pendingStatuses.includes(p.status),
+  );
+  const outstandingBalance =
+    payments
+      ?.filter((p) => p.status !== "PAID")
+      .reduce((sum, p) => sum + p.amount_due - p.amount_paid, 0) ?? 0;
 
   if (isLoading) {
     return (
@@ -74,7 +87,7 @@ export function LoanDetailPage() {
               Edit Loan
             </Button>
           )}
-          <Button icon={CreditCard} onClick={() => document.getElementById("payment-schedule-card")?.scrollIntoView({ behavior: "smooth" })}>
+          <Button icon={CreditCard} onClick={() => setRecordOpen(true)}>
             Record Payment
           </Button>
         </div>
@@ -157,7 +170,15 @@ export function LoanDetailPage() {
         loan={loan}
       />
 
-      {/* Record Payment button scrolls to the payment schedule */}
+      {recordOpen && nextPendingPayment && (
+        <RecordPaymentDialog
+          open
+          onClose={() => setRecordOpen(false)}
+          payment={nextPendingPayment}
+          loanId={loan.id}
+          outstandingBalance={outstandingBalance}
+        />
+      )}
     </div>
   );
 }
