@@ -29,8 +29,9 @@ def readiness():
 
     # Redis check
     try:
-        import redis
         import os
+
+        import redis
 
         redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
         if redis_url and redis_url != "memory://":

@@ -4,7 +4,6 @@ from flask import Blueprint, current_app, g, jsonify, make_response, request
 
 from app.extensions import limiter
 from app.middleware.auth_middleware import require_auth
-from app.middleware.csrf import require_csrf
 from app.schemas.auth_schemas import (
     EmailVerificationConfirmSchema,
     EmailVerificationResendSchema,

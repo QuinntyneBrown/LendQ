@@ -48,8 +48,8 @@ def list_borrowers():
     page = request.args.get("page", 1, type=int)
     per_page = min(request.args.get("per_page", 20, type=int), 50)
 
-    from app.models.user import User, Role
     from app.extensions import db
+    from app.models.user import Role, User
 
     query = User.query.join(User.roles).filter(
         Role.name == "Borrower",

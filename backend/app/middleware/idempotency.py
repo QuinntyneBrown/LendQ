@@ -1,8 +1,6 @@
 import functools
-import hashlib
-import json
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from flask import g, jsonify, request
 
@@ -47,7 +45,7 @@ def require_idempotency(f):
             user_id=user.id if user else None,
             response_body=resp_data,
             response_status=resp_status,
-            expires_at=datetime.now(timezone.utc) + timedelta(hours=IDEMPOTENCY_TTL_HOURS),
+            expires_at=datetime.now(UTC) + timedelta(hours=IDEMPOTENCY_TTL_HOURS),
         )
         db.session.add(record)
         db.session.commit()

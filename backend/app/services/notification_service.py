@@ -96,7 +96,10 @@ class NotificationService:
         self.create_notification(
             user_id=loan.borrower_id,
             notification_type=NotificationType.LOAN_MODIFIED,
-            message=f"A new loan of ${loan.principal} has been created for you by {loan.creditor.name}",
+            message=(
+                f"A new loan of ${loan.principal} has been created"
+                f" for you by {loan.creditor.name}"
+            ),
             loan_id=loan.id,
         )
 

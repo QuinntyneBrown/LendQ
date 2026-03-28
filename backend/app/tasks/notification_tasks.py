@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.celery_app import celery
 from app.extensions import db
@@ -24,7 +24,7 @@ def process_outbox_events(self):
         try:
             if event.event_type.startswith("notification."):
                 _materialize_notification(event)
-            event.published_at = datetime.now(timezone.utc)
+            event.published_at = datetime.now(UTC)
             db.session.commit()
         except Exception as exc:
             db.session.rollback()
@@ -84,11 +84,11 @@ def send_notification_email(self, notification_id):
         )
         delivery.status = DeliveryStatus.SENT
         delivery.attempt_count = 1
-        delivery.last_attempt_at = datetime.now(timezone.utc)
+        delivery.last_attempt_at = datetime.now(UTC)
     except Exception as exc:
         delivery.status = DeliveryStatus.FAILED
         delivery.attempt_count = 1
-        delivery.last_attempt_at = datetime.now(timezone.utc)
+        delivery.last_attempt_at = datetime.now(UTC)
         db.session.commit()
         logger.exception("Failed to send notification email %s: %s", notification_id, exc)
         raise self.retry(exc=exc)
@@ -117,7 +117,7 @@ def _materialize_notification(event):
         channel=DeliveryChannel.IN_APP,
         status=DeliveryStatus.SENT,
         attempt_count=1,
-        last_attempt_at=datetime.now(timezone.utc),
+        last_attempt_at=datetime.now(UTC),
     )
     db.session.add(in_app_delivery)
 

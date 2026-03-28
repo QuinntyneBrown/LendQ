@@ -6,8 +6,6 @@ Usage:
 """
 
 import argparse
-import sys
-import uuid
 from datetime import date, timedelta
 from decimal import Decimal
 

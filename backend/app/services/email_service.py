@@ -78,6 +78,7 @@ class EmailService:
         """
         body = f"""
         <h2>Payment Overdue</h2>
-        <p>A payment of ${amount} was due on {due_date} for loan #{loan_id[:8]} and is now overdue.</p>
+        <p>A payment of ${amount} was due on {due_date} for loan
+        #{loan_id[:8]} and is now overdue.</p>
         """
         self.send_email(to, "LendQ - Payment Overdue", body)
