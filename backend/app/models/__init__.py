@@ -9,6 +9,8 @@ from app.models.auth_session import AuthSession
 from app.models.email_verification_token import EmailVerificationToken
 from app.models.password_reset_token import PasswordResetToken
 from app.models.notification_preference import NotificationPreference
+from app.models.notification_delivery import NotificationDelivery
+from app.models.outbox_event import OutboxEvent
 from app.models.security_audit_event import SecurityAuditEvent
 from app.models.payment_transaction import PaymentTransaction
 from app.models.payment_allocation import PaymentAllocation
@@ -33,6 +35,8 @@ __all__ = [
     "EmailVerificationToken",
     "PasswordResetToken",
     "NotificationPreference",
+    "NotificationDelivery",
+    "OutboxEvent",
     "SecurityAuditEvent",
     "PaymentTransaction",
     "PaymentAllocation",

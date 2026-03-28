@@ -26,3 +26,12 @@ class RoleService:
         db.session.commit()
         logger.info("Role %s permissions updated", role_id)
         return role
+
+    def update_permissions_by_name(self, role_name, permissions):
+        role = self.role_repo.get_by_name(role_name)
+        if not role:
+            raise NotFoundError("Role not found")
+        role.permissions = permissions
+        db.session.commit()
+        logger.info("Role '%s' permissions updated", role_name)
+        return role

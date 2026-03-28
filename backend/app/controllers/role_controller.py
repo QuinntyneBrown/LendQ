@@ -26,10 +26,10 @@ def get_role(role_id):
     return jsonify(role_schema.dump(role)), 200
 
 
-@role_bp.route("/<role_id>/permissions", methods=["PUT"])
+@role_bp.route("/<role_key>/permissions", methods=["PUT"])
 @require_role("Admin")
-def update_permissions(role_id):
+def update_permissions(role_key):
     data = permission_update_schema.load(request.get_json())
     role_service = RoleService()
-    role = role_service.update_permissions(role_id, data["permissions"])
+    role = role_service.update_permissions_by_name(role_key, data["permissions"])
     return jsonify(role_schema.dump(role)), 200

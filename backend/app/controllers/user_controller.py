@@ -30,14 +30,6 @@ def list_users():
     return jsonify(paginated_response(user_schema, result)), 200
 
 
-@user_bp.route("/<user_id>", methods=["GET"])
-@require_role("Admin")
-def get_user(user_id):
-    user_service = UserService()
-    user = user_service.get_user(user_id)
-    return jsonify(user_schema.dump(user)), 200
-
-
 @user_bp.route("", methods=["POST"])
 @require_role("Admin")
 def create_user():
@@ -47,7 +39,48 @@ def create_user():
     return jsonify(user_schema.dump(user)), 201
 
 
-@user_bp.route("/<user_id>", methods=["PUT"])
+@user_bp.route("/borrowers", methods=["GET"])
+@require_role("Creditor", "Admin")
+def list_borrowers():
+    search = request.args.get("search", "")
+    page = request.args.get("page", 1, type=int)
+    per_page = min(request.args.get("per_page", 20, type=int), 50)
+
+    from app.models.user import User, Role
+    from app.extensions import db
+
+    query = User.query.join(User.roles).filter(
+        Role.name == "Borrower",
+        User.is_active == True,
+        User.email_verified == True,
+    )
+    if search:
+        query = query.filter(
+            db.or_(
+                User.name.ilike(f"%{search}%"),
+                User.email.ilike(f"%{search}%"),
+            )
+        )
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    items = [{"id": u.id, "name": u.name, "email": u.email} for u in pagination.items]
+    return jsonify({
+        "items": items,
+        "total": pagination.total,
+        "page": page,
+        "per_page": per_page,
+    }), 200
+
+
+@user_bp.route("/<user_id>", methods=["GET"])
+@require_role("Admin")
+def get_user(user_id):
+    user_service = UserService()
+    user = user_service.get_user(user_id)
+    return jsonify(user_schema.dump(user)), 200
+
+
+@user_bp.route("/<user_id>", methods=["PATCH"])
 @require_role("Admin")
 def update_user(user_id):
     data = update_user_schema.load(request.get_json())

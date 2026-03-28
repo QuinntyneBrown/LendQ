@@ -36,15 +36,17 @@ def create_app(config_name=None):
     register_error_handlers(app)
 
     # Register blueprints
+    from app.controllers.admin_controller import admin_bp
     from app.controllers.auth_controller import auth_bp
     from app.controllers.dashboard_controller import dashboard_bp
     from app.controllers.loan_controller import loan_bp
-    from app.controllers.notification_controller import notification_bp
+    from app.controllers.notification_controller import notification_bp, pref_bp
     from app.controllers.payment_controller import payment_bp
     from app.controllers.role_controller import role_bp
     from app.controllers.user_controller import user_bp
     from app.observability.health import health_bp
 
+    app.register_blueprint(admin_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(role_bp)
@@ -52,7 +54,12 @@ def create_app(config_name=None):
     app.register_blueprint(payment_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(notification_bp)
+    app.register_blueprint(pref_bp)
     app.register_blueprint(health_bp)
+
+    # Initialize metrics
+    from app.observability.metrics import init_metrics
+    init_metrics(app)
 
     # Configure logging
     from app.observability.logging import configure_logging
