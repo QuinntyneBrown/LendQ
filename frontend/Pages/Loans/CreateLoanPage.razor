@@ -1,0 +1,283 @@
+@page "/loans/new"
+@using LendQ.Client.Models
+@using LendQ.Client.Services
+@using LendQ.Client.Components.UI
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@attribute [Authorize(Roles = "CREDITOR")]
+
+@inject ILoanService LoanService
+@inject IUserService UserService
+@inject NavigationManager NavigationManager
+@inject IToastService ToastService
+
+<div class="max-w-2xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-gray-900">Create New Loan</h1>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="rounded-lg bg-red-50 p-4 text-sm text-red-700">
+            @_errorMessage
+        </div>
+    }
+
+    <div class="bg-white rounded-xl shadow-sm border p-6">
+        <EditForm Model="_model" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="mb-4 text-sm text-red-600" />
+
+            <div class="space-y-6">
+
+                @* ===== Borrower Section ===== *@
+                <fieldset>
+                    <legend class="text-lg font-semibold text-gray-900 mb-3">Borrower</legend>
+                    <div>
+                        <label for="borrower-search" class="block text-sm font-medium text-gray-700 mb-1">Search Borrower</label>
+                        <div class="relative">
+                            <input id="borrower-search"
+                                   type="text"
+                                   placeholder="Search by name or email..."
+                                   value="@_borrowerSearch"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                   @oninput="HandleBorrowerSearch" />
+                            @if (_borrowerResults != null && _borrowerResults.Count > 0 && !_borrowerSelected)
+                            {
+                                <div class="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                    @foreach (var borrower in _borrowerResults)
+                                    {
+                                        <button type="button"
+                                                class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between"
+                                                @onclick="@(() => SelectBorrower(borrower))">
+                                            <span class="font-medium text-gray-900">@borrower.Name</span>
+                                            <span class="text-gray-500 text-xs">@borrower.Email</span>
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        @if (_borrowerSelected && _selectedBorrower != null)
+                        {
+                            <div class="mt-2 flex items-center gap-2 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2 text-sm">
+                                <span class="font-medium text-indigo-900">@_selectedBorrower.Name</span>
+                                <span class="text-indigo-600 text-xs">(@_selectedBorrower.Email)</span>
+                                <button type="button"
+                                        class="ml-auto text-indigo-400 hover:text-indigo-600"
+                                        @onclick="ClearBorrower">
+                                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        }
+                        <ValidationMessage For="() => _model.BorrowerId" class="mt-1 text-xs text-red-600" />
+                    </div>
+                </fieldset>
+
+                @* ===== Loan Details Section ===== *@
+                <fieldset>
+                    <legend class="text-lg font-semibold text-gray-900 mb-3">Loan Details</legend>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <InputText id="description"
+                                       @bind-Value="_model.Description"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                       placeholder="e.g., Home renovation loan" />
+                            <ValidationMessage For="() => _model.Description" class="mt-1 text-xs text-red-600" />
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="principal" class="block text-sm font-medium text-gray-700 mb-1">Principal Amount</label>
+                                <InputNumber id="principal"
+                                             @bind-Value="_model.PrincipalAmount"
+                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                                <ValidationMessage For="() => _model.PrincipalAmount" class="mt-1 text-xs text-red-600" />
+                            </div>
+
+                            <div>
+                                <label for="currency" class="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                                <InputSelect id="currency"
+                                             @bind-Value="_model.Currency"
+                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                                    <option value="">-- Select Currency --</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="GBP">GBP</option>
+                                </InputSelect>
+                                <ValidationMessage For="() => _model.Currency" class="mt-1 text-xs text-red-600" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="interest" class="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%)</label>
+                            <InputNumber id="interest"
+                                         @bind-Value="_model.InterestRatePercent"
+                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                         placeholder="0.00" />
+                            <p class="mt-1 text-xs text-gray-500">Leave blank for interest-free loans.</p>
+                        </div>
+                    </div>
+                </fieldset>
+
+                @* ===== Repayment Section ===== *@
+                <fieldset>
+                    <legend class="text-lg font-semibold text-gray-900 mb-3">Repayment</legend>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="frequency" class="block text-sm font-medium text-gray-700 mb-1">Repayment Frequency</label>
+                            <InputSelect id="frequency"
+                                         @bind-Value="_model.RepaymentFrequency"
+                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                                <option value="">-- Select Frequency --</option>
+                                <option value="WEEKLY">Weekly</option>
+                                <option value="BIWEEKLY">Bi-Weekly</option>
+                                <option value="MONTHLY">Monthly</option>
+                                <option value="QUARTERLY">Quarterly</option>
+                                <option value="ANNUALLY">Annually</option>
+                                <option value="ONE_TIME">One-Time</option>
+                            </InputSelect>
+                            <ValidationMessage For="() => _model.RepaymentFrequency" class="mt-1 text-xs text-red-600" />
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="installments" class="block text-sm font-medium text-gray-700 mb-1">Installment Count</label>
+                                <InputNumber id="installments"
+                                             @bind-Value="_model.InstallmentCount"
+                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                                <p class="mt-1 text-xs text-gray-500">Or specify a maturity date instead.</p>
+                            </div>
+
+                            <div>
+                                <label for="maturity" class="block text-sm font-medium text-gray-700 mb-1">Maturity Date</label>
+                                <InputText id="maturity"
+                                           @bind-Value="_model.MaturityDate"
+                                           type="date"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="start-date" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                            <InputText id="start-date"
+                                       @bind-Value="_model.StartDate"
+                                       type="date"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                            <ValidationMessage For="() => _model.StartDate" class="mt-1 text-xs text-red-600" />
+                        </div>
+                    </div>
+                </fieldset>
+
+                @* ===== Notes Section ===== *@
+                <fieldset>
+                    <legend class="text-lg font-semibold text-gray-900 mb-3">Additional Notes</legend>
+                    <div>
+                        <InputTextArea @bind-Value="_model.Notes"
+                                       rows="4"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                       placeholder="Any additional notes about this loan..." />
+                    </div>
+                </fieldset>
+
+                @* ===== Actions ===== *@
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+                    <Button Variant="secondary" OnClick="@(() => NavigationManager.NavigateTo("/loans"))">Cancel</Button>
+                    <Button Type="submit" IsLoading="_isSubmitting">Save</Button>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private LoanFormModel _model = new();
+    private bool _isSubmitting;
+    private string? _errorMessage;
+
+    // Borrower search
+    private string _borrowerSearch = "";
+    private List<BorrowerDirectoryItem>? _borrowerResults;
+    private BorrowerDirectoryItem? _selectedBorrower;
+    private bool _borrowerSelected;
+    private Timer? _borrowerDebounce;
+
+    private Task HandleBorrowerSearch(ChangeEventArgs e)
+    {
+        _borrowerSearch = e.Value?.ToString() ?? "";
+        _borrowerSelected = false;
+
+        if (string.IsNullOrWhiteSpace(_borrowerSearch) || _borrowerSearch.Length < 2)
+        {
+            _borrowerResults = null;
+            return Task.CompletedTask;
+        }
+
+        _borrowerDebounce?.Dispose();
+        _borrowerDebounce = new Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                try
+                {
+                    _borrowerResults = await UserService.SearchBorrowersAsync(_borrowerSearch);
+                }
+                catch
+                {
+                    _borrowerResults = null;
+                }
+                StateHasChanged();
+            });
+        }, null, 300, Timeout.Infinite);
+
+        return Task.CompletedTask;
+    }
+
+    private void SelectBorrower(BorrowerDirectoryItem borrower)
+    {
+        _selectedBorrower = borrower;
+        _borrowerSelected = true;
+        _borrowerSearch = borrower.Name;
+        _model.BorrowerId = borrower.Id;
+        _borrowerResults = null;
+    }
+
+    private void ClearBorrower()
+    {
+        _selectedBorrower = null;
+        _borrowerSelected = false;
+        _borrowerSearch = "";
+        _model.BorrowerId = "";
+        _borrowerResults = null;
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (_isSubmitting) return;
+
+        _errorMessage = null;
+        _isSubmitting = true;
+
+        try
+        {
+            var result = await LoanService.CreateLoanAsync(_model);
+            ToastService.ShowSuccess("Loan created successfully.");
+            NavigationManager.NavigateTo($"/loans/{result.Id}");
+        }
+        catch (HttpRequestException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            _errorMessage = "An unexpected error occurred. Please try again.";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

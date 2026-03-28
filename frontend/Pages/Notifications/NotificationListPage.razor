@@ -1,0 +1,277 @@
+@page "/notifications"
+@using LendQ.Client.Models
+@using LendQ.Client.Services
+@using LendQ.Client.Components.UI
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@implements IDisposable
+
+@inject INotificationService NotificationService
+@inject NavigationManager NavigationManager
+
+<div class="space-y-6">
+
+    @* Top bar *@
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 class="text-2xl font-bold text-gray-900">Notifications</h1>
+        <Button Variant="secondary" IsLoading="_markingAllRead" OnClick="HandleMarkAllRead">
+            Mark all as read
+        </Button>
+    </div>
+
+    @* Filter tabs *@
+    <div class="flex flex-wrap gap-2">
+        @foreach (var filter in _filters)
+        {
+            var isActive = _activeFilter == filter.Key;
+            <button type="button"
+                    class="@($"px-3 py-1.5 rounded-full text-sm font-medium transition-colors {(isActive ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}")"
+                    @onclick="@(() => SetFilter(filter.Key))">
+                @filter.Value
+            </button>
+        }
+    </div>
+
+    @* Content *@
+    @if (_loading)
+    {
+        <LoadingSkeleton Lines="8" CssClass="bg-white rounded-xl shadow-sm border p-6" />
+    }
+    else if (_error != null)
+    {
+        <div class="rounded-lg bg-red-50 p-4 text-sm text-red-700 flex items-center justify-between">
+            <span>@_error</span>
+            <button type="button" class="text-red-700 underline font-medium" @onclick="LoadNotificationsAsync">Retry</button>
+        </div>
+    }
+    else if (_filteredNotifications.Count == 0)
+    {
+        <EmptyState Title="No notifications yet"
+                    Description="When there are updates to your loans, payments, or account, they will appear here." />
+    }
+    else
+    {
+        @* Grouped by date *@
+        @foreach (var group in _groupedNotifications)
+        {
+            <div class="space-y-2">
+                <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-1">@group.Key</h2>
+                <div class="bg-white rounded-xl shadow-sm border divide-y divide-gray-100 overflow-hidden">
+                    @foreach (var notification in group.Value)
+                    {
+                        <button type="button"
+                                class="@($"w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors {(notification.IsRead ? "" : "bg-indigo-50/40")}")"
+                                @onclick="@(() => HandleNotificationClick(notification))">
+                            @* Type icon *@
+                            <div class="flex-shrink-0 mt-0.5">
+                                @((MarkupString)GetTypeIcon(notification.Type))
+                            </div>
+
+                            @* Content *@
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <p class="@($"text-sm truncate {(notification.IsRead ? "text-gray-700" : "font-semibold text-gray-900")}")">
+                                        @notification.Title
+                                    </p>
+                                    @if (!notification.IsRead)
+                                    {
+                                        <span class="flex-shrink-0 h-2 w-2 rounded-full bg-indigo-500"></span>
+                                    }
+                                </div>
+                                <p class="text-sm text-gray-500 mt-0.5 line-clamp-2">@notification.Body</p>
+                                <p class="text-xs text-gray-400 mt-1">@FormatRelativeTime(notification.CreatedAt)</p>
+                            </div>
+
+                            @* Arrow if navigable *@
+                            @if (!string.IsNullOrEmpty(notification.RelatedLoanId))
+                            {
+                                <div class="flex-shrink-0 self-center text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                    </svg>
+                                </div>
+                            }
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private List<Notification> _notifications = new();
+    private bool _loading;
+    private bool _markingAllRead;
+    private string? _error;
+    private string _activeFilter = "ALL";
+
+    private static readonly Dictionary<string, string> _filters = new()
+    {
+        { "ALL", "All" },
+        { "PAYMENTS", "Payments" },
+        { "OVERDUE", "Overdue" },
+        { "SCHEDULE", "Schedule" },
+        { "SYSTEM", "System" }
+    };
+
+    private static readonly HashSet<string> _paymentTypes = new() { "PAYMENT_DUE", "PAYMENT_RECEIVED" };
+    private static readonly HashSet<string> _overdueTypes = new() { "PAYMENT_OVERDUE" };
+    private static readonly HashSet<string> _scheduleTypes = new() { "SCHEDULE_CHANGED", "LOAN_MODIFIED" };
+    private static readonly HashSet<string> _systemTypes = new() { "SYSTEM" };
+
+    private List<Notification> _filteredNotifications => _activeFilter switch
+    {
+        "PAYMENTS" => _notifications.Where(n => _paymentTypes.Contains(n.Type)).ToList(),
+        "OVERDUE" => _notifications.Where(n => _overdueTypes.Contains(n.Type)).ToList(),
+        "SCHEDULE" => _notifications.Where(n => _scheduleTypes.Contains(n.Type)).ToList(),
+        "SYSTEM" => _notifications.Where(n => _systemTypes.Contains(n.Type)).ToList(),
+        _ => _notifications
+    };
+
+    private Dictionary<string, List<Notification>> _groupedNotifications =>
+        _filteredNotifications
+            .OrderByDescending(n => n.CreatedAt)
+            .GroupBy(n => GetDateGroup(n.CreatedAt))
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+    protected override async Task OnInitializedAsync()
+    {
+        NotificationService.OnChange += HandleServiceChange;
+        await LoadNotificationsAsync();
+    }
+
+    private async Task LoadNotificationsAsync()
+    {
+        _loading = true;
+        _error = null;
+        StateHasChanged();
+
+        try
+        {
+            _notifications = await NotificationService.GetNotificationsAsync();
+        }
+        catch (Exception)
+        {
+            _error = "Failed to load notifications. Please try again.";
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void SetFilter(string filter)
+    {
+        _activeFilter = filter;
+    }
+
+    private async Task HandleMarkAllRead()
+    {
+        _markingAllRead = true;
+        try
+        {
+            await NotificationService.MarkAllReadAsync();
+            foreach (var n in _notifications)
+                n.IsRead = true;
+        }
+        catch (Exception)
+        {
+            _error = "Failed to mark notifications as read.";
+        }
+        finally
+        {
+            _markingAllRead = false;
+        }
+    }
+
+    private async Task HandleNotificationClick(Notification notification)
+    {
+        if (!notification.IsRead)
+        {
+            try
+            {
+                await NotificationService.MarkReadAsync(notification.Id);
+                notification.IsRead = true;
+            }
+            catch { /* silently continue */ }
+        }
+
+        if (!string.IsNullOrEmpty(notification.RelatedLoanId))
+        {
+            NavigationManager.NavigateTo($"/loans/{notification.RelatedLoanId}");
+        }
+    }
+
+    private static string GetDateGroup(DateTime createdAt)
+    {
+        var today = DateTime.UtcNow.Date;
+        var date = createdAt.Date;
+
+        if (date == today) return "Today";
+        if (date == today.AddDays(-1)) return "Yesterday";
+        return "Earlier";
+    }
+
+    private static string FormatRelativeTime(DateTime createdAt)
+    {
+        var diff = DateTime.UtcNow - createdAt;
+
+        if (diff.TotalMinutes < 1) return "Just now";
+        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}m ago";
+        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours}h ago";
+        if (diff.TotalDays < 7) return $"{(int)diff.TotalDays}d ago";
+        return createdAt.ToString("MMM d, yyyy");
+    }
+
+    private static string GetTypeIcon(string type)
+    {
+        return type switch
+        {
+            "PAYMENT_DUE" =>
+                @"<svg xmlns=""http://www.w3.org/2000/svg"" class=""h-8 w-8 text-amber-500"" fill=""none"" viewBox=""0 0 24 24"" stroke=""currentColor"" stroke-width=""1.5"">
+                    <path stroke-linecap=""round"" stroke-linejoin=""round"" d=""M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"" />
+                </svg>",
+
+            "PAYMENT_OVERDUE" =>
+                @"<svg xmlns=""http://www.w3.org/2000/svg"" class=""h-8 w-8 text-red-500"" fill=""none"" viewBox=""0 0 24 24"" stroke=""currentColor"" stroke-width=""1.5"">
+                    <path stroke-linecap=""round"" stroke-linejoin=""round"" d=""M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"" />
+                </svg>",
+
+            "PAYMENT_RECEIVED" =>
+                @"<svg xmlns=""http://www.w3.org/2000/svg"" class=""h-8 w-8 text-green-500"" fill=""none"" viewBox=""0 0 24 24"" stroke=""currentColor"" stroke-width=""1.5"">
+                    <path stroke-linecap=""round"" stroke-linejoin=""round"" d=""M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"" />
+                </svg>",
+
+            "SCHEDULE_CHANGED" =>
+                @"<svg xmlns=""http://www.w3.org/2000/svg"" class=""h-8 w-8 text-blue-500"" fill=""none"" viewBox=""0 0 24 24"" stroke=""currentColor"" stroke-width=""1.5"">
+                    <path stroke-linecap=""round"" stroke-linejoin=""round"" d=""M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"" />
+                </svg>",
+
+            "LOAN_MODIFIED" =>
+                @"<svg xmlns=""http://www.w3.org/2000/svg"" class=""h-8 w-8 text-purple-500"" fill=""none"" viewBox=""0 0 24 24"" stroke=""currentColor"" stroke-width=""1.5"">
+                    <path stroke-linecap=""round"" stroke-linejoin=""round"" d=""m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"" />
+                </svg>",
+
+            _ => // SYSTEM
+                @"<svg xmlns=""http://www.w3.org/2000/svg"" class=""h-8 w-8 text-gray-500"" fill=""none"" viewBox=""0 0 24 24"" stroke=""currentColor"" stroke-width=""1.5"">
+                    <path stroke-linecap=""round"" stroke-linejoin=""round"" d=""m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"" />
+                </svg>"
+        };
+    }
+
+    private async void HandleServiceChange()
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadNotificationsAsync();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        NotificationService.OnChange -= HandleServiceChange;
+    }
+}

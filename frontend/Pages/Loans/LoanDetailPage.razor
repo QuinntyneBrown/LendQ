@@ -1,0 +1,492 @@
+@page "/loans/{Id}"
+@using LendQ.Client.Models
+@using LendQ.Client.Services
+@using LendQ.Client.Components.UI
+@using LendQ.Client.Components.Shared
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize]
+
+@inject ILoanService LoanService
+@inject IPaymentService PaymentService
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject IToastService ToastService
+
+@if (_loading)
+{
+    <div class="space-y-6">
+        <LoadingSkeleton Lines="2" CssClass="bg-white rounded-xl shadow-sm border p-6" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            @for (int i = 0; i < 4; i++)
+            {
+                <LoadingSkeleton Lines="2" CssClass="bg-white rounded-xl shadow-sm border p-6" />
+            }
+        </div>
+        <LoadingSkeleton Lines="8" CssClass="bg-white rounded-xl shadow-sm border p-6" />
+    </div>
+}
+else if (_error != null)
+{
+    <div class="rounded-lg bg-red-50 p-4 text-sm text-red-700 flex items-center justify-between">
+        <span>@_error</span>
+        <button type="button" class="text-red-700 underline font-medium" @onclick="LoadLoanAsync">Retry</button>
+    </div>
+}
+else if (_loan != null)
+{
+    <div class="space-y-6">
+
+        @* ===== Header ===== *@
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-3 mb-1">
+                    <h1 class="text-2xl font-bold text-gray-900">@_loan.Description</h1>
+                    <StatusBadge Status="@_loan.Status" />
+                </div>
+                <p class="text-sm text-gray-500">
+                    <span class="font-medium">Creditor:</span> @_loan.Creditor.Name
+                    <span class="mx-2">|</span>
+                    <span class="font-medium">Borrower:</span> @_loan.Borrower.Name
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                @if (_isCreditor)
+                {
+                    <Button Variant="secondary" OnClick="@(() => NavigationManager.NavigateTo($"/loans/{Id}/edit"))">
+                        Edit Loan
+                    </Button>
+                    <Button OnClick="@(() => _showRecordPayment = true)">
+                        Record Payment
+                    </Button>
+                }
+                else
+                {
+                    <Button OnClick="@(() => _showRecordPayment = true)">
+                        Make Payment
+                    </Button>
+                    <Button Variant="secondary" OnClick="@(() => _showChangeRequest = true)">
+                        Request Change
+                    </Button>
+                }
+            </div>
+        </div>
+
+        @* ===== Summary Cards Row ===== *@
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <SummaryCard Title="Principal" Value="@_loan.PrincipalAmount.ToString("C")" />
+            <SummaryCard Title="Total Paid" Value="@_totalPaid.ToString("C")" />
+            <SummaryCard Title="Outstanding Balance" Value="@_loan.OutstandingBalance.ToString("C")"
+                         Variant="@(_loan.OutstandingBalance > 0 ? "warning" : "default")" />
+            <SummaryCard Title="Next Payment Due" Value="@(_loan.NextDueDate ?? "N/A")" />
+        </div>
+
+        @* ===== Tabs ===== *@
+        <div class="bg-white rounded-xl shadow-sm border">
+            <div class="border-b border-gray-200">
+                <nav class="flex -mb-px overflow-x-auto">
+                    <button type="button" class="@TabClass("schedule")" @onclick="@(() => SwitchTab("schedule"))">Schedule</button>
+                    <button type="button" class="@TabClass("payments")" @onclick="@(() => SwitchTab("payments"))">Payments</button>
+                    <button type="button" class="@TabClass("terms")" @onclick="@(() => SwitchTab("terms"))">Terms History</button>
+                    <button type="button" class="@TabClass("requests")" @onclick="@(() => SwitchTab("requests"))">Change Requests</button>
+                </nav>
+            </div>
+
+            <div class="p-4">
+                @switch (_activeTab)
+                {
+                    case "schedule":
+                        <PaymentScheduleView Schedule="_loan.CurrentScheduleVersion"
+                                             OnRecordPayment="HandleScheduleRecordPayment"
+                                             OnReschedule="HandleScheduleReschedule"
+                                             OnPause="HandleSchedulePause" />
+                        break;
+
+                    case "payments":
+                        @if (_paymentsLoading)
+                        {
+                            <LoadingSkeleton Lines="5" />
+                        }
+                        else if (_payments == null || _payments.Count == 0)
+                        {
+                            <EmptyState Title="No payments recorded" Description="Payments will appear here once recorded." />
+                        }
+                        else
+                        {
+                            @* Desktop table *@
+                            <div class="hidden md:block overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        @foreach (var payment in _payments)
+                                        {
+                                            <tr class="hover:bg-gray-50 transition-colors">
+                                                <td class="px-4 py-3 text-sm text-gray-900">@payment.PostedAt.ToString("MMM d, yyyy")</td>
+                                                <td class="px-4 py-3 text-sm text-gray-900 text-right">@payment.Amount.ToString("C")</td>
+                                                <td class="px-4 py-3 text-sm text-gray-500">@FormatPaymentMethod(payment.PaymentMethod)</td>
+                                                <td class="px-4 py-3 text-sm"><StatusBadge Status="@payment.TransactionType" /></td>
+                                                <td class="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">@(payment.Notes ?? "-")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @* Mobile cards *@
+                            <div class="md:hidden space-y-3">
+                                @foreach (var payment in _payments)
+                                {
+                                    <div class="border rounded-lg p-4 space-y-2">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-sm font-medium text-gray-900">@payment.PostedAt.ToString("MMM d, yyyy")</span>
+                                            <span class="text-sm font-semibold text-gray-900">@payment.Amount.ToString("C")</span>
+                                        </div>
+                                        <div class="flex items-center justify-between text-xs text-gray-500">
+                                            <span>@FormatPaymentMethod(payment.PaymentMethod)</span>
+                                            <StatusBadge Status="@payment.TransactionType" />
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(payment.Notes))
+                                        {
+                                            <p class="text-xs text-gray-400 truncate">@payment.Notes</p>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                        break;
+
+                    case "terms":
+                        @if (_termsLoading)
+                        {
+                            <LoadingSkeleton Lines="4" />
+                        }
+                        else if (_termsHistory == null || _termsHistory.Count == 0)
+                        {
+                            <EmptyState Title="No terms history" Description="Terms version history will appear here." />
+                        }
+                        else
+                        {
+                            <div class="space-y-4">
+                                @foreach (var version in _termsHistory)
+                                {
+                                    <div class="border rounded-lg p-4 @(version.Version == _loan.CurrentTermsVersion.Version ? "border-indigo-300 bg-indigo-50" : "")">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-sm font-medium text-gray-900">Version @version.Version</span>
+                                            <span class="text-xs text-gray-500">@version.EffectiveAt.ToString("MMM d, yyyy")</span>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(version.Reason))
+                                        {
+                                            <p class="text-sm text-gray-600 mb-2">@version.Reason</p>
+                                        }
+                                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-500">
+                                            @if (version.PrincipalAmount.HasValue)
+                                            {
+                                                <div><span class="font-medium">Principal:</span> @version.PrincipalAmount.Value.ToString("C")</div>
+                                            }
+                                            @if (!string.IsNullOrEmpty(version.Currency))
+                                            {
+                                                <div><span class="font-medium">Currency:</span> @version.Currency</div>
+                                            }
+                                            @if (version.InterestRatePercent.HasValue)
+                                            {
+                                                <div><span class="font-medium">Interest:</span> @version.InterestRatePercent.Value%</div>
+                                            }
+                                            @if (!string.IsNullOrEmpty(version.RepaymentFrequency))
+                                            {
+                                                <div><span class="font-medium">Frequency:</span> @version.RepaymentFrequency</div>
+                                            }
+                                            @if (version.InstallmentCount.HasValue)
+                                            {
+                                                <div><span class="font-medium">Installments:</span> @version.InstallmentCount</div>
+                                            }
+                                            @if (!string.IsNullOrEmpty(version.MaturityDate))
+                                            {
+                                                <div><span class="font-medium">Maturity:</span> @version.MaturityDate</div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        break;
+
+                    case "requests":
+                        @if (_requestsLoading)
+                        {
+                            <LoadingSkeleton Lines="4" />
+                        }
+                        else if (_changeRequests == null || _changeRequests.Count == 0)
+                        {
+                            <EmptyState Title="No change requests" Description="Change requests will appear here." />
+                        }
+                        else
+                        {
+                            <div class="space-y-3">
+                                @foreach (var request in _changeRequests)
+                                {
+                                    <div class="border rounded-lg p-4">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-2">
+                                                <StatusBadge Status="@request.Status" />
+                                                <span class="text-sm font-medium text-gray-900">@FormatRequestType(request.Type)</span>
+                                            </div>
+                                            <span class="text-xs text-gray-500">@request.CreatedAt.ToString("MMM d, yyyy")</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-1">@request.Reason</p>
+                                        <p class="text-xs text-gray-400">Requested by @request.RequestedBy.Name</p>
+                                        @if (_isCreditor && request.Status == "PENDING")
+                                        {
+                                            <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+                                                <Button CssClass="text-xs px-3 py-1" OnClick="@(() => ApproveRequest(request.Id))">Approve</Button>
+                                                <Button Variant="destructive" CssClass="text-xs px-3 py-1" OnClick="@(() => RejectRequest(request.Id))">Reject</Button>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                        break;
+                }
+            </div>
+        </div>
+    </div>
+
+    @* ===== Modals ===== *@
+    <RecordPaymentDialog IsOpen="_showRecordPayment"
+                         OnClose="@(() => _showRecordPayment = false)"
+                         LoanId="@Id"
+                         OnPaymentRecorded="HandlePaymentRecorded" />
+
+    <LoanChangeRequestDialog IsOpen="_showChangeRequest"
+                              OnClose="@(() => _showChangeRequest = false)"
+                              LoanId="@Id" />
+}
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+
+    private LoanDetail? _loan;
+    private bool _loading;
+    private string? _error;
+    private string _activeTab = "schedule";
+    private bool _isCreditor;
+
+    // Payments tab
+    private List<PaymentTransaction>? _payments;
+    private bool _paymentsLoading;
+
+    // Terms tab
+    private List<LoanTermsVersion>? _termsHistory;
+    private bool _termsLoading;
+
+    // Change requests tab
+    private List<LoanChangeRequest>? _changeRequests;
+    private bool _requestsLoading;
+
+    // Calculated
+    private decimal _totalPaid;
+
+    // Modals
+    private bool _showRecordPayment;
+    private bool _showChangeRequest;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLoanAsync();
+    }
+
+    private async Task LoadLoanAsync()
+    {
+        _loading = true;
+        _error = null;
+        StateHasChanged();
+
+        try
+        {
+            _loan = await LoanService.GetLoanDetailAsync(Id);
+
+            var currentUser = await AuthService.GetCurrentUserAsync();
+            _isCreditor = currentUser?.Id == _loan.Creditor.Id;
+
+            // Calculate total paid from schedule installments
+            _totalPaid = _loan.CurrentScheduleVersion?.Installments
+                ?.Sum(i => i.AmountPaid) ?? 0m;
+        }
+        catch (Exception)
+        {
+            _error = "Failed to load loan details. Please try again.";
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SwitchTab(string tab)
+    {
+        _activeTab = tab;
+
+        switch (tab)
+        {
+            case "payments" when _payments == null:
+                await LoadPaymentsAsync();
+                break;
+            case "terms" when _termsHistory == null:
+                await LoadTermsHistoryAsync();
+                break;
+            case "requests" when _changeRequests == null:
+                await LoadChangeRequestsAsync();
+                break;
+        }
+    }
+
+    private async Task LoadPaymentsAsync()
+    {
+        _paymentsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            _payments = await PaymentService.GetPaymentsAsync(Id);
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("Failed to load payments.");
+        }
+        finally
+        {
+            _paymentsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadTermsHistoryAsync()
+    {
+        _termsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            _termsHistory = await LoanService.GetTermsHistoryAsync(Id);
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("Failed to load terms history.");
+        }
+        finally
+        {
+            _termsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadChangeRequestsAsync()
+    {
+        _requestsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            _changeRequests = await LoanService.GetChangeRequestsAsync(Id);
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("Failed to load change requests.");
+        }
+        finally
+        {
+            _requestsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandlePaymentRecorded()
+    {
+        _payments = null;
+        await LoadLoanAsync();
+        if (_activeTab == "payments")
+        {
+            await LoadPaymentsAsync();
+        }
+    }
+
+    private async Task ApproveRequest(string requestId)
+    {
+        try
+        {
+            await LoanService.ApproveChangeRequestAsync(Id, requestId);
+            ToastService.ShowSuccess("Change request approved.");
+            _changeRequests = null;
+            await LoadChangeRequestsAsync();
+            await LoadLoanAsync();
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("Failed to approve request.");
+        }
+    }
+
+    private async Task RejectRequest(string requestId)
+    {
+        try
+        {
+            await LoanService.RejectChangeRequestAsync(Id, requestId);
+            ToastService.ShowSuccess("Change request rejected.");
+            _changeRequests = null;
+            await LoadChangeRequestsAsync();
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("Failed to reject request.");
+        }
+    }
+
+    private Task HandleScheduleRecordPayment(string installmentId)
+    {
+        _showRecordPayment = true;
+        return Task.CompletedTask;
+    }
+
+    private Task HandleScheduleReschedule(string installmentId)
+    {
+        ToastService.ShowInfo("Reschedule functionality coming soon.");
+        return Task.CompletedTask;
+    }
+
+    private Task HandleSchedulePause(string installmentId)
+    {
+        ToastService.ShowInfo("Pause functionality coming soon.");
+        return Task.CompletedTask;
+    }
+
+    private string TabClass(string tab) =>
+        _activeTab == tab
+            ? "px-4 py-3 text-sm font-medium text-indigo-600 border-b-2 border-indigo-600 whitespace-nowrap"
+            : "px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300 whitespace-nowrap";
+
+    private static string FormatPaymentMethod(string method) => method switch
+    {
+        "CASH" => "Cash",
+        "BANK_TRANSFER" => "Bank Transfer",
+        "CARD" => "Card",
+        "OTHER" => "Other",
+        _ => method
+    };
+
+    private static string FormatRequestType(string type) => type switch
+    {
+        "TERM_CHANGE" => "Term Change",
+        "RESCHEDULE" => "Reschedule",
+        "PAUSE" => "Pause",
+        _ => type
+    };
+}

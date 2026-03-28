@@ -1,0 +1,146 @@
+@using LendQ.Client.Models
+@using LendQ.Client.Components.UI
+
+@if (Schedule == null || Schedule.Installments.Count == 0)
+{
+    <EmptyState Title="No schedule available" Description="There are no installments in this schedule." />
+}
+else
+{
+    <!-- Desktop table -->
+    <div class="hidden md:block overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount Due</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount Paid</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                @foreach (var inst in Schedule.Installments)
+                {
+                    <tr class="@(inst.Status == "PAUSED" ? "bg-gray-100" : "hover:bg-gray-50") transition-colors">
+                        <td class="px-4 py-3 text-sm text-gray-900">@inst.Sequence</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">
+                            @if (!string.IsNullOrEmpty(inst.OriginalDueDate))
+                            {
+                                <span class="line-through text-gray-400 mr-1">@inst.OriginalDueDate</span>
+                            }
+                            <span>@inst.DueDate</span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-900 text-right">@inst.AmountDue.ToString("C")</td>
+                        <td class="px-4 py-3 text-sm text-gray-900 text-right">@inst.AmountPaid.ToString("C")</td>
+                        <td class="px-4 py-3 text-sm">
+                            <StatusBadge Status="@inst.Status" />
+                        </td>
+                        <td class="px-4 py-3 text-sm text-right">
+                            <div class="relative inline-block text-left">
+                                <button type="button"
+                                        class="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded p-1"
+                                        @onclick="() => ToggleDropdown(inst.Id)">
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01" />
+                                    </svg>
+                                </button>
+                                @if (_openDropdownId == inst.Id)
+                                {
+                                    <div class="origin-top-right absolute right-0 mt-1 w-44 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                                        <div class="py-1">
+                                            <button type="button"
+                                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                    @onclick="() => HandleAction(OnRecordPayment, inst.Id)">
+                                                Record Payment
+                                            </button>
+                                            <button type="button"
+                                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                    @onclick="() => HandleAction(OnReschedule, inst.Id)">
+                                                Reschedule
+                                            </button>
+                                            <button type="button"
+                                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                    @onclick="() => HandleAction(OnPause, inst.Id)">
+                                                Pause
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Mobile card layout -->
+    <div class="md:hidden space-y-3">
+        @foreach (var inst in Schedule.Installments)
+        {
+            <div class="@(inst.Status == "PAUSED" ? "bg-gray-100" : "bg-white") border border-gray-200 rounded-lg p-4 space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-gray-900">Installment #@inst.Sequence</span>
+                    <StatusBadge Status="@inst.Status" />
+                </div>
+                <div class="text-sm text-gray-600">
+                    <span class="font-medium">Due:</span>
+                    @if (!string.IsNullOrEmpty(inst.OriginalDueDate))
+                    {
+                        <span class="line-through text-gray-400 mr-1">@inst.OriginalDueDate</span>
+                    }
+                    <span>@inst.DueDate</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <div>
+                        <span class="text-gray-500">Due:</span>
+                        <span class="font-medium text-gray-900">@inst.AmountDue.ToString("C")</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Paid:</span>
+                        <span class="font-medium text-gray-900">@inst.AmountPaid.ToString("C")</span>
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-2 border-t border-gray-100">
+                    <button type="button"
+                            class="flex-1 text-xs font-medium text-indigo-600 hover:text-indigo-800 py-1"
+                            @onclick="() => OnRecordPayment.InvokeAsync(inst.Id)">
+                        Record Payment
+                    </button>
+                    <button type="button"
+                            class="flex-1 text-xs font-medium text-indigo-600 hover:text-indigo-800 py-1"
+                            @onclick="() => OnReschedule.InvokeAsync(inst.Id)">
+                        Reschedule
+                    </button>
+                    <button type="button"
+                            class="flex-1 text-xs font-medium text-indigo-600 hover:text-indigo-800 py-1"
+                            @onclick="() => OnPause.InvokeAsync(inst.Id)">
+                        Pause
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public ScheduleVersion? Schedule { get; set; }
+    [Parameter] public EventCallback<string> OnRecordPayment { get; set; }
+    [Parameter] public EventCallback<string> OnReschedule { get; set; }
+    [Parameter] public EventCallback<string> OnPause { get; set; }
+
+    private string? _openDropdownId;
+
+    private void ToggleDropdown(string id)
+    {
+        _openDropdownId = _openDropdownId == id ? null : id;
+    }
+
+    private async Task HandleAction(EventCallback<string> callback, string id)
+    {
+        _openDropdownId = null;
+        await callback.InvokeAsync(id);
+    }
+}

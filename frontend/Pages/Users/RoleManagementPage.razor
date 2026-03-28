@@ -1,0 +1,194 @@
+@page "/users/roles"
+@using LendQ.Client.Models
+@using LendQ.Client.Services
+@using LendQ.Client.Components.UI
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize(Roles = "ADMIN")]
+
+@inject IRoleService RoleService
+@inject IToastService ToastService
+
+<div class="space-y-6">
+
+    <h1 class="text-2xl font-bold text-gray-900">Role Management</h1>
+
+    @if (_loading)
+    {
+        <LoadingSkeleton Lines="6" CssClass="bg-white rounded-xl shadow-sm border p-6" />
+    }
+    else if (_error != null)
+    {
+        <div class="rounded-lg bg-red-50 p-4 text-sm text-red-700 flex items-center justify-between">
+            <span>@_error</span>
+            <button type="button" class="text-red-700 underline font-medium" @onclick="LoadRolesAsync">Retry</button>
+        </div>
+    }
+    else
+    {
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            @foreach (var role in _roles)
+            {
+                var r = role;
+                <div class="bg-white rounded-xl shadow-sm border p-6 space-y-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">@r.Label</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">@r.Key</p>
+                    </div>
+
+                    @if (_editingRoleKey == r.Key)
+                    {
+                        @* Edit mode: permission checkboxes *@
+                        <div class="space-y-2 max-h-64 overflow-y-auto">
+                            @foreach (var perm in _allPermissions)
+                            {
+                                var p = perm;
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox"
+                                           checked="@_editingPermissions.Contains(p)"
+                                           @onchange="() => TogglePermission(p)"
+                                           class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
+                                    <span class="text-sm text-gray-700">@FormatPermission(p)</span>
+                                </label>
+                            }
+                        </div>
+
+                        <div class="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
+                            <Button Variant="secondary" CssClass="text-xs px-3 py-1.5" OnClick="CancelEdit">Cancel</Button>
+                            <Button CssClass="text-xs px-3 py-1.5" IsLoading="_isSaving" OnClick="() => SavePermissions(r.Key)">Save</Button>
+                        </div>
+                    }
+                    else
+                    {
+                        @* View mode: permission chips *@
+                        @if (r.Permissions.Count == 0)
+                        {
+                            <p class="text-sm text-gray-400 italic">No permissions assigned</p>
+                        }
+                        else
+                        {
+                            <div class="flex flex-wrap gap-1.5">
+                                @foreach (var perm in r.Permissions)
+                                {
+                                    <Badge Text="@FormatPermission(perm)" Variant="default" />
+                                }
+                            </div>
+                        }
+
+                        <div class="pt-2 border-t border-gray-100">
+                            <Button Variant="secondary" CssClass="text-xs px-3 py-1.5 w-full" OnClick="() => StartEdit(r)">Edit Permissions</Button>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<Role> _roles = new();
+    private bool _loading;
+    private string? _error;
+
+    private string? _editingRoleKey;
+    private List<string> _editingPermissions = new();
+    private bool _isSaving;
+
+    private static readonly List<string> _allPermissions = new()
+    {
+        "manage_users",
+        "manage_roles",
+        "create_loans",
+        "edit_loans",
+        "view_loans",
+        "record_payments",
+        "reverse_payments",
+        "manage_schedule",
+        "view_dashboard",
+        "view_notifications"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRolesAsync();
+    }
+
+    private async Task LoadRolesAsync()
+    {
+        _loading = true;
+        _error = null;
+        StateHasChanged();
+
+        try
+        {
+            _roles = await RoleService.GetRolesAsync();
+        }
+        catch (Exception)
+        {
+            _error = "Failed to load roles. Please try again.";
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void StartEdit(Role role)
+    {
+        _editingRoleKey = role.Key;
+        _editingPermissions = new List<string>(role.Permissions);
+    }
+
+    private void CancelEdit()
+    {
+        _editingRoleKey = null;
+        _editingPermissions = new();
+    }
+
+    private void TogglePermission(string permission)
+    {
+        if (_editingPermissions.Contains(permission))
+        {
+            _editingPermissions.Remove(permission);
+        }
+        else
+        {
+            _editingPermissions.Add(permission);
+        }
+    }
+
+    private async Task SavePermissions(string roleKey)
+    {
+        if (_isSaving) return;
+
+        _isSaving = true;
+
+        try
+        {
+            await RoleService.UpdatePermissionsAsync(roleKey, _editingPermissions);
+            ToastService.ShowSuccess("Permissions updated successfully.");
+
+            var role = _roles.FirstOrDefault(r => r.Key == roleKey);
+            if (role != null)
+            {
+                role.Permissions = new List<string>(_editingPermissions);
+            }
+
+            _editingRoleKey = null;
+            _editingPermissions = new();
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("Failed to update permissions. Please try again.");
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private static string FormatPermission(string permission) =>
+        System.Globalization.CultureInfo.CurrentCulture.TextInfo
+            .ToTitleCase(permission.Replace("_", " "));
+}

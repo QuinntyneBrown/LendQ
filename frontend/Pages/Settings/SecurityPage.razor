@@ -1,0 +1,302 @@
+@page "/settings/security"
+@using LendQ.Client.Models
+@using LendQ.Client.Services
+@using LendQ.Client.Components.UI
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+@inject ISessionService SessionService
+@inject IAuthService AuthService
+@inject IToastService ToastService
+@inject NavigationManager NavigationManager
+
+<div class="space-y-8">
+
+    <h1 class="text-2xl font-bold text-gray-900">Security</h1>
+
+    @* ───── Section 1: Active Sessions ───── *@
+    <div class="space-y-4">
+        <div>
+            <h2 class="text-lg font-medium text-gray-900">Active Sessions</h2>
+            <p class="mt-1 text-sm text-gray-500">Manage the devices and sessions signed in to your account.</p>
+        </div>
+
+        @if (_sessionsLoading)
+        {
+            <LoadingSkeleton Lines="6" CssClass="bg-white rounded-xl shadow-sm border p-6" />
+        }
+        else if (_sessionsError != null)
+        {
+            <div class="rounded-lg bg-red-50 p-4 text-sm text-red-700 flex items-center justify-between">
+                <span>@_sessionsError</span>
+                <button type="button" class="text-red-700 underline font-medium" @onclick="LoadSessionsAsync">Retry</button>
+            </div>
+        }
+        else
+        {
+            <div class="bg-white rounded-xl shadow-sm border divide-y divide-gray-100 overflow-hidden">
+                @foreach (var session in _sessions)
+                {
+                    <div class="px-4 py-4 sm:px-6 flex flex-col sm:flex-row sm:items-center gap-3">
+                        @* Session icon *@
+                        <div class="flex-shrink-0">
+                            <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25A2.25 2.25 0 0 1 5.25 3h13.5A2.25 2.25 0 0 1 21 5.25Z" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        @* Session details *@
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm font-medium text-gray-900 truncate" title="@session.UserAgent">
+                                    @TruncateUserAgent(session.UserAgent)
+                                </p>
+                                @if (session.IsCurrent)
+                                {
+                                    <Badge Text="Current session" Variant="success" />
+                                }
+                            </div>
+                            <div class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                                @if (!string.IsNullOrEmpty(session.IpAddress))
+                                {
+                                    <span class="flex items-center gap-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
+                                        </svg>
+                                        @session.IpAddress
+                                        @if (!string.IsNullOrEmpty(session.LocationHint))
+                                        {
+                                            <text> &middot; @session.LocationHint</text>
+                                        }
+                                    </span>
+                                }
+                                <span>Created @session.CreatedAt.ToString("MMM d, yyyy h:mm tt")</span>
+                                <span>Last used @FormatRelativeTime(session.LastSeenAt)</span>
+                            </div>
+                        </div>
+
+                        @* Revoke button (not shown for current session) *@
+                        @if (!session.IsCurrent)
+                        {
+                            <div class="flex-shrink-0">
+                                <Button Variant="destructive"
+                                        CssClass="text-xs px-3 py-1.5 min-h-0"
+                                        IsLoading="@(_revokingSessionId == session.Id)"
+                                        OnClick="@(() => HandleRevoke(session.Id))">
+                                    Revoke
+                                </Button>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            @if (_sessions.Any(s => !s.IsCurrent))
+            {
+                <div class="flex justify-end">
+                    <Button Variant="destructive" IsLoading="_loggingOutAll" OnClick="HandleLogoutAll">
+                        Log out all other sessions
+                    </Button>
+                </div>
+            }
+        }
+    </div>
+
+    @* ───── Section 2: Account Security ───── *@
+    <div class="space-y-4">
+        <div>
+            <h2 class="text-lg font-medium text-gray-900">Account Security</h2>
+            <p class="mt-1 text-sm text-gray-500">Review your account security status.</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border divide-y divide-gray-100 overflow-hidden">
+
+            @* Email verification status *@
+            <div class="px-4 py-4 sm:px-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0">
+                            @if (AuthService.CurrentUser?.EmailVerified == true)
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                                </svg>
+                            }
+                            else
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
+                                </svg>
+                            }
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">Email verification</p>
+                            <p class="text-xs text-gray-500">@(AuthService.CurrentUser?.Email ?? "Unknown")</p>
+                        </div>
+                    </div>
+                    @if (AuthService.CurrentUser?.EmailVerified == true)
+                    {
+                        <Badge Text="Verified" Variant="success" />
+                    }
+                    else
+                    {
+                        <Badge Text="Not verified" Variant="warning" />
+                    }
+                </div>
+
+                @if (AuthService.CurrentUser?.EmailVerified != true)
+                {
+                    <div class="mt-3 rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800 flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div class="flex items-center gap-2 flex-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                            </svg>
+                            <span>Your email address has not been verified. Please verify to secure your account.</span>
+                        </div>
+                        <Button Variant="secondary"
+                                CssClass="text-xs px-3 py-1.5 min-h-0 whitespace-nowrap"
+                                IsLoading="_resendingVerification"
+                                OnClick="HandleResendVerification">
+                            Resend verification email
+                        </Button>
+                    </div>
+                }
+            </div>
+
+            @* Password info *@
+            <div class="px-4 py-4 sm:px-6 flex items-center gap-3">
+                <div class="flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-900">Password</p>
+                    <p class="text-xs text-gray-500">Last changed information is not available at this time.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<SessionSummary> _sessions = new();
+    private bool _sessionsLoading;
+    private string? _sessionsError;
+    private string? _revokingSessionId;
+    private bool _loggingOutAll;
+    private bool _resendingVerification;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSessionsAsync();
+    }
+
+    private async Task LoadSessionsAsync()
+    {
+        _sessionsLoading = true;
+        _sessionsError = null;
+        StateHasChanged();
+
+        try
+        {
+            _sessions = await SessionService.GetSessionsAsync();
+        }
+        catch (Exception)
+        {
+            _sessionsError = "Failed to load sessions. Please try again.";
+        }
+        finally
+        {
+            _sessionsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleRevoke(string sessionId)
+    {
+        _revokingSessionId = sessionId;
+        StateHasChanged();
+
+        try
+        {
+            await SessionService.RevokeSessionAsync(sessionId);
+            _sessions.RemoveAll(s => s.Id == sessionId);
+            ToastService.ShowSuccess("Session revoked successfully.");
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("Failed to revoke session. Please try again.");
+        }
+        finally
+        {
+            _revokingSessionId = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleLogoutAll()
+    {
+        _loggingOutAll = true;
+        StateHasChanged();
+
+        try
+        {
+            await SessionService.LogoutAllAsync();
+            await LoadSessionsAsync();
+            ToastService.ShowSuccess("All other sessions have been logged out.");
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("Failed to log out other sessions. Please try again.");
+        }
+        finally
+        {
+            _loggingOutAll = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleResendVerification()
+    {
+        var email = AuthService.CurrentUser?.Email;
+        if (string.IsNullOrEmpty(email)) return;
+
+        _resendingVerification = true;
+        StateHasChanged();
+
+        try
+        {
+            await AuthService.ResendVerificationAsync(email);
+            ToastService.ShowSuccess("Verification email sent. Please check your inbox.");
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("Failed to send verification email. Please try again.");
+        }
+        finally
+        {
+            _resendingVerification = false;
+            StateHasChanged();
+        }
+    }
+
+    private static string TruncateUserAgent(string userAgent)
+    {
+        if (string.IsNullOrEmpty(userAgent)) return "Unknown device";
+        return userAgent.Length > 80 ? userAgent[..80] + "..." : userAgent;
+    }
+
+    private static string FormatRelativeTime(DateTime dateTime)
+    {
+        var diff = DateTime.UtcNow - dateTime;
+
+        if (diff.TotalMinutes < 1) return "just now";
+        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}m ago";
+        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours}h ago";
+        if (diff.TotalDays < 7) return $"{(int)diff.TotalDays}d ago";
+        return dateTime.ToString("MMM d, yyyy");
+    }
+}

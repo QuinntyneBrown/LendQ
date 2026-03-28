@@ -1,0 +1,43 @@
+@namespace LendQ.Client.Components.Shared
+@typeparam TItem
+
+@using LendQ.Client.Components.UI
+
+@if (Items == null || Items.Count == 0)
+{
+    @if (EmptyTemplate != null)
+    {
+        @EmptyTemplate
+    }
+    else
+    {
+        <EmptyState Title="No data found" Description="There are no items to display." />
+    }
+}
+else
+{
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    @HeaderTemplate
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                @foreach (var item in Items)
+                {
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        @RowTemplate(item)
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter] public List<TItem> Items { get; set; } = new();
+    [Parameter] public RenderFragment HeaderTemplate { get; set; } = default!;
+    [Parameter] public RenderFragment<TItem> RowTemplate { get; set; } = default!;
+    [Parameter] public RenderFragment? EmptyTemplate { get; set; }
+}

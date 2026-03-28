@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LendQ</title>
+    <base href="/" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="LendQ.Client.styles.css" rel="stylesheet" />
+</head>
+
+<body class="bg-gray-50 text-gray-900 antialiased">
+    <div id="app">
+        <div class="flex items-center justify-center h-screen">
+            <div class="text-center">
+                <h1 class="text-2xl font-bold text-indigo-600 mb-4">LendQ</h1>
+                <svg class="loading-progress mx-auto" width="80" height="80">
+                    <circle r="30" cx="40" cy="40" fill="none" stroke="#e5e7eb" stroke-width="4" />
+                    <circle r="30" cx="40" cy="40" fill="none" stroke="#4f46e5" stroke-width="4"
+                        stroke-dasharray="188.5" stroke-dashoffset="47"
+                        style="animation: spin 1s linear infinite; transform-origin: center;">
+                    </circle>
+                </svg>
+                <div class="loading-progress-text mt-2 text-sm text-gray-500"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui" class="fixed bottom-0 inset-x-0 bg-red-600 text-white text-center py-3 z-50" style="display:none">
+        An unhandled error has occurred.
+        <a href="" class="reload underline ml-2">Reload</a>
+        <a class="dismiss ml-4 cursor-pointer">Close</a>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+
+</html>

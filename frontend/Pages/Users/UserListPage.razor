@@ -1,0 +1,261 @@
+@page "/users"
+@using LendQ.Client.Models
+@using LendQ.Client.Services
+@using LendQ.Client.Components.UI
+@using LendQ.Client.Components.Shared
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize(Roles = "ADMIN")]
+
+@inject IUserService UserService
+@inject IToastService ToastService
+@inject NavigationManager NavigationManager
+
+<div class="space-y-6">
+
+    @* Top bar *@
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 class="text-2xl font-bold text-gray-900">Users</h1>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <SearchBar Placeholder="Search users..."
+                       Value="@_search"
+                       ValueChanged="@((s) => _search = s)"
+                       OnSearch="HandleSearch" />
+            <Button OnClick="OpenAddDialog">Add User</Button>
+        </div>
+    </div>
+
+    @* Content *@
+    @if (_loading)
+    {
+        <LoadingSkeleton Lines="8" CssClass="bg-white rounded-xl shadow-sm border p-6" />
+    }
+    else if (_error != null)
+    {
+        <div class="rounded-lg bg-red-50 p-4 text-sm text-red-700 flex items-center justify-between">
+            <span>@_error</span>
+            <button type="button" class="text-red-700 underline font-medium" @onclick="LoadUsersAsync">Retry</button>
+        </div>
+    }
+    else if (_response == null || _response.Items.Count == 0)
+    {
+        <EmptyState Title="No users found"
+                    Description="There are no users matching your criteria.">
+            <Action>
+                <Button OnClick="OpenAddDialog">Add Your First User</Button>
+            </Action>
+        </EmptyState>
+    }
+    else
+    {
+        @* Desktop table *@
+        <div class="hidden md:block bg-white rounded-xl shadow-sm border overflow-hidden">
+            <DataTable TItem="UserSummary" Items="_response.Items">
+                <HeaderTemplate>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roles</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </HeaderTemplate>
+                <RowTemplate Context="user">
+                    <td class="px-4 py-3 text-sm text-gray-900">@user.Name</td>
+                    <td class="px-4 py-3 text-sm text-gray-500">@user.Email</td>
+                    <td class="px-4 py-3">
+                        <div class="flex flex-wrap gap-1">
+                            @foreach (var role in user.Roles)
+                            {
+                                <Badge Text="@role" Variant="info" />
+                            }
+                        </div>
+                    </td>
+                    <td class="px-4 py-3">
+                        <StatusBadge Status="@user.Status" />
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <Button Variant="ghost" CssClass="text-xs px-2 py-1" OnClick="@(() => OpenEditDialog(user))">Edit</Button>
+                            @if (user.Status == "ACTIVE")
+                            {
+                                <Button Variant="ghost" CssClass="text-xs px-2 py-1 text-red-600 hover:text-red-800" OnClick="@(() => OpenDeactivateDialog(user))">Deactivate</Button>
+                            }
+                        </div>
+                    </td>
+                </RowTemplate>
+            </DataTable>
+        </div>
+
+        @* Mobile cards *@
+        <div class="md:hidden space-y-3">
+            @foreach (var user in _response.Items)
+            {
+                <div class="bg-white rounded-xl shadow-sm border p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-medium text-gray-900 text-sm">@user.Name</span>
+                        <StatusBadge Status="@user.Status" />
+                    </div>
+                    <p class="text-xs text-gray-500">@user.Email</p>
+                    <div class="flex flex-wrap gap-1">
+                        @foreach (var role in user.Roles)
+                        {
+                            <Badge Text="@role" Variant="info" />
+                        }
+                    </div>
+                    <div class="flex gap-2 pt-2 border-t border-gray-100">
+                        <button type="button"
+                                class="flex-1 text-xs font-medium text-indigo-600 hover:text-indigo-800 py-1"
+                                @onclick="() => OpenEditDialog(user)">
+                            Edit
+                        </button>
+                        @if (user.Status == "ACTIVE")
+                        {
+                            <button type="button"
+                                    class="flex-1 text-xs font-medium text-red-600 hover:text-red-800 py-1"
+                                    @onclick="() => OpenDeactivateDialog(user)">
+                                Deactivate
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* Pagination *@
+        @if (_response.Pages > 1)
+        {
+            <Pagination CurrentPage="_response.Page"
+                        TotalPages="_response.Pages"
+                        OnPageChanged="HandlePageChanged" />
+        }
+    }
+</div>
+
+@* Add/Edit User Dialog *@
+<AddEditUserDialog IsOpen="_isAddEditOpen"
+                   OnClose="CloseAddEditDialog"
+                   User="_selectedUser"
+                   OnSaved="HandleUserSaved" />
+
+@* Deactivate Confirmation *@
+<ConfirmActionDialog IsOpen="_isDeactivateOpen"
+                     OnClose="CloseDeactivateDialog"
+                     OnConfirm="HandleDeactivateConfirmed"
+                     Title="Deactivate User"
+                     Message="@($"Are you sure you want to deactivate {_deactivateTarget?.Name}? They will lose access to the system.")"
+                     ConfirmText="Deactivate"
+                     IsDestructive="true" />
+
+@code {
+    private PaginatedResponse<UserSummary>? _response;
+    private bool _loading;
+    private string? _error;
+    private int _currentPage = 1;
+    private string _search = "";
+
+    private bool _isAddEditOpen;
+    private UserSummary? _selectedUser;
+
+    private bool _isDeactivateOpen;
+    private UserSummary? _deactivateTarget;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsersAsync();
+    }
+
+    private async Task LoadUsersAsync()
+    {
+        _loading = true;
+        _error = null;
+        StateHasChanged();
+
+        try
+        {
+            _response = await UserService.GetUsersAsync(
+                _currentPage,
+                string.IsNullOrEmpty(_search) ? null : _search);
+        }
+        catch (Exception)
+        {
+            _error = "Failed to load users. Please try again.";
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleSearch(string search)
+    {
+        _search = search;
+        _currentPage = 1;
+        await LoadUsersAsync();
+    }
+
+    private async Task HandlePageChanged(int page)
+    {
+        _currentPage = page;
+        await LoadUsersAsync();
+    }
+
+    private void OpenAddDialog()
+    {
+        _selectedUser = null;
+        _isAddEditOpen = true;
+    }
+
+    private void OpenEditDialog(UserSummary user)
+    {
+        _selectedUser = user;
+        _isAddEditOpen = true;
+    }
+
+    private void CloseAddEditDialog()
+    {
+        _isAddEditOpen = false;
+        _selectedUser = null;
+    }
+
+    private async Task HandleUserSaved()
+    {
+        CloseAddEditDialog();
+        await LoadUsersAsync();
+    }
+
+    private void OpenDeactivateDialog(UserSummary user)
+    {
+        _deactivateTarget = user;
+        _isDeactivateOpen = true;
+    }
+
+    private void CloseDeactivateDialog()
+    {
+        _isDeactivateOpen = false;
+        _deactivateTarget = null;
+    }
+
+    private async Task HandleDeactivateConfirmed()
+    {
+        if (_deactivateTarget == null) return;
+
+        try
+        {
+            var model = new UserFormModel
+            {
+                Name = _deactivateTarget.Name,
+                Email = _deactivateTarget.Email,
+                Roles = _deactivateTarget.Roles,
+                IsActive = false
+            };
+            await UserService.UpdateUserAsync(_deactivateTarget.Id, model);
+            ToastService.ShowSuccess($"{_deactivateTarget.Name} has been deactivated.");
+            CloseDeactivateDialog();
+            await LoadUsersAsync();
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("Failed to deactivate user. Please try again.");
+        }
+    }
+}

@@ -1,0 +1,204 @@
+@page "/loans"
+@using LendQ.Client.Models
+@using LendQ.Client.Services
+@using LendQ.Client.Components.UI
+@using LendQ.Client.Components.Shared
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize]
+@implements IDisposable
+
+@inject ILoanService LoanService
+@inject NavigationManager NavigationManager
+@inject IAuthService AuthService
+
+<div class="space-y-6">
+
+    @* Top bar *@
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 class="text-2xl font-bold text-gray-900">Loans</h1>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <SearchBar Placeholder="Search loans..."
+                       Value="@_search"
+                       ValueChanged="@((s) => _search = s)"
+                       OnSearch="HandleSearch" />
+            <AuthorizeView Roles="CREDITOR">
+                <Authorized>
+                    <Button OnClick="@(() => NavigationManager.NavigateTo("/loans/new"))">
+                        Create New Loan
+                    </Button>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+    </div>
+
+    @* Status filter *@
+    <div>
+        <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                value="@_statusFilter"
+                @onchange="HandleStatusChange">
+            <option value="">All Statuses</option>
+            <option value="ACTIVE">Active</option>
+            <option value="PAUSED">Paused</option>
+            <option value="OVERDUE">Overdue</option>
+            <option value="PAID">Paid Off</option>
+        </select>
+    </div>
+
+    @* Content *@
+    @if (_loading)
+    {
+        <LoadingSkeleton Lines="8" CssClass="bg-white rounded-xl shadow-sm border p-6" />
+    }
+    else if (_error != null)
+    {
+        <div class="rounded-lg bg-red-50 p-4 text-sm text-red-700 flex items-center justify-between">
+            <span>@_error</span>
+            <button type="button" class="text-red-700 underline font-medium" @onclick="LoadLoansAsync">Retry</button>
+        </div>
+    }
+    else if (_response == null || _response.Items.Count == 0)
+    {
+        <EmptyState Title="No loans found"
+                    Description="There are no loans matching your criteria.">
+            <Action>
+                <AuthorizeView Roles="CREDITOR">
+                    <Authorized>
+                        <Button OnClick="@(() => NavigationManager.NavigateTo("/loans/new"))">Create Your First Loan</Button>
+                    </Authorized>
+                </AuthorizeView>
+            </Action>
+        </EmptyState>
+    }
+    else
+    {
+        @* Desktop table *@
+        <div class="hidden md:block bg-white rounded-xl shadow-sm border overflow-hidden">
+            <DataTable TItem="LoanSummary" Items="_response.Items">
+                <HeaderTemplate>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Counterparty</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Principal</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Next Due</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </HeaderTemplate>
+                <RowTemplate Context="loan">
+                    <td class="px-4 py-3 text-sm text-gray-900">@loan.CounterpartyName</td>
+                    <td class="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">@loan.Description</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 text-right">@loan.PrincipalAmount.ToString("C")</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 text-right">@loan.OutstandingBalance.ToString("C")</td>
+                    <td class="px-4 py-3 text-sm text-gray-500">@(loan.NextDueDate ?? "N/A")</td>
+                    <td class="px-4 py-3"><StatusBadge Status="@loan.Status" /></td>
+                    <td class="px-4 py-3 text-right">
+                        <Button Variant="ghost" CssClass="text-xs px-2 py-1" OnClick="@(() => NavigationManager.NavigateTo($"/loans/{loan.Id}"))">View</Button>
+                    </td>
+                </RowTemplate>
+            </DataTable>
+        </div>
+
+        @* Mobile cards *@
+        <div class="md:hidden space-y-3">
+            @foreach (var loan in _response.Items)
+            {
+                <div class="bg-white rounded-xl shadow-sm border p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                     @onclick="@(() => NavigationManager.NavigateTo($"/loans/{loan.Id}"))">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-medium text-gray-900 text-sm">@loan.CounterpartyName</span>
+                        <StatusBadge Status="@loan.Status" />
+                    </div>
+                    <p class="text-xs text-gray-500 truncate mb-2">@loan.Description</p>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-700">Principal: @loan.PrincipalAmount.ToString("C")</span>
+                        <span class="text-gray-700">Balance: @loan.OutstandingBalance.ToString("C")</span>
+                    </div>
+                    <div class="mt-1 text-xs text-gray-400">
+                        Next due: @(loan.NextDueDate ?? "N/A")
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* Pagination *@
+        @if (_response.Pages > 1)
+        {
+            <Pagination CurrentPage="_response.Page"
+                        TotalPages="_response.Pages"
+                        OnPageChanged="HandlePageChanged" />
+        }
+    }
+</div>
+
+@code {
+    private PaginatedResponse<LoanSummary>? _response;
+    private bool _loading;
+    private string? _error;
+    private int _currentPage = 1;
+    private string _statusFilter = "";
+    private string _search = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoanService.OnChange += HandleLoanServiceChange;
+        await LoadLoansAsync();
+    }
+
+    private async Task LoadLoansAsync()
+    {
+        _loading = true;
+        _error = null;
+        StateHasChanged();
+
+        try
+        {
+            _response = await LoanService.GetLoansAsync(
+                _currentPage,
+                string.IsNullOrEmpty(_statusFilter) ? null : _statusFilter,
+                string.IsNullOrEmpty(_search) ? null : _search);
+        }
+        catch (Exception)
+        {
+            _error = "Failed to load loans. Please try again.";
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleSearch(string search)
+    {
+        _search = search;
+        _currentPage = 1;
+        await LoadLoansAsync();
+    }
+
+    private async Task HandleStatusChange(ChangeEventArgs e)
+    {
+        _statusFilter = e.Value?.ToString() ?? "";
+        _currentPage = 1;
+        await LoadLoansAsync();
+    }
+
+    private async Task HandlePageChanged(int page)
+    {
+        _currentPage = page;
+        await LoadLoansAsync();
+    }
+
+    private async void HandleLoanServiceChange()
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadLoansAsync();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        LoanService.OnChange -= HandleLoanServiceChange;
+    }
+}
