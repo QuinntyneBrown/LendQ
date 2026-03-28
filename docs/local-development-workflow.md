@@ -455,18 +455,19 @@ Project-level dev tools to add early:
 Use Playwright in layers instead of defaulting to the full browser-and-device matrix on every edit:
 
 - Fastest local loop: `npm --prefix e2e run test`
+- PR-equivalent verification: `npm --prefix e2e run test:pr`
 - Targeted smoke verification: `npm --prefix e2e run test:smoke`
 - Re-run only changed specs: `npm --prefix e2e run test:changed`
 - Re-run only the last failed tests: `npm --prefix e2e run test:last-failed`
 - Responsive checks when layout changes: `npm --prefix e2e run test:responsive`
 - Cross-browser smoke verification: `npm --prefix e2e run test:cross-browser`
-- Full regression only when explicitly needed: `npm --prefix e2e run test:full`
+- Full regression only on nightly/manual verification: `npm --prefix e2e run test:full`
 
 Recommended order of use:
 
 1. Run a single file or grep-targeted command while building the feature.
 2. Run the Chromium-only default command before asking for review.
-3. Run the smoke suite before merging larger feature changes.
+3. Run the PR-equivalent path before opening or updating a pull request.
 4. Run cross-browser or full regression only for release-risk changes or explicit verification.
 
 Useful direct Playwright commands:
@@ -479,6 +480,14 @@ npm --prefix e2e run test:debug
 ```
 
 The goal is to keep the everyday feedback loop on `chromium-desktop` and reserve the full matrix for deliberate regression checks.
+
+Current measured E2E runtimes on the optimized suite:
+
+- `test`: `35.0s`
+- `test:smoke`: `30.7s`
+- `test:pr`: `30.7s` smoke + `23.4s` responsive
+- `test:cross-browser`: `1.4m`
+- `test:full`: `3.5m`
 
 ## Practical Debugging Workflow
 
