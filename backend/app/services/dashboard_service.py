@@ -36,10 +36,11 @@ class DashboardService:
             counterparty = loan.borrower if tab == "creditor" else loan.creditor
             result.append({
                 "id": loan.id,
-                "counterparty_name": counterparty.name if counterparty else "Unknown",
+                "person_name": counterparty.name if counterparty else "Unknown",
                 "principal": loan.principal,
+                "amount": loan.principal,
                 "outstanding_balance": self.balance_service.get_outstanding_balance(loan.id),
-                "next_due_date": next_payment.due_date if next_payment else None,
+                "next_due": next_payment.due_date.isoformat() if next_payment else None,
                 "status": loan.status,
             })
         return result

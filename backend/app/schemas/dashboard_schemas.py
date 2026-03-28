@@ -10,10 +10,11 @@ class DashboardSummarySchema(Schema):
 
 class DashboardLoanSchema(Schema):
     id = fields.String()
-    counterparty_name = fields.String()
+    person_name = fields.String()
     principal = fields.Decimal(as_string=True)
+    amount = fields.Decimal(as_string=True)
     outstanding_balance = fields.Decimal(as_string=True)
-    next_due_date = fields.Date()
+    next_due = fields.String()
     status = fields.String()
 
 

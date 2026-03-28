@@ -19,8 +19,8 @@ export function MetricCard({
   variant = "default",
 }: MetricCardProps) {
   const displayValue =
-    format === "currency" && typeof value === "number"
-      ? formatCurrency(value)
+    format === "currency"
+      ? formatCurrency(Number(value))
       : String(value);
 
   return (
