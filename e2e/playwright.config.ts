@@ -14,23 +14,32 @@ export default defineConfig({
   },
   projects: [
     {
+      name: "setup-auth",
+      testMatch: /.*\.setup\.ts/,
+    },
+    {
       name: "chromium-desktop",
+      dependencies: ["setup-auth"],
       use: { ...devices["Desktop Chrome"] },
     },
     {
       name: "firefox-desktop",
+      dependencies: ["setup-auth"],
       use: { ...devices["Desktop Firefox"] },
     },
     {
       name: "webkit-desktop",
+      dependencies: ["setup-auth"],
       use: { ...devices["Desktop Safari"] },
     },
     {
       name: "chromium-tablet",
+      dependencies: ["setup-auth"],
       use: { ...devices["iPad (gen 7)"] },
     },
     {
       name: "chromium-mobile",
+      dependencies: ["setup-auth"],
       use: { ...devices["iPhone 13"] },
     },
   ],

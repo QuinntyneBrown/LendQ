@@ -3,7 +3,7 @@ import { NotificationBell } from "../../pages/NotificationBell";
 import { NotificationDropdown } from "../../pages/NotificationDropdown";
 import { ToastComponent } from "../../pages/ToastComponent";
 
-test.describe("End-to-end: Notification lifecycle", () => {
+test.describe("End-to-end: Notification lifecycle @smoke", () => {
   test("notifications appear and can be managed", async ({ creditorPage }) => {
     const bell = new NotificationBell(creditorPage);
     const dropdown = new NotificationDropdown(creditorPage);

@@ -1,10 +1,6 @@
 import { test as authTest } from "./auth.fixture";
-
-export const USERS = {
-  admin: { email: "admin@family.com", password: "password123", name: "Admin User" },
-  creditor: { email: "creditor@family.com", password: "password123", name: "Quinn Brown" },
-  borrower: { email: "borrower@family.com", password: "password123", name: "Sarah Williams" },
-} as const;
+import { USERS } from "../helpers/test-users";
 
 export const test = authTest;
+export { USERS };
 export { expect } from "@playwright/test";

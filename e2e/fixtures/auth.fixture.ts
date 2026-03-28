@@ -1,5 +1,5 @@
-import { test as base, type Page } from "@playwright/test";
-import { LoginPage } from "../pages/LoginPage";
+import { test as base, type Browser, type Page } from "@playwright/test";
+import { AUTH_STORAGE_STATE } from "../helpers/auth-state";
 
 type AuthFixtures = {
   authenticatedPage: Page;
@@ -8,37 +8,52 @@ type AuthFixtures = {
   borrowerPage: Page;
 };
 
+async function createAuthenticatedPage(
+  browser: Browser,
+  storageState: string,
+) {
+  const context = await browser.newContext({ storageState });
+  const page = await context.newPage();
+  await page.goto("/dashboard");
+  await page.waitForURL("**/dashboard");
+  return { context, page };
+}
+
 export const test = base.extend<AuthFixtures>({
-  authenticatedPage: async ({ page }, use) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login("creditor@family.com", "password123");
-    await page.waitForURL("/dashboard");
+  authenticatedPage: async ({ browser }, use) => {
+    const { context, page } = await createAuthenticatedPage(
+      browser,
+      AUTH_STORAGE_STATE.creditor,
+    );
     await use(page);
+    await context.close();
   },
 
-  adminPage: async ({ page }, use) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login("admin@family.com", "password123");
-    await page.waitForURL("/dashboard");
+  adminPage: async ({ browser }, use) => {
+    const { context, page } = await createAuthenticatedPage(
+      browser,
+      AUTH_STORAGE_STATE.admin,
+    );
     await use(page);
+    await context.close();
   },
 
-  creditorPage: async ({ page }, use) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login("creditor@family.com", "password123");
-    await page.waitForURL("/dashboard");
+  creditorPage: async ({ browser }, use) => {
+    const { context, page } = await createAuthenticatedPage(
+      browser,
+      AUTH_STORAGE_STATE.creditor,
+    );
     await use(page);
+    await context.close();
   },
 
-  borrowerPage: async ({ page }, use) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login("borrower@family.com", "password123");
-    await page.waitForURL("/dashboard");
+  borrowerPage: async ({ browser }, use) => {
+    const { context, page } = await createAuthenticatedPage(
+      browser,
+      AUTH_STORAGE_STATE.borrower,
+    );
     await use(page);
+    await context.close();
   },
 });
 

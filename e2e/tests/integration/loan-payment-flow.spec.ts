@@ -7,7 +7,7 @@ import { RecordPaymentDialog } from "../../pages/RecordPaymentDialog";
 import { DashboardPage } from "../../pages/DashboardPage";
 import { ToastComponent } from "../../pages/ToastComponent";
 
-test.describe("End-to-end: Full loan lifecycle", () => {
+test.describe("End-to-end: Full loan lifecycle @smoke", () => {
   test("creditor creates a loan, borrower records payments until paid off", async ({
     creditorPage,
   }) => {

@@ -6,7 +6,7 @@ import { PausePaymentDialog } from "../../pages/PausePaymentDialog";
 import { PaymentHistorySection } from "../../pages/PaymentHistorySection";
 import { ToastComponent } from "../../pages/ToastComponent";
 
-test.describe("End-to-end: Schedule modification flow", () => {
+test.describe("End-to-end: Schedule modification flow @smoke", () => {
   test("borrower reschedules, pauses, and resumes payments", async ({ borrowerPage, seededLoanId }) => {
     const detail = new LoanDetailPage(borrowerPage);
     const schedule = new PaymentScheduleSection(borrowerPage);

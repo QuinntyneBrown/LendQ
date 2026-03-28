@@ -5,7 +5,7 @@ import { DeleteUserDialog } from "../../pages/DeleteUserDialog";
 import { ToastComponent } from "../../pages/ToastComponent";
 import { LoginPage } from "../../pages/LoginPage";
 
-test.describe("End-to-end: Admin user management", () => {
+test.describe("End-to-end: Admin user management @smoke", () => {
   test("admin creates, edits, and deactivates a user", async ({ adminPage }) => {
     const userList = new UserListPage(adminPage);
     const addDialog = new AddEditUserDialog(adminPage);

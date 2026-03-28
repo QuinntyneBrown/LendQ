@@ -424,6 +424,7 @@ autom4te.cache/
 tarballs/
 test-results/
 playwright-report/
+e2e/.auth/
 
 # content below from: https://github.com/github/gitignore/blob/main/Global/macOS.gitignore
 # General

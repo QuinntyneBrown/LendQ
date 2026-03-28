@@ -36,10 +36,10 @@ Use this baseline when measuring improvement:
 
 ## 2. Replace UI Login Per Test With Reusable Auth State
 
-- [ ] Add a Playwright setup step that creates reusable `storageState` files for `admin`, `creditor`, and `borrower`.
-- [ ] Decide and implement whether reusable auth state is created through `globalSetup` or a dedicated Playwright setup project.
-- [ ] Refactor `e2e/fixtures/auth.fixture.ts` so `adminPage`, `creditorPage`, `borrowerPage`, and `authenticatedPage` use `storageState` instead of filling and submitting the login form in every test.
-- [ ] Keep a minimal set of true login-page E2E tests so UI login still has direct coverage.
+- [x] Add a Playwright setup step that creates reusable `storageState` files for `admin`, `creditor`, and `borrower`.
+- [x] Decide and implement whether reusable auth state is created through `globalSetup` or a dedicated Playwright setup project.
+- [x] Refactor `e2e/fixtures/auth.fixture.ts` so `adminPage`, `creditorPage`, `borrowerPage`, and `authenticatedPage` use `storageState` instead of filling and submitting the login form in every test.
+- [x] Keep a minimal set of true login-page E2E tests so UI login still has direct coverage.
 - [ ] Verify that session-expiry, token-refresh, logout, and redirect tests still exercise real auth behavior and are not accidentally bypassed by cached state.
 - [ ] Measure the runtime improvement from auth-state reuse alone.
 
@@ -54,18 +54,18 @@ Use this baseline when measuring improvement:
 
 ## 4. Make Chromium Desktop The Default Local Feedback Loop
 
-- [ ] Implement a clearly documented local default command that runs only `chromium-desktop`.
-- [ ] Ensure that a full 5-project run is still available as an explicit command.
+- [x] Implement a clearly documented local default command that runs only `chromium-desktop`.
+- [x] Ensure that a full 5-project run is still available as an explicit command.
 - [ ] Confirm that day-to-day debugging, file targeting, and rapid re-runs all use the Chromium-only path by default.
 - [ ] Update local workflow documentation so the team no longer treats the full matrix as the normal development command.
 
 ## 5. Split The Suite By Purpose
 
-- [ ] Add a `smoke` suite for business-critical paths.
+- [x] Add a `smoke` suite for business-critical paths.
 - [ ] Add a `full` suite for complete regression coverage.
-- [ ] Add a `responsive` suite for viewport and layout coverage.
-- [ ] Add a `cross-browser` suite for browser-engine-specific verification.
-- [ ] Implement tags or another explicit selection mechanism such as `@smoke`, `@full`, `@responsive`, and `@cross-browser`.
+- [x] Add a `responsive` suite for viewport and layout coverage.
+- [x] Add a `cross-browser` suite for browser-engine-specific verification.
+- [x] Implement tags or another explicit selection mechanism such as `@smoke`, `@full`, `@responsive`, and `@cross-browser`.
 - [ ] Document which suites run locally, on PRs, on `main`, and on nightly or release verification.
 
 ## 6. Restrict Responsive Coverage To The Right Execution Paths
@@ -98,11 +98,11 @@ Use this baseline when measuring improvement:
 
 ## 9. Improve Day-To-Day Developer Verification
 
-- [ ] Add package scripts for the most common local verification flows.
-- [ ] Add a script for Chromium-only local execution.
-- [ ] Add a script for the smoke suite.
-- [ ] Add a script for rerunning only the last failed tests.
-- [ ] Add a script or documented command for running only changed tests.
+- [x] Add package scripts for the most common local verification flows.
+- [x] Add a script for Chromium-only local execution.
+- [x] Add a script for the smoke suite.
+- [x] Add a script for rerunning only the last failed tests.
+- [x] Add a script or documented command for running only changed tests.
 - [ ] Add documented commands for file-targeted runs, grep-targeted runs, UI mode, and debug mode.
 - [ ] Update developer docs so the expected workflow is: smallest possible scope first, full suite last.
 

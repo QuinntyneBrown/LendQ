@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { LoginPage } from "../../pages/LoginPage";
 
-test.describe("L2-1.1: Login Screen", () => {
+test.describe("L2-1.1: Login Screen @smoke", () => {
   let loginPage: LoginPage;
 
   test.beforeEach(async ({ page }) => {
