@@ -1,0 +1,22 @@
+    <h2 mat-dialog-title>Reschedule Payment</h2>
+    <mat-dialog-content>
+      <form [formGroup]="form">
+        <mat-form-field appearance="outline" class="form-field-full">
+          <mat-label>New Due Date</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="new_due_date">
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field-full">
+          <mat-label>Reason</mat-label>
+          <textarea matInput formControlName="reason" rows="3"></textarea>
+        </mat-form-field>
+      </form>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button (click)="dialogRef.close()">Cancel</button>
+      <button mat-flat-button color="primary" [disabled]="loading || form.invalid" (click)="onSubmit()">
+        @if (loading) { <mat-spinner diameter="20"></mat-spinner> } @else { Reschedule }
+      </button>
+    </mat-dialog-actions>

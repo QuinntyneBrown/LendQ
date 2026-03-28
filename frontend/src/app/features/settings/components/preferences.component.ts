@@ -17,87 +17,8 @@ import { NotificationPreferences } from '../../../core/models/notification.model
     MatSlideToggleModule, MatButtonModule, MatProgressSpinnerModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="page-container">
-      <h1>Notification Preferences</h1>
-      <p class="hint">In-app notifications are always enabled. Toggle email delivery per category below.</p>
-
-      @if (form) {
-        <mat-card>
-          <mat-card-content>
-            <form [formGroup]="form">
-              <div class="pref-row">
-                <div class="pref-info">
-                  <strong>Payment Due</strong>
-                  <span>Email reminder when a payment is approaching</span>
-                </div>
-                <mat-slide-toggle formControlName="payment_due_email"></mat-slide-toggle>
-              </div>
-              <div class="pref-row">
-                <div class="pref-info">
-                  <strong>Payment Overdue</strong>
-                  <span>Email alert when a payment is past due</span>
-                </div>
-                <mat-slide-toggle formControlName="payment_overdue_email"></mat-slide-toggle>
-              </div>
-              <div class="pref-row">
-                <div class="pref-info">
-                  <strong>Payment Received</strong>
-                  <span>Email confirmation when a payment is recorded</span>
-                </div>
-                <mat-slide-toggle formControlName="payment_received_email"></mat-slide-toggle>
-              </div>
-              <div class="pref-row">
-                <div class="pref-info">
-                  <strong>Schedule Changed</strong>
-                  <span>Email when a payment schedule is modified</span>
-                </div>
-                <mat-slide-toggle formControlName="schedule_changed_email"></mat-slide-toggle>
-              </div>
-              <div class="pref-row">
-                <div class="pref-info">
-                  <strong>Loan Modified</strong>
-                  <span>Email when loan terms are updated</span>
-                </div>
-                <mat-slide-toggle formControlName="loan_modified_email"></mat-slide-toggle>
-              </div>
-              <div class="pref-row">
-                <div class="pref-info">
-                  <strong>System Notifications</strong>
-                  <span>Email for system-level announcements</span>
-                </div>
-                <mat-slide-toggle formControlName="system_email"></mat-slide-toggle>
-              </div>
-            </form>
-          </mat-card-content>
-        </mat-card>
-
-        @if (isDirty) {
-          <div class="save-bar">
-            <span>You have unsaved changes</span>
-            <button mat-flat-button color="primary" [disabled]="saving" (click)="save()">
-              @if (saving) { <mat-spinner diameter="20"></mat-spinner> } @else { Save Preferences }
-            </button>
-          </div>
-        }
-      }
-    </div>
-  `,
-  styles: [`
-    .hint { color: rgba(0,0,0,0.54); margin-bottom: 24px; }
-    .pref-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 16px 0; border-bottom: 1px solid rgba(0,0,0,0.06);
-    }
-    .pref-info { display: flex; flex-direction: column; }
-    .pref-info strong { margin-bottom: 2px; }
-    .pref-info span { font-size: 13px; color: rgba(0,0,0,0.54); }
-    .save-bar {
-      position: sticky; bottom: 0; background: #fff3e0; padding: 12px 24px;
-      display: flex; justify-content: space-between; align-items: center;
-      border-radius: 4px; margin-top: 16px;
-    }
-  `]
+  templateUrl: './preferences.component.html',
+  styleUrl: './preferences.component.scss'
 })
 export class PreferencesComponent implements OnInit {
   form!: FormGroup;

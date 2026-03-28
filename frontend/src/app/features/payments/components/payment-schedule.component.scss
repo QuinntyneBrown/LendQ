@@ -1,0 +1,14 @@
+    .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .inline-title { display: inline; vertical-align: middle; margin: 0 0 0 8px; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .full-width { width: 100%; }
+    .original-date { text-decoration: line-through; color: rgba(0,0,0,0.38); margin-left: 4px; font-size: 12px; }
+    .empty-tab { text-align: center; color: rgba(0,0,0,0.54); padding: 32px; }
+    .tx-icon.tx-payment { color: #2e7d32; }
+    .tx-icon.tx-reversal { color: #c62828; }
+    .tx-icon.tx-adjustment { color: #f9a825; }
+    @media (max-width: 767px) {
+      .page-header { flex-direction: column; }
+      .actions { width: 100%; }
+      .actions button { flex: 1; }
+    }

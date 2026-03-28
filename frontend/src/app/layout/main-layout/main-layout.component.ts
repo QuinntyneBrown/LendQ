@@ -17,34 +17,8 @@ import { ToastService } from '../../core/services/toast.service';
   standalone: true,
   imports: [CommonModule, RouterModule, MatSidenavModule, HeaderComponent, SidebarComponent, MobileNavComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="layout-container">
-      <app-header (toggleSidenav)="sidenav.toggle()"></app-header>
-      <mat-sidenav-container class="sidenav-container">
-        <mat-sidenav #sidenav
-                     [mode]="sidenavMode"
-                     [opened]="sidenavOpened"
-                     class="app-sidenav">
-          <app-sidebar></app-sidebar>
-        </mat-sidenav>
-        <mat-sidenav-content class="main-content">
-          <router-outlet></router-outlet>
-        </mat-sidenav-content>
-      </mat-sidenav-container>
-      @if (isMobile) {
-        <app-mobile-nav></app-mobile-nav>
-      }
-    </div>
-  `,
-  styles: [`
-    .layout-container { display: flex; flex-direction: column; height: 100vh; }
-    .sidenav-container { flex: 1; }
-    .app-sidenav { width: 260px; }
-    .main-content { padding: 0; overflow-y: auto; }
-    @media (max-width: 767px) {
-      .main-content { padding-bottom: 56px; }
-    }
-  `]
+  templateUrl: './main-layout.component.html',
+  styleUrl: './main-layout.component.scss'
 })
 export class MainLayoutComponent implements OnInit, OnDestroy {
   @ViewChild('sidenav') sidenav!: MatSidenav;

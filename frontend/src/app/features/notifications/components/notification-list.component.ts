@@ -23,54 +23,8 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state.comp
     RelativeTimePipe, LoadingSpinnerComponent, EmptyStateComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="page-container">
-      <div class="page-header">
-        <h1>Notifications</h1>
-        <button mat-stroked-button (click)="markAllRead()">
-          <mat-icon>done_all</mat-icon> Mark All Read
-        </button>
-      </div>
-
-      @if (notifications$ | async; as notifications) {
-        @if (notifications.length === 0) {
-          <app-empty-state icon="notifications_none" title="No notifications"
-                           message="You're all caught up!">
-          </app-empty-state>
-        } @else {
-          <mat-list>
-            @for (notif of notifications; track notif.id) {
-              <mat-list-item [class.unread]="!notif.is_read" (click)="markRead(notif)">
-                <mat-icon matListItemIcon [class]="'notif-icon type-' + notif.type.toLowerCase()">
-                  {{ getIcon(notif.type) }}
-                </mat-icon>
-                <span matListItemTitle>{{ notif.title }}</span>
-                <span matListItemLine>{{ notif.body }}</span>
-                <span matListItemLine class="notif-time">{{ notif.created_at | relativeTime }}</span>
-                @if (!notif.is_read) {
-                  <div matListItemMeta class="unread-dot"></div>
-                }
-              </mat-list-item>
-            }
-          </mat-list>
-        }
-      } @else {
-        <app-loading-spinner></app-loading-spinner>
-      }
-    </div>
-  `,
-  styles: [`
-    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .page-header h1 { margin: 0; }
-    .unread { background: rgba(21, 101, 192, 0.04); }
-    .unread-dot { width: 10px; height: 10px; border-radius: 50%; background: #1565c0; }
-    .notif-time { color: rgba(0,0,0,0.38); font-size: 12px; }
-    .type-payment_due, .type-payment_overdue { color: #e65100; }
-    .type-payment_received { color: #2e7d32; }
-    .type-schedule_changed, .type-loan_modified { color: #1565c0; }
-    .type-system { color: rgba(0,0,0,0.54); }
-    mat-list-item { cursor: pointer; }
-  `]
+  templateUrl: './notification-list.component.html',
+  styleUrl: './notification-list.component.scss'
 })
 export class NotificationListComponent implements OnInit {
   notifications$!: Observable<Notification[]>;

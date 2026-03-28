@@ -1,0 +1,10 @@
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .page-header h1 { margin: 0; }
+    .unread { background: rgba(21, 101, 192, 0.04); }
+    .unread-dot { width: 10px; height: 10px; border-radius: 50%; background: #1565c0; }
+    .notif-time { color: rgba(0,0,0,0.38); font-size: 12px; }
+    .type-payment_due, .type-payment_overdue { color: #e65100; }
+    .type-payment_received { color: #2e7d32; }
+    .type-schedule_changed, .type-loan_modified { color: #1565c0; }
+    .type-system { color: rgba(0,0,0,0.54); }
+    mat-list-item { cursor: pointer; }

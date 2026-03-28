@@ -17,25 +17,8 @@ import { ToastService } from '../../../core/services/toast.service';
     MatInputModule, MatButtonModule, MatProgressSpinnerModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <h2 mat-dialog-title>Pause Payments</h2>
-    <mat-dialog-content>
-      <p>Pausing will mark selected installments as paused. This can be reviewed later.</p>
-      <form [formGroup]="form">
-        <mat-form-field appearance="outline" class="form-field-full">
-          <mat-label>Reason</mat-label>
-          <textarea matInput formControlName="reason" rows="3"></textarea>
-        </mat-form-field>
-      </form>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="dialogRef.close()">Cancel</button>
-      <button mat-flat-button color="warn" [disabled]="loading || form.invalid" (click)="onSubmit()">
-        @if (loading) { <mat-spinner diameter="20"></mat-spinner> } @else { Pause }
-      </button>
-    </mat-dialog-actions>
-  `,
-  styles: [`.form-field-full { width: 100%; }`]
+  templateUrl: './pause-dialog.component.html',
+  styleUrl: './pause-dialog.component.scss'
 })
 export class PauseDialogComponent {
   form: FormGroup;

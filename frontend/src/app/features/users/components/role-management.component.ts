@@ -18,39 +18,8 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
     MatIconModule, MatProgressSpinnerModule, LoadingSpinnerComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="page-container">
-      <h1>Role Management</h1>
-
-      @if (roles$ | async; as roles) {
-        @for (role of roles; track role.key) {
-          <mat-card class="role-card">
-            <mat-card-header>
-              <mat-card-title>{{ role.label }}</mat-card-title>
-              <mat-card-subtitle>{{ role.key }}</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content>
-              <div class="permissions">
-                @for (perm of role.permissions; track perm) {
-                  <mat-chip>{{ perm }}</mat-chip>
-                }
-                @if (role.permissions.length === 0) {
-                  <span class="no-perms">No permissions assigned</span>
-                }
-              </div>
-            </mat-card-content>
-          </mat-card>
-        }
-      } @else {
-        <app-loading-spinner></app-loading-spinner>
-      }
-    </div>
-  `,
-  styles: [`
-    .role-card { margin-bottom: 16px; }
-    .permissions { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; }
-    .no-perms { color: rgba(0,0,0,0.38); font-style: italic; }
-  `]
+  templateUrl: './role-management.component.html',
+  styleUrl: './role-management.component.scss'
 })
 export class RoleManagementComponent implements OnInit {
   roles$!: Observable<Role[]>;

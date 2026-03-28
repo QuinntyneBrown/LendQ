@@ -1,0 +1,64 @@
+    <div class="page-container">
+      <h1>Notification Preferences</h1>
+      <p class="hint">In-app notifications are always enabled. Toggle email delivery per category below.</p>
+
+      @if (form) {
+        <mat-card>
+          <mat-card-content>
+            <form [formGroup]="form">
+              <div class="pref-row">
+                <div class="pref-info">
+                  <strong>Payment Due</strong>
+                  <span>Email reminder when a payment is approaching</span>
+                </div>
+                <mat-slide-toggle formControlName="payment_due_email"></mat-slide-toggle>
+              </div>
+              <div class="pref-row">
+                <div class="pref-info">
+                  <strong>Payment Overdue</strong>
+                  <span>Email alert when a payment is past due</span>
+                </div>
+                <mat-slide-toggle formControlName="payment_overdue_email"></mat-slide-toggle>
+              </div>
+              <div class="pref-row">
+                <div class="pref-info">
+                  <strong>Payment Received</strong>
+                  <span>Email confirmation when a payment is recorded</span>
+                </div>
+                <mat-slide-toggle formControlName="payment_received_email"></mat-slide-toggle>
+              </div>
+              <div class="pref-row">
+                <div class="pref-info">
+                  <strong>Schedule Changed</strong>
+                  <span>Email when a payment schedule is modified</span>
+                </div>
+                <mat-slide-toggle formControlName="schedule_changed_email"></mat-slide-toggle>
+              </div>
+              <div class="pref-row">
+                <div class="pref-info">
+                  <strong>Loan Modified</strong>
+                  <span>Email when loan terms are updated</span>
+                </div>
+                <mat-slide-toggle formControlName="loan_modified_email"></mat-slide-toggle>
+              </div>
+              <div class="pref-row">
+                <div class="pref-info">
+                  <strong>System Notifications</strong>
+                  <span>Email for system-level announcements</span>
+                </div>
+                <mat-slide-toggle formControlName="system_email"></mat-slide-toggle>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+
+        @if (isDirty) {
+          <div class="save-bar">
+            <span>You have unsaved changes</span>
+            <button mat-flat-button color="primary" [disabled]="saving" (click)="save()">
+              @if (saving) { <mat-spinner diameter="20"></mat-spinner> } @else { Save Preferences }
+            </button>
+          </div>
+        }
+      }
+    </div>

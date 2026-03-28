@@ -1,0 +1,107 @@
+    <h2 mat-dialog-title>{{ isEdit ? 'Edit Loan' : 'Create New Loan' }}</h2>
+    <mat-dialog-content>
+      <form [formGroup]="form">
+        @if (!isEdit) {
+          <mat-form-field appearance="outline" class="form-field-full">
+            <mat-label>Borrower</mat-label>
+            <input matInput formControlName="borrower_search" [matAutocomplete]="auto" placeholder="Search borrower...">
+            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onBorrowerSelected($event)">
+              @for (b of filteredBorrowers$ | async; track b.id) {
+                <mat-option [value]="b">{{ b.name }} ({{ b.email }})</mat-option>
+              }
+            </mat-autocomplete>
+          </mat-form-field>
+        }
+
+        <mat-form-field appearance="outline" class="form-field-full">
+          <mat-label>Description</mat-label>
+          <input matInput formControlName="description" maxlength="500">
+        </mat-form-field>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Principal Amount</mat-label>
+            <input matInput formControlName="principal_amount" type="number" min="0" step="0.01">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Currency</mat-label>
+            <input matInput formControlName="currency" maxlength="3" placeholder="USD">
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Interest Rate %</mat-label>
+            <input matInput formControlName="interest_rate_percent" type="number" min="0" step="0.01">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Repayment Frequency</mat-label>
+            <mat-select formControlName="repayment_frequency">
+              <mat-option value="WEEKLY">Weekly</mat-option>
+              <mat-option value="BIWEEKLY">Bi-weekly</mat-option>
+              <mat-option value="MONTHLY">Monthly</mat-option>
+              <mat-option value="CUSTOM">Custom</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Installment Count</mat-label>
+            <input matInput formControlName="installment_count" type="number" min="1">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Maturity Date</mat-label>
+            <input matInput [matDatepicker]="maturityPicker" formControlName="maturity_date">
+            <mat-datepicker-toggle matSuffix [for]="maturityPicker"></mat-datepicker-toggle>
+            <mat-datepicker #maturityPicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="form-field-full">
+          <mat-label>Start Date</mat-label>
+          <input matInput [matDatepicker]="startPicker" formControlName="start_date">
+          <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field-full">
+          <mat-label>Notes</mat-label>
+          <textarea matInput formControlName="notes" rows="3"></textarea>
+        </mat-form-field>
+
+        @if (form.get('repayment_frequency')?.value === 'CUSTOM') {
+          <h3>Custom Schedule</h3>
+          @for (row of customSchedule.controls; track $index; let i = $index) {
+            <div class="form-row" [formGroupName]="'custom_schedule'">
+              <div [formArrayName]="'custom_schedule'">
+                <div [formGroupName]="i" class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Due Date</mat-label>
+                    <input matInput [matDatepicker]="dp" formControlName="due_date">
+                    <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                    <mat-datepicker #dp></mat-datepicker>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Amount</mat-label>
+                    <input matInput formControlName="amount_due" type="number" min="0" step="0.01">
+                  </mat-form-field>
+                  <button mat-icon-button color="warn" type="button" (click)="removeScheduleRow(i)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+          <button mat-stroked-button type="button" (click)="addScheduleRow()">
+            <mat-icon>add</mat-icon> Add Row
+          </button>
+        }
+      </form>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button (click)="dialogRef.close()">Cancel</button>
+      <button mat-flat-button color="primary" [disabled]="loading || form.invalid" (click)="onSave()">
+        @if (loading) { <mat-spinner diameter="20"></mat-spinner> } @else { Save }
+      </button>
+    </mat-dialog-actions>

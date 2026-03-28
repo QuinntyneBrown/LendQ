@@ -17,27 +17,8 @@ interface NavItem {
   standalone: true,
   imports: [CommonModule, RouterModule, MatListModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="sidebar-brand">
-      <h2>LendQ</h2>
-    </div>
-    <mat-nav-list>
-      @for (item of visibleItems; track item.route) {
-        <a mat-list-item [routerLink]="item.route" routerLinkActive="active-link">
-          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-          <span matListItemTitle>{{ item.label }}</span>
-        </a>
-      }
-    </mat-nav-list>
-  `,
-  styles: [`
-    .sidebar-brand {
-      padding: 16px 24px;
-      border-bottom: 1px solid rgba(0,0,0,0.12);
-      h2 { margin: 0; color: #1565c0; font-weight: 500; }
-    }
-    .active-link { background: rgba(21, 101, 192, 0.08); }
-  `]
+  templateUrl: './sidebar.component.html',
+  styleUrl: './sidebar.component.scss'
 })
 export class SidebarComponent {
   private navItems: NavItem[] = [

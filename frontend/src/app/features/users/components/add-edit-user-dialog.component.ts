@@ -21,42 +21,8 @@ import { UserSummary } from '../../../core/models/user.model';
     MatProgressSpinnerModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <h2 mat-dialog-title>{{ isEdit ? 'Edit User' : 'Add User' }}</h2>
-    <mat-dialog-content>
-      <form [formGroup]="form">
-        <mat-form-field appearance="outline" class="form-field-full">
-          <mat-label>Name</mat-label>
-          <input matInput formControlName="name">
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="form-field-full">
-          <mat-label>Email</mat-label>
-          <input matInput formControlName="email" type="email">
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="form-field-full">
-          <mat-label>Roles</mat-label>
-          <mat-select formControlName="roles" multiple>
-            <mat-option value="ADMIN">Admin</mat-option>
-            <mat-option value="CREDITOR">Creditor</mat-option>
-            <mat-option value="BORROWER">Borrower</mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        @if (isEdit) {
-          <mat-slide-toggle formControlName="is_active">Active</mat-slide-toggle>
-        }
-      </form>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="dialogRef.close()">Cancel</button>
-      <button mat-flat-button color="primary" [disabled]="loading || form.invalid" (click)="onSave()">
-        @if (loading) { <mat-spinner diameter="20"></mat-spinner> } @else { Save }
-      </button>
-    </mat-dialog-actions>
-  `,
-  styles: [`.form-field-full { width: 100%; }`]
+  templateUrl: './add-edit-user-dialog.component.html',
+  styleUrl: './add-edit-user-dialog.component.scss'
 })
 export class AddEditUserDialogComponent {
   form: FormGroup;

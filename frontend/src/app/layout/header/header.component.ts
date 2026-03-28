@@ -15,57 +15,8 @@ import { NotificationService } from '../../core/services/notification.service';
   standalone: true,
   imports: [CommonModule, RouterModule, MatToolbarModule, MatIconModule, MatButtonModule, MatBadgeModule, MatMenuModule, MatDividerModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <mat-toolbar color="primary">
-      <button mat-icon-button (click)="toggleSidenav.emit()" aria-label="Toggle navigation">
-        <mat-icon>menu</mat-icon>
-      </button>
-      <span class="brand">LendQ</span>
-      <span class="spacer"></span>
-
-      <button mat-icon-button
-              routerLink="/notifications"
-              [matBadge]="(notificationService.unreadCount$ | async) || null"
-              matBadgeColor="warn"
-              matBadgeSize="small"
-              [matBadgeHidden]="(notificationService.unreadCount$ | async) === 0"
-              aria-label="Notifications">
-        <mat-icon>notifications</mat-icon>
-      </button>
-
-      <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="User menu">
-        <mat-icon>account_circle</mat-icon>
-      </button>
-
-      <mat-menu #userMenu="matMenu">
-        @if (authService.currentUser; as user) {
-          <div class="user-info" mat-menu-item disabled>
-            <strong>{{ user.name }}</strong>
-            <br>
-            <small>{{ user.email }}</small>
-          </div>
-        }
-        <button mat-menu-item routerLink="/settings/preferences">
-          <mat-icon>settings</mat-icon>
-          <span>Settings</span>
-        </button>
-        <button mat-menu-item routerLink="/settings/security">
-          <mat-icon>security</mat-icon>
-          <span>Security</span>
-        </button>
-        <mat-divider></mat-divider>
-        <button mat-menu-item (click)="onLogout()">
-          <mat-icon>logout</mat-icon>
-          <span>Logout</span>
-        </button>
-      </mat-menu>
-    </mat-toolbar>
-  `,
-  styles: [`
-    .spacer { flex: 1 1 auto; }
-    .brand { margin-left: 8px; font-weight: 500; cursor: default; }
-    .user-info { line-height: 1.4; white-space: normal; }
-  `]
+  templateUrl: './header.component.html',
+  styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
   @Output() toggleSidenav = new EventEmitter<void>();

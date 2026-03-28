@@ -18,33 +18,8 @@ import { ToastService } from '../../../core/services/toast.service';
     MatInputModule, MatSelectModule, MatButtonModule, MatProgressSpinnerModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <h2 mat-dialog-title>Submit Change Request</h2>
-    <mat-dialog-content>
-      <form [formGroup]="form">
-        <mat-form-field appearance="outline" class="form-field-full">
-          <mat-label>Type</mat-label>
-          <mat-select formControlName="type">
-            <mat-option value="TERM_CHANGE">Term Change</mat-option>
-            <mat-option value="RESCHEDULE">Reschedule</mat-option>
-            <mat-option value="PAUSE">Pause</mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="form-field-full">
-          <mat-label>Reason</mat-label>
-          <textarea matInput formControlName="reason" rows="4" placeholder="Explain why you are requesting this change"></textarea>
-        </mat-form-field>
-      </form>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="dialogRef.close()">Cancel</button>
-      <button mat-flat-button color="primary" [disabled]="loading || form.invalid" (click)="onSubmit()">
-        @if (loading) { <mat-spinner diameter="20"></mat-spinner> } @else { Submit Request }
-      </button>
-    </mat-dialog-actions>
-  `,
-  styles: [`.form-field-full { width: 100%; }`]
+  templateUrl: './loan-change-request-dialog.component.html',
+  styleUrl: './loan-change-request-dialog.component.scss'
 })
 export class LoanChangeRequestDialogComponent {
   form: FormGroup;

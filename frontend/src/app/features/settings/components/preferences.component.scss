@@ -1,0 +1,13 @@
+    .hint { color: rgba(0,0,0,0.54); margin-bottom: 24px; }
+    .pref-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 0; border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .pref-info { display: flex; flex-direction: column; }
+    .pref-info strong { margin-bottom: 2px; }
+    .pref-info span { font-size: 13px; color: rgba(0,0,0,0.54); }
+    .save-bar {
+      position: sticky; bottom: 0; background: #fff3e0; padding: 12px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-radius: 4px; margin-top: 16px;
+    }

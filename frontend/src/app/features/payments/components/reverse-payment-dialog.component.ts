@@ -18,26 +18,8 @@ import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
     MatInputModule, MatButtonModule, MatProgressSpinnerModule, CurrencyFormatPipe
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <h2 mat-dialog-title>Reverse Payment</h2>
-    <mat-dialog-content>
-      <p>You are about to reverse a payment of <strong>{{ data.amount | currencyFormat }}</strong>.
-         This will create a compensating transaction.</p>
-      <form [formGroup]="form">
-        <mat-form-field appearance="outline" class="form-field-full">
-          <mat-label>Reason for reversal</mat-label>
-          <textarea matInput formControlName="reason" rows="3"></textarea>
-        </mat-form-field>
-      </form>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="dialogRef.close()">Cancel</button>
-      <button mat-flat-button color="warn" [disabled]="loading || form.invalid" (click)="onSubmit()">
-        @if (loading) { <mat-spinner diameter="20"></mat-spinner> } @else { Reverse Payment }
-      </button>
-    </mat-dialog-actions>
-  `,
-  styles: [`.form-field-full { width: 100%; }`]
+  templateUrl: './reverse-payment-dialog.component.html',
+  styleUrl: './reverse-payment-dialog.component.scss'
 })
 export class ReversePaymentDialogComponent {
   form: FormGroup;

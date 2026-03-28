@@ -1,0 +1,20 @@
+    <nav class="mobile-nav">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <mat-icon>dashboard</mat-icon>
+        <span>Home</span>
+      </a>
+      @if (authService.hasAnyRole(['CREDITOR', 'BORROWER'])) {
+        <a routerLink="/loans" routerLinkActive="active" class="nav-item">
+          <mat-icon>account_balance</mat-icon>
+          <span>Loans</span>
+        </a>
+      }
+      <a routerLink="/notifications" routerLinkActive="active" class="nav-item">
+        <mat-icon>notifications</mat-icon>
+        <span>Alerts</span>
+      </a>
+      <a routerLink="/settings/preferences" routerLinkActive="active" class="nav-item">
+        <mat-icon>settings</mat-icon>
+        <span>Settings</span>
+      </a>
+    </nav>

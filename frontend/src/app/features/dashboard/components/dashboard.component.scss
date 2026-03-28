@@ -1,0 +1,29 @@
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .page-header h1 { margin: 0; }
+    .summary-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;
+    }
+    .summary-card {
+      display: flex; align-items: center; padding: 20px; gap: 16px;
+    }
+    .summary-card mat-icon { font-size: 36px; width: 36px; height: 36px; color: #1565c0; }
+    .summary-card.has-overdue mat-icon { color: #e65100; }
+    .card-content { display: flex; flex-direction: column; }
+    .card-label { font-size: 13px; color: rgba(0,0,0,0.54); }
+    .card-value { font-size: 24px; font-weight: 500; }
+    .freshness { grid-column: 1 / -1; font-size: 12px; color: rgba(0,0,0,0.38); text-align: right; }
+    .section-card { margin-bottom: 24px; }
+    .loan-list { padding: 8px 0; }
+    .loan-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.06);
+      cursor: pointer; transition: background 0.15s;
+    }
+    .loan-row:hover { background: rgba(0,0,0,0.04); }
+    .loan-info { display: flex; flex-direction: column; }
+    .counterparty { font-size: 13px; color: rgba(0,0,0,0.54); }
+    .loan-amount { display: flex; align-items: center; gap: 12px; }
+    .empty-message { text-align: center; color: rgba(0,0,0,0.54); padding: 24px; }
+    .status-chip { font-size: 11px; }
+    @media (max-width: 1279px) { .summary-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 767px) { .summary-grid { grid-template-columns: 1fr; } }
