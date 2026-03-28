@@ -450,6 +450,36 @@ Project-level dev tools to add early:
 - a structured logging formatter for Python
 - optional OpenTelemetry hooks once tracing is introduced
 
+## Playwright Local Verification Workflow
+
+Use Playwright in layers instead of defaulting to the full browser-and-device matrix on every edit:
+
+- Fastest local loop: `npm --prefix e2e run test`
+- Targeted smoke verification: `npm --prefix e2e run test:smoke`
+- Re-run only changed specs: `npm --prefix e2e run test:changed`
+- Re-run only the last failed tests: `npm --prefix e2e run test:last-failed`
+- Responsive checks when layout changes: `npm --prefix e2e run test:responsive`
+- Cross-browser smoke verification: `npm --prefix e2e run test:cross-browser`
+- Full regression only when explicitly needed: `npm --prefix e2e run test:full`
+
+Recommended order of use:
+
+1. Run a single file or grep-targeted command while building the feature.
+2. Run the Chromium-only default command before asking for review.
+3. Run the smoke suite before merging larger feature changes.
+4. Run cross-browser or full regression only for release-risk changes or explicit verification.
+
+Useful direct Playwright commands:
+
+```bash
+npm --prefix e2e exec -- playwright test tests/loans/create-loan.spec.ts --project=chromium-desktop
+npm --prefix e2e exec -- playwright test --grep "creates loan" --project=chromium-desktop
+npm --prefix e2e run test:ui
+npm --prefix e2e run test:debug
+```
+
+The goal is to keep the everyday feedback loop on `chromium-desktop` and reserve the full matrix for deliberate regression checks.
+
 ## Practical Debugging Workflow
 
 For most bugs, use this order:

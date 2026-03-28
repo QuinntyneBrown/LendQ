@@ -16,6 +16,11 @@ Use this baseline when measuring improvement:
 - `e2e/fixtures/auth.fixture.ts` performs UI login in auth-backed fixtures
 - `e2e/fixtures/data.fixture.ts` performs API login and loan creation per test in mutation-heavy flows
 
+Latest post-change verification:
+
+- `test:smoke` completed successfully in `38.43s` on the current local environment
+- `test` (`chromium-desktop`) completed successfully in `562.81s` on the current local environment
+
 ## Files Most Likely To Change
 
 - `e2e/playwright.config.ts`
@@ -29,7 +34,7 @@ Use this baseline when measuring improvement:
 ## 1. Measure Before Changing Anything
 
 - [ ] Capture the current runtime for the full Playwright suite.
-- [ ] Capture the current runtime for a Chromium-only run.
+- [x] Capture the current runtime for a Chromium-only run.
 - [ ] Capture the current runtime for the slowest feature groups: `payments`, `loans`, `responsive`, `auth`, and `users`.
 - [ ] Record the current flake rate from recent local runs and CI runs.
 - [ ] Define target runtime budgets for local development, PR verification, and full regression runs.
@@ -56,17 +61,17 @@ Use this baseline when measuring improvement:
 
 - [x] Implement a clearly documented local default command that runs only `chromium-desktop`.
 - [x] Ensure that a full 5-project run is still available as an explicit command.
-- [ ] Confirm that day-to-day debugging, file targeting, and rapid re-runs all use the Chromium-only path by default.
-- [ ] Update local workflow documentation so the team no longer treats the full matrix as the normal development command.
+- [x] Confirm that day-to-day debugging, file targeting, and rapid re-runs all use the Chromium-only path by default.
+- [x] Update local workflow documentation so the team no longer treats the full matrix as the normal development command.
 
 ## 5. Split The Suite By Purpose
 
 - [x] Add a `smoke` suite for business-critical paths.
-- [ ] Add a `full` suite for complete regression coverage.
+- [x] Add a `full` suite for complete regression coverage.
 - [x] Add a `responsive` suite for viewport and layout coverage.
 - [x] Add a `cross-browser` suite for browser-engine-specific verification.
 - [x] Implement tags or another explicit selection mechanism such as `@smoke`, `@full`, `@responsive`, and `@cross-browser`.
-- [ ] Document which suites run locally, on PRs, on `main`, and on nightly or release verification.
+- [x] Document which suites run locally, on PRs, on `main`, and on nightly or release verification.
 
 ## 6. Restrict Responsive Coverage To The Right Execution Paths
 
@@ -103,8 +108,8 @@ Use this baseline when measuring improvement:
 - [x] Add a script for the smoke suite.
 - [x] Add a script for rerunning only the last failed tests.
 - [x] Add a script or documented command for running only changed tests.
-- [ ] Add documented commands for file-targeted runs, grep-targeted runs, UI mode, and debug mode.
-- [ ] Update developer docs so the expected workflow is: smallest possible scope first, full suite last.
+- [x] Add documented commands for file-targeted runs, grep-targeted runs, UI mode, and debug mode.
+- [x] Update developer docs so the expected workflow is: smallest possible scope first, full suite last.
 
 ## 10. Rework CI Verification Strategy
 

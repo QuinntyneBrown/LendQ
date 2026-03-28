@@ -249,12 +249,25 @@ npm --prefix e2e run test
 Useful variants:
 
 ```bash
+npm --prefix e2e run test:smoke
+npm --prefix e2e run test:changed
+npm --prefix e2e run test:last-failed
+npm --prefix e2e run test:responsive
+npm --prefix e2e run test:cross-browser
+npm --prefix e2e run test:full
 npm --prefix e2e run test:headed
 npm --prefix e2e run test:ui
 npm --prefix e2e run test:chromium
 npm --prefix e2e run test:tablet
 npm --prefix e2e run test:mobile
 ```
+
+Recommended usage:
+
+- `test` is the fast default local loop and runs `chromium-desktop`.
+- `test:smoke` is the business-critical verification path.
+- `test:full` runs the full project matrix.
+- Use file-targeted and `--grep` Playwright commands for the tightest inner loop.
 
 ## Current Integration Notes
 
