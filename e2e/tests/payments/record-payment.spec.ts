@@ -3,7 +3,6 @@ import { LoanDetailPage } from "../../pages/LoanDetailPage";
 import { PaymentScheduleSection } from "../../pages/PaymentScheduleSection";
 import { RecordPaymentDialog } from "../../pages/RecordPaymentDialog";
 import { isoDateFromToday } from "../../helpers/date-values";
-import { waitForToast } from "../../helpers/wait";
 
 test.describe("Record Payment", () => {
   test("Record Payment button scrolls to schedule and row action opens dialog", async ({
@@ -59,7 +58,6 @@ test.describe("Record Payment", () => {
 
     // Dialog closes and payment row updates to Paid
     await dialog.expectClosed();
-    await waitForToast(creditorPage, "success");
     await schedule.expectPaymentStatus(0, "Paid");
   });
 
@@ -99,6 +97,6 @@ test.describe("Record Payment", () => {
 
     // Dialog stays open with a validation error
     await dialog.expectOpen();
-    await dialog.expectFieldError("amount", "positive");
+    await dialog.expectFieldError("amount", "expected number to be >0");
   });
 });

@@ -139,7 +139,7 @@ export function LoanDetailPage() {
           </Card>
         </div>
 
-        <div data-testid="payment-schedule-card">
+        <div id="payment-schedule-card" data-testid="payment-schedule-card">
           <Card className="p-6">
           <h2 className="font-heading text-lg font-bold text-text-primary mb-4">
             Payment Schedule
