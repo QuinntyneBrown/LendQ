@@ -1,0 +1,84 @@
+@namespace LendQ.Client.Components.UI
+
+<nav class="flex items-center justify-between px-4 py-3 sm:px-0" aria-label="Pagination">
+    <div class="flex flex-1 justify-between sm:justify-end gap-2 items-center">
+        <button type="button"
+                class="@(_prevDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50") relative inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors"
+                disabled="@_prevDisabled"
+                @onclick="() => GoToPage(CurrentPage - 1)">
+            Previous
+        </button>
+
+        <div class="hidden sm:flex items-center gap-1">
+            @foreach (var page in _pageNumbers)
+            {
+                if (page == -1)
+                {
+                    <span class="px-2 text-gray-400">...</span>
+                }
+                else
+                {
+                    var p = page;
+                    <button type="button"
+                            class="@(p == CurrentPage ? "bg-indigo-600 text-white" : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300") px-3 py-2 text-sm font-medium rounded-lg transition-colors"
+                            @onclick="() => GoToPage(p)">
+                        @p
+                    </button>
+                }
+            }
+        </div>
+
+        <span class="text-sm text-gray-700 sm:hidden">
+            Page @CurrentPage of @TotalPages
+        </span>
+
+        <button type="button"
+                class="@(_nextDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50") relative inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors"
+                disabled="@_nextDisabled"
+                @onclick="() => GoToPage(CurrentPage + 1)">
+            Next
+        </button>
+    </div>
+</nav>
+
+@code {
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int TotalPages { get; set; }
+    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+
+    private bool _prevDisabled => CurrentPage <= 1;
+    private bool _nextDisabled => CurrentPage >= TotalPages;
+
+    private List<int> _pageNumbers
+    {
+        get
+        {
+            var pages = new List<int>();
+            if (TotalPages <= 7)
+            {
+                for (int i = 1; i <= TotalPages; i++)
+                    pages.Add(i);
+            }
+            else
+            {
+                pages.Add(1);
+                if (CurrentPage > 3) pages.Add(-1);
+
+                var start = Math.Max(2, CurrentPage - 1);
+                var end = Math.Min(TotalPages - 1, CurrentPage + 1);
+                for (int i = start; i <= end; i++)
+                    pages.Add(i);
+
+                if (CurrentPage < TotalPages - 2) pages.Add(-1);
+                pages.Add(TotalPages);
+            }
+            return pages;
+        }
+    }
+
+    private async Task GoToPage(int page)
+    {
+        if (page < 1 || page > TotalPages || page == CurrentPage) return;
+        await OnPageChanged.InvokeAsync(page);
+    }
+}

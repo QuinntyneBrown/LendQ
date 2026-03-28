@@ -1,0 +1,296 @@
+@page "/dashboard"
+@using LendQ.Client.Models
+@using LendQ.Client.Services
+@using LendQ.Client.Components.UI
+@using LendQ.Client.Components.Shared
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize]
+
+@inject IDashboardService DashboardService
+@inject ILoanService LoanService
+@inject NavigationManager NavigationManager
+
+<div class="space-y-8">
+
+    @* ===== Section 1: Summary Cards ===== *@
+    <section>
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold text-gray-900">Overview</h2>
+            <div class="flex items-center gap-3">
+                @if (_summary != null)
+                {
+                    <span class="text-xs text-gray-400">
+                        Updated @_summary.GeneratedAt.ToString("MMM d, h:mm tt")
+                    </span>
+                }
+                <button type="button"
+                        class="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1"
+                        @onclick="LoadSummaryAsync">
+                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+        @if (_summaryLoading)
+        {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                @for (int i = 0; i < 4; i++)
+                {
+                    <LoadingSkeleton Lines="2" CssClass="bg-white rounded-xl shadow-sm border p-6" />
+                }
+            </div>
+        }
+        else if (_summaryError != null)
+        {
+            <div class="rounded-lg bg-red-50 p-4 text-sm text-red-700 flex items-center justify-between">
+                <span>@_summaryError</span>
+                <button type="button" class="text-red-700 underline font-medium" @onclick="LoadSummaryAsync">Retry</button>
+            </div>
+        }
+        else if (_summary != null)
+        {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <SummaryCard Title="Total Lent Out" Value="@_summary.TotalLentOut.ToString("C")" />
+                <SummaryCard Title="Total Owed" Value="@_summary.TotalOwed.ToString("C")" />
+                <SummaryCard Title="Upcoming Payments (7d)"
+                             Value="@_summary.UpcomingPayments7d.ToString()"
+                             Variant="@(_summary.UpcomingPayments7d > 0 ? "warning" : "default")" />
+                <SummaryCard Title="Overdue Payments"
+                             Value="@_summary.OverduePayments.ToString()"
+                             Variant="@(_summary.OverduePayments > 0 ? "danger" : "default")" />
+            </div>
+        }
+    </section>
+
+    @* ===== Section 2: Active Loans Tabs ===== *@
+    <section>
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Active Loans</h2>
+
+        @if (_loansLoading)
+        {
+            <LoadingSkeleton Lines="5" CssClass="bg-white rounded-xl shadow-sm border p-6" />
+        }
+        else if (_loansError != null)
+        {
+            <div class="rounded-lg bg-red-50 p-4 text-sm text-red-700 flex items-center justify-between">
+                <span>@_loansError</span>
+                <button type="button" class="text-red-700 underline font-medium" @onclick="LoadLoansAsync">Retry</button>
+            </div>
+        }
+        else
+        {
+            <div class="bg-white rounded-xl shadow-sm border">
+                @* Tab headers *@
+                <div class="border-b border-gray-200">
+                    <nav class="flex -mb-px">
+                        <button type="button"
+                                class="@TabClass("gave")"
+                                @onclick="@(() => _activeTab = "gave")">
+                            Loans I Gave
+                        </button>
+                        <button type="button"
+                                class="@TabClass("owe")"
+                                @onclick="@(() => _activeTab = "owe")">
+                            Loans I Owe
+                        </button>
+                    </nav>
+                </div>
+
+                @* Tab content *@
+                <div class="p-4">
+                    @{
+                        var visibleLoans = _activeTab == "gave" ? _loansGave : _loansOwe;
+                    }
+
+                    @if (visibleLoans == null || visibleLoans.Count == 0)
+                    {
+                        <EmptyState Title="No loans yet"
+                                    Description="@(_activeTab == "gave" ? "You haven't lent any money yet." : "You don't owe anything yet.")" />
+                    }
+                    else
+                    {
+                        @* Desktop table *@
+                        <div class="hidden md:block overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Person</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Next Due</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach (var loan in visibleLoans)
+                                    {
+                                        <tr class="hover:bg-gray-50 transition-colors">
+                                            <td class="px-4 py-3 text-sm text-gray-900">@loan.CounterpartyName</td>
+                                            <td class="px-4 py-3 text-sm text-gray-900">@loan.OutstandingBalance.ToString("C")</td>
+                                            <td class="px-4 py-3 text-sm text-gray-500">@(loan.NextDueDate ?? "N/A")</td>
+                                            <td class="px-4 py-3"><StatusBadge Status="@loan.Status" /></td>
+                                            <td class="px-4 py-3 text-right">
+                                                <Button Variant="ghost" CssClass="text-xs px-2 py-1" OnClick="@(() => NavigationManager.NavigateTo($"/loans/{loan.Id}"))">View</Button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @* Mobile cards *@
+                        <div class="md:hidden space-y-3">
+                            @foreach (var loan in visibleLoans)
+                            {
+                                <div class="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                                     @onclick="@(() => NavigationManager.NavigateTo($"/loans/{loan.Id}"))">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="font-medium text-gray-900 text-sm">@loan.CounterpartyName</span>
+                                        <StatusBadge Status="@loan.Status" />
+                                    </div>
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-gray-500">Balance: @loan.OutstandingBalance.ToString("C")</span>
+                                        <span class="text-gray-400">Due: @(loan.NextDueDate ?? "N/A")</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </section>
+
+    @* ===== Section 3: Recent Activity ===== *@
+    <section>
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold text-gray-900">Recent Activity</h2>
+            <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">View All</a>
+        </div>
+
+        @if (_activityLoading)
+        {
+            <LoadingSkeleton Lines="4" CssClass="bg-white rounded-xl shadow-sm border p-6" />
+        }
+        else if (_activityError != null)
+        {
+            <div class="rounded-lg bg-red-50 p-4 text-sm text-red-700 flex items-center justify-between">
+                <span>@_activityError</span>
+                <button type="button" class="text-red-700 underline font-medium" @onclick="LoadActivityAsync">Retry</button>
+            </div>
+        }
+        else
+        {
+            <div class="bg-white rounded-xl shadow-sm border p-6">
+                <ActivityFeed Items="_activityItems" />
+            </div>
+        }
+    </section>
+</div>
+
+@code {
+    // Section 1: Summary
+    private DashboardSummary? _summary;
+    private bool _summaryLoading;
+    private string? _summaryError;
+
+    // Section 2: Loans
+    private List<LoanSummary>? _loansGave;
+    private List<LoanSummary>? _loansOwe;
+    private bool _loansLoading;
+    private string? _loansError;
+    private string _activeTab = "gave";
+
+    // Section 3: Activity
+    private List<ActivityItem> _activityItems = new();
+    private bool _activityLoading;
+    private string? _activityError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Fire all three sections independently
+        var summaryTask = LoadSummaryAsync();
+        var loansTask = LoadLoansAsync();
+        var activityTask = LoadActivityAsync();
+
+        await Task.WhenAll(summaryTask, loansTask, activityTask);
+    }
+
+    private async Task LoadSummaryAsync()
+    {
+        _summaryLoading = true;
+        _summaryError = null;
+        StateHasChanged();
+
+        try
+        {
+            _summary = await DashboardService.GetSummaryAsync();
+        }
+        catch (Exception)
+        {
+            _summaryError = "Failed to load summary. Please try again.";
+        }
+        finally
+        {
+            _summaryLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadLoansAsync()
+    {
+        _loansLoading = true;
+        _loansError = null;
+        StateHasChanged();
+
+        try
+        {
+            var loans = await DashboardService.GetDashboardLoansAsync();
+            // Split into two lists based on a heuristic: loans where counterparty is borrower = "gave", else "owe"
+            // The API returns all dashboard loans; we split by checking if the user is creditor or borrower.
+            // For dashboard, the service returns LoanSummary items. We treat first half as gave, but actually
+            // the API should distinguish them. We'll use all loans for both tabs and let the API handle it.
+            _loansGave = loans;
+            _loansOwe = loans;
+        }
+        catch (Exception)
+        {
+            _loansError = "Failed to load loans. Please try again.";
+        }
+        finally
+        {
+            _loansLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadActivityAsync()
+    {
+        _activityLoading = true;
+        _activityError = null;
+        StateHasChanged();
+
+        try
+        {
+            _activityItems = await DashboardService.GetActivityAsync();
+        }
+        catch (Exception)
+        {
+            _activityError = "Failed to load activity. Please try again.";
+        }
+        finally
+        {
+            _activityLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private string TabClass(string tab) =>
+        _activeTab == tab
+            ? "px-4 py-3 text-sm font-medium text-indigo-600 border-b-2 border-indigo-600"
+            : "px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300";
+}

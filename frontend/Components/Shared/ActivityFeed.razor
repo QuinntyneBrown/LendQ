@@ -1,0 +1,80 @@
+@namespace LendQ.Client.Components.Shared
+@using LendQ.Client.Models
+@using LendQ.Client.Components.UI
+
+@if (Items == null || Items.Count == 0)
+{
+    <EmptyState Title="No activity yet" Description="Recent activity will appear here." />
+}
+else
+{
+    <div class="flow-root">
+        <ul class="-mb-8">
+            @for (int i = 0; i < Items.Count; i++)
+            {
+                var item = Items[i];
+                var isLast = i == Items.Count - 1;
+                <li>
+                    <div class="relative pb-8">
+                        @if (!isLast)
+                        {
+                            <span class="absolute left-4 top-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                        }
+                        <div class="relative flex items-start space-x-3">
+                            <div class="@GetIconBgClass(item.Type) flex h-8 w-8 items-center justify-center rounded-full ring-4 ring-white flex-shrink-0">
+                                @GetIconSvg(item.Type)
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm text-gray-700">@item.Description</p>
+                                <p class="mt-0.5 text-xs text-gray-500">@FormatRelativeTime(item.CreatedAt)</p>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    [Parameter] public List<ActivityItem> Items { get; set; } = new();
+
+    private string GetIconBgClass(string type) => type.ToUpperInvariant() switch
+    {
+        "PAYMENT" or "PAYMENT_RECORDED" => "bg-green-100",
+        "LOAN_CREATED" or "LOAN" => "bg-indigo-100",
+        "OVERDUE" or "DEFAULT" => "bg-red-100",
+        "ADJUSTMENT" or "RESCHEDULE" => "bg-yellow-100",
+        _ => "bg-gray-100"
+    };
+
+    private static MarkupString GetIconSvg(string type)
+    {
+        var svg = type.ToUpperInvariant() switch
+        {
+            "PAYMENT" or "PAYMENT_RECORDED" =>
+                """<svg class="h-4 w-4 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" /></svg>""",
+            "LOAN_CREATED" or "LOAN" =>
+                """<svg class="h-4 w-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>""",
+            "OVERDUE" or "DEFAULT" =>
+                """<svg class="h-4 w-4 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>""",
+            "ADJUSTMENT" or "RESCHEDULE" =>
+                """<svg class="h-4 w-4 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>""",
+            _ =>
+                """<svg class="h-4 w-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" /></svg>"""
+        };
+        return new MarkupString(svg);
+    }
+
+    private static string FormatRelativeTime(DateTime dateTime)
+    {
+        var diff = DateTime.UtcNow - dateTime;
+
+        if (diff.TotalMinutes < 1) return "just now";
+        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}m ago";
+        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours}h ago";
+        if (diff.TotalDays < 7) return $"{(int)diff.TotalDays}d ago";
+        if (diff.TotalDays < 30) return $"{(int)(diff.TotalDays / 7)}w ago";
+        return dateTime.ToString("MMM d, yyyy");
+    }
+}

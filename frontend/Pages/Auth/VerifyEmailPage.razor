@@ -1,0 +1,132 @@
+@page "/verify-email"
+@layout LendQ.Client.Layout.AuthLayout
+@using LendQ.Client.Services
+@using LendQ.Client.Components.UI
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject IToastService ToastService
+
+<div class="text-center">
+    @if (_isLoading)
+    {
+        <div class="space-y-4">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center">
+                <svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900">Verifying your email...</h2>
+            <p class="text-sm text-gray-600">Please wait while we confirm your email address.</p>
+        </div>
+    }
+    else if (_isSuccess)
+    {
+        <div class="space-y-4">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                <svg class="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900">Email verified!</h2>
+            <p class="text-sm text-gray-600">Your email has been verified. You can now sign in to your account.</p>
+            <div class="pt-4">
+                <a href="/login"
+                   class="inline-flex items-center justify-center w-full px-4 py-2 rounded-lg font-medium text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    Sign In
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="space-y-4">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900">Verification failed</h2>
+            <p class="text-sm text-gray-600">
+                @(!string.IsNullOrEmpty(_errorMessage) ? _errorMessage : "The verification link is invalid or has expired.")
+            </p>
+
+            @if (!string.IsNullOrEmpty(_email))
+            {
+                <div class="pt-4">
+                    <Button Variant="secondary"
+                            IsLoading="_isResending"
+                            CssClass="w-full"
+                            OnClick="HandleResendVerification">
+                        Resend verification email
+                    </Button>
+                </div>
+            }
+
+            <div class="pt-2">
+                <a href="/login" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                    Back to Sign In
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool _isLoading = true;
+    private bool _isSuccess;
+    private bool _isResending;
+    private string? _errorMessage;
+    private string? _email;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = new Uri(NavigationManager.Uri);
+        var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
+        var token = queryParams["token"];
+        var email = queryParams["email"];
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            _email = email;
+
+            try
+            {
+                await AuthService.ConfirmEmailAsync(token);
+                _isSuccess = true;
+            }
+            catch (Exception)
+            {
+                _errorMessage = "The verification link is invalid or has expired.";
+            }
+        }
+        else
+        {
+            _errorMessage = "No verification token provided.";
+        }
+
+        _isLoading = false;
+    }
+
+    private async Task HandleResendVerification()
+    {
+        if (string.IsNullOrEmpty(_email)) return;
+
+        _isResending = true;
+
+        try
+        {
+            await AuthService.ResendVerificationAsync(_email);
+            ToastService.ShowSuccess("Verification email resent.");
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("Unable to resend verification email. Please try again.");
+        }
+        finally
+        {
+            _isResending = false;
+        }
+    }
+}

@@ -1,0 +1,20 @@
+@namespace LendQ.Client.Components.UI
+
+<Badge Text="@_displayText" Variant="@_variant" />
+
+@code {
+    [Parameter] public string Status { get; set; } = "";
+
+    private string _variant => Status.ToUpperInvariant() switch
+    {
+        "ACTIVE" or "PAID" => "success",
+        "PAUSED" or "SCHEDULED" or "PARTIAL" => "info",
+        "OVERDUE" or "DEFAULTED" => "danger",
+        "RESCHEDULED" => "warning",
+        _ => "default"
+    };
+
+    private string _displayText => string.IsNullOrEmpty(Status)
+        ? "Unknown"
+        : System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Status.ToLowerInvariant());
+}

@@ -1,0 +1,283 @@
+@page "/loans/{Id}/edit"
+@using LendQ.Client.Models
+@using LendQ.Client.Services
+@using LendQ.Client.Components.UI
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@attribute [Authorize(Roles = "CREDITOR")]
+
+@inject ILoanService LoanService
+@inject IUserService UserService
+@inject NavigationManager NavigationManager
+@inject IToastService ToastService
+
+@if (_loading)
+{
+    <div class="max-w-2xl mx-auto">
+        <LoadingSkeleton Lines="10" CssClass="bg-white rounded-xl shadow-sm border p-6" />
+    </div>
+}
+else if (_loadError != null)
+{
+    <div class="max-w-2xl mx-auto rounded-lg bg-red-50 p-4 text-sm text-red-700 flex items-center justify-between">
+        <span>@_loadError</span>
+        <button type="button" class="text-red-700 underline font-medium" @onclick="LoadLoanAsync">Retry</button>
+    </div>
+}
+else
+{
+    <div class="max-w-2xl mx-auto space-y-6">
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-gray-900">Edit Loan</h1>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="rounded-lg bg-red-50 p-4 text-sm text-red-700">
+                @_errorMessage
+            </div>
+        }
+
+        @if (_showConflictDialog)
+        {
+            <div class="rounded-lg bg-yellow-50 border border-yellow-200 p-4">
+                <h3 class="text-sm font-medium text-yellow-800 mb-2">Conflict Detected</h3>
+                <p class="text-sm text-yellow-700 mb-3">
+                    This loan has been modified by someone else since you started editing.
+                    Please refresh to load the latest version before saving.
+                </p>
+                <div class="flex gap-2">
+                    <Button OnClick="RefreshLoan">Refresh and Reload</Button>
+                    <Button Variant="secondary" OnClick="@(() => _showConflictDialog = false)">Dismiss</Button>
+                </div>
+            </div>
+        }
+
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+            <EditForm Model="_model" OnValidSubmit="HandleSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="mb-4 text-sm text-red-600" />
+
+                <div class="space-y-6">
+
+                    @* ===== Borrower (read-only) ===== *@
+                    <fieldset>
+                        <legend class="text-lg font-semibold text-gray-900 mb-3">Borrower</legend>
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700">
+                            @_borrowerName
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500">Borrower cannot be changed after creation.</p>
+                    </fieldset>
+
+                    @* ===== Loan Details Section ===== *@
+                    <fieldset>
+                        <legend class="text-lg font-semibold text-gray-900 mb-3">Loan Details</legend>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <InputText id="description"
+                                           @bind-Value="_model.Description"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                                <ValidationMessage For="() => _model.Description" class="mt-1 text-xs text-red-600" />
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="principal" class="block text-sm font-medium text-gray-700 mb-1">Principal Amount</label>
+                                    <InputNumber id="principal"
+                                                 @bind-Value="_model.PrincipalAmount"
+                                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                                    <ValidationMessage For="() => _model.PrincipalAmount" class="mt-1 text-xs text-red-600" />
+                                </div>
+
+                                <div>
+                                    <label for="currency" class="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                                    <InputSelect id="currency"
+                                                 @bind-Value="_model.Currency"
+                                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                                        <option value="">-- Select Currency --</option>
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                        <option value="GBP">GBP</option>
+                                    </InputSelect>
+                                    <ValidationMessage For="() => _model.Currency" class="mt-1 text-xs text-red-600" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="interest" class="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%)</label>
+                                <InputNumber id="interest"
+                                             @bind-Value="_model.InterestRatePercent"
+                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                                <p class="mt-1 text-xs text-gray-500">Leave blank for interest-free loans.</p>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    @* ===== Repayment Section ===== *@
+                    <fieldset>
+                        <legend class="text-lg font-semibold text-gray-900 mb-3">Repayment</legend>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="frequency" class="block text-sm font-medium text-gray-700 mb-1">Repayment Frequency</label>
+                                <InputSelect id="frequency"
+                                             @bind-Value="_model.RepaymentFrequency"
+                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                                    <option value="">-- Select Frequency --</option>
+                                    <option value="WEEKLY">Weekly</option>
+                                    <option value="BIWEEKLY">Bi-Weekly</option>
+                                    <option value="MONTHLY">Monthly</option>
+                                    <option value="QUARTERLY">Quarterly</option>
+                                    <option value="ANNUALLY">Annually</option>
+                                    <option value="ONE_TIME">One-Time</option>
+                                </InputSelect>
+                                <ValidationMessage For="() => _model.RepaymentFrequency" class="mt-1 text-xs text-red-600" />
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="installments" class="block text-sm font-medium text-gray-700 mb-1">Installment Count</label>
+                                    <InputNumber id="installments"
+                                                 @bind-Value="_model.InstallmentCount"
+                                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                                    <p class="mt-1 text-xs text-gray-500">Or specify a maturity date instead.</p>
+                                </div>
+
+                                <div>
+                                    <label for="maturity" class="block text-sm font-medium text-gray-700 mb-1">Maturity Date</label>
+                                    <InputText id="maturity"
+                                               @bind-Value="_model.MaturityDate"
+                                               type="date"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="start-date" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                                <InputText id="start-date"
+                                           @bind-Value="_model.StartDate"
+                                           type="date"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                                <ValidationMessage For="() => _model.StartDate" class="mt-1 text-xs text-red-600" />
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    @* ===== Notes Section ===== *@
+                    <fieldset>
+                        <legend class="text-lg font-semibold text-gray-900 mb-3">Additional Notes</legend>
+                        <div>
+                            <InputTextArea @bind-Value="_model.Notes"
+                                           rows="4"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                           placeholder="Any additional notes about this loan..." />
+                        </div>
+                    </fieldset>
+
+                    @* ===== Actions ===== *@
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+                        <Button Variant="secondary" OnClick="@(() => NavigationManager.NavigateTo($"/loans/{Id}"))">Cancel</Button>
+                        <Button Type="submit" IsLoading="_isSubmitting">Save Changes</Button>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+
+    private LoanFormModel _model = new();
+    private bool _loading;
+    private string? _loadError;
+    private string? _errorMessage;
+    private bool _isSubmitting;
+    private int _expectedTermsVersion;
+    private string _borrowerName = "";
+    private bool _showConflictDialog;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLoanAsync();
+    }
+
+    private async Task LoadLoanAsync()
+    {
+        _loading = true;
+        _loadError = null;
+        _showConflictDialog = false;
+        StateHasChanged();
+
+        try
+        {
+            var loan = await LoanService.GetLoanDetailAsync(Id);
+
+            _expectedTermsVersion = loan.CurrentTermsVersion.Version;
+            _borrowerName = $"{loan.Borrower.Name} ({loan.Borrower.Email})";
+
+            _model = new LoanFormModel
+            {
+                BorrowerId = loan.Borrower.Id,
+                Description = loan.Description,
+                PrincipalAmount = loan.PrincipalAmount,
+                Currency = loan.CurrentTermsVersion.Currency ?? "",
+                InterestRatePercent = loan.CurrentTermsVersion.InterestRatePercent,
+                RepaymentFrequency = loan.CurrentTermsVersion.RepaymentFrequency ?? "",
+                InstallmentCount = loan.CurrentTermsVersion.InstallmentCount,
+                MaturityDate = loan.CurrentTermsVersion.MaturityDate,
+                StartDate = "",
+                Notes = null
+            };
+        }
+        catch (Exception)
+        {
+            _loadError = "Failed to load loan details. Please try again.";
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (_isSubmitting) return;
+
+        _errorMessage = null;
+        _isSubmitting = true;
+
+        try
+        {
+            await LoanService.UpdateLoanAsync(Id, _model, _expectedTermsVersion);
+            ToastService.ShowSuccess("Loan updated successfully.");
+            NavigationManager.NavigateTo($"/loans/{Id}");
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            _showConflictDialog = true;
+            _errorMessage = null;
+        }
+        catch (HttpRequestException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            _errorMessage = "An unexpected error occurred. Please try again.";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private async Task RefreshLoan()
+    {
+        _showConflictDialog = false;
+        _errorMessage = null;
+        await LoadLoanAsync();
+    }
+}

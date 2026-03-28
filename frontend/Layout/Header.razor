@@ -1,0 +1,129 @@
+@using LendQ.Client.Services
+@using LendQ.Client.Models
+@inject IAuthService AuthService
+@inject INotificationService NotificationService
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<header class="flex items-center justify-between h-16 px-4 md:px-6 bg-white border-b border-gray-200">
+    @* Left: hamburger + page area *@
+    <div class="flex items-center gap-3">
+        <button @onclick="OnToggleSidebar" class="lg:hidden text-gray-500 hover:text-gray-700 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+        </button>
+    </div>
+
+    @* Right: notification bell + user menu *@
+    <div class="flex items-center gap-4">
+        @* Notification bell *@
+        <a href="/notifications" class="relative text-gray-500 hover:text-gray-700 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+            </svg>
+            @if (_unreadCount > 0)
+            {
+                <span class="absolute -top-1 -right-1 flex items-center justify-center h-5 min-w-[1.25rem] px-1 text-xs font-bold text-white bg-red-500 rounded-full">
+                    @(_unreadCount > 99 ? "99+" : _unreadCount)
+                </span>
+            }
+        </a>
+
+        @* User avatar / name with dropdown *@
+        <div class="relative">
+            <button @onclick="ToggleUserMenu" class="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 focus:outline-none">
+                <div class="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 font-semibold text-sm">
+                    @_initials
+                </div>
+                <span class="hidden md:inline font-medium">@_userName</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="hidden md:inline h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+            </button>
+
+            @if (_isUserMenuOpen)
+            {
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                    <a href="/settings/preferences" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                    <hr class="my-1 border-gray-200" />
+                    <button @onclick="HandleLogout" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600">
+                        Log out
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+</header>
+
+@code {
+    [Parameter]
+    public EventCallback OnToggleSidebar { get; set; }
+
+    private int _unreadCount;
+    private string _userName = "";
+    private string _initials = "";
+    private bool _isUserMenuOpen;
+
+    protected override void OnInitialized()
+    {
+        _unreadCount = NotificationService.UnreadCount;
+        NotificationService.OnChange += HandleNotificationChange;
+        AuthService.OnChange += HandleAuthChange;
+        UpdateUserInfo();
+    }
+
+    private void UpdateUserInfo()
+    {
+        var user = AuthService.CurrentUser;
+        if (user is not null)
+        {
+            _userName = user.Name;
+            _initials = GetInitials(user.Name);
+        }
+        else
+        {
+            _userName = "User";
+            _initials = "U";
+        }
+    }
+
+    private static string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "U";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
+        return parts[0][0].ToString().ToUpper();
+    }
+
+    private void HandleNotificationChange()
+    {
+        _unreadCount = NotificationService.UnreadCount;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void HandleAuthChange()
+    {
+        UpdateUserInfo();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleUserMenu()
+    {
+        _isUserMenuOpen = !_isUserMenuOpen;
+    }
+
+    private async Task HandleLogout()
+    {
+        _isUserMenuOpen = false;
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+    public void Dispose()
+    {
+        NotificationService.OnChange -= HandleNotificationChange;
+        AuthService.OnChange -= HandleAuthChange;
+    }
+}

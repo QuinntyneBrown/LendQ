@@ -1,0 +1,158 @@
+@page "/signup"
+@layout LendQ.Client.Layout.AuthLayout
+@using LendQ.Client.Models
+@using LendQ.Client.Services
+@using LendQ.Client.Components.UI
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject IToastService ToastService
+
+<div>
+    @if (_showVerificationMessage)
+    {
+        <div class="text-center space-y-4">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100">
+                <svg class="h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900">Check your email</h2>
+            <p class="text-sm text-gray-600">
+                We've sent a verification link to <span class="font-medium text-gray-900">@_model.Email</span>.
+            </p>
+            <p class="text-sm text-gray-500">
+                Click the link in the email to verify your account and get started.
+            </p>
+
+            <div class="pt-4">
+                <Button Variant="secondary"
+                        IsLoading="_isResending"
+                        CssClass="w-full"
+                        OnClick="HandleResendVerification">
+                    Resend verification email
+                </Button>
+            </div>
+
+            <p class="text-sm text-gray-600 pt-2">
+                <a href="/login" class="font-medium text-indigo-600 hover:text-indigo-500">Back to Sign In</a>
+            </p>
+        </div>
+    }
+    else
+    {
+        <h2 class="text-center text-2xl font-bold text-gray-900 mb-6">Create your account</h2>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-700">
+                @_errorMessage
+            </div>
+        }
+
+        <EditForm Model="_model" OnValidSubmit="HandleSubmit" FormName="signup">
+            <DataAnnotationsValidator />
+
+            <div class="space-y-4">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <InputText id="name"
+                               @bind-Value="_model.Name"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                               placeholder="John Doe" />
+                    <ValidationMessage For="() => _model.Name" class="mt-1 text-xs text-red-600" />
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <InputText id="email"
+                               @bind-Value="_model.Email"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                               placeholder="you@example.com" />
+                    <ValidationMessage For="() => _model.Email" class="mt-1 text-xs text-red-600" />
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <InputText id="password"
+                               type="password"
+                               @bind-Value="_model.Password"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                               placeholder="At least 8 characters" />
+                    <ValidationMessage For="() => _model.Password" class="mt-1 text-xs text-red-600" />
+                </div>
+
+                <div>
+                    <label for="confirm-password" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                    <InputText id="confirm-password"
+                               type="password"
+                               @bind-Value="_model.ConfirmPassword"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                               placeholder="Re-enter your password" />
+                    <ValidationMessage For="() => _model.ConfirmPassword" class="mt-1 text-xs text-red-600" />
+                </div>
+
+                <Button Type="submit" IsLoading="_isSubmitting" CssClass="w-full">
+                    Create Account
+                </Button>
+            </div>
+        </EditForm>
+
+        <p class="mt-6 text-center text-sm text-gray-600">
+            Already have an account?
+            <a href="/login" class="font-medium text-indigo-600 hover:text-indigo-500">Sign In</a>
+        </p>
+    }
+</div>
+
+@code {
+    private SignUpFormModel _model = new();
+    private bool _isSubmitting;
+    private bool _isResending;
+    private bool _showVerificationMessage;
+    private string? _errorMessage;
+
+    private async Task HandleSubmit()
+    {
+        _errorMessage = null;
+        _isSubmitting = true;
+
+        try
+        {
+            await AuthService.SignUpAsync(_model.Name, _model.Email, _model.Password, _model.ConfirmPassword);
+            _showVerificationMessage = true;
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = "Unable to create account. Please try again.";
+        }
+        catch (Exception)
+        {
+            _errorMessage = "An unexpected error occurred. Please try again.";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private async Task HandleResendVerification()
+    {
+        _isResending = true;
+
+        try
+        {
+            await AuthService.ResendVerificationAsync(_model.Email);
+            ToastService.ShowSuccess("Verification email resent.");
+        }
+        catch (Exception)
+        {
+            ToastService.ShowError("Unable to resend verification email. Please try again.");
+        }
+        finally
+        {
+            _isResending = false;
+        }
+    }
+}

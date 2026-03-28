@@ -1,0 +1,16 @@
+@namespace LendQ.Client.Components.UI
+
+<div class="@CssClass space-y-3">
+    @for (int i = 0; i < Lines; i++)
+    {
+        var width = _widths[i % _widths.Length];
+        <div class="animate-pulse bg-gray-200 rounded h-4" style="width: @width"></div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Lines { get; set; } = 3;
+    [Parameter] public string CssClass { get; set; } = "";
+
+    private readonly string[] _widths = { "100%", "85%", "70%", "90%", "60%" };
+}
