@@ -25,6 +25,7 @@ test.describe("L2-2.2: Add/Edit User Dialog", () => {
     await userList.clickAddUser();
     await dialog.fillName("New Test User");
     await dialog.fillEmail(`newuser_${Date.now()}@family.com`);
+    await dialog.fillPassword("Password123!");
     await dialog.selectRoles(["Borrower"]);
     await dialog.clickSave();
     await dialog.expectClosed();
@@ -35,6 +36,7 @@ test.describe("L2-2.2: Add/Edit User Dialog", () => {
     await userList.clickAddUser();
     await dialog.fillName("Toast Test User");
     await dialog.fillEmail(`toast_${Date.now()}@family.com`);
+    await dialog.fillPassword("Password123!");
     await dialog.selectRoles(["Borrower"]);
     await dialog.clickSave();
     await toast.expectToast("success", "created");
@@ -45,6 +47,7 @@ test.describe("L2-2.2: Add/Edit User Dialog", () => {
     await userList.clickAddUser();
     await dialog.fillName("Refresh Test User");
     await dialog.fillEmail(`refresh_${Date.now()}@family.com`);
+    await dialog.fillPassword("Password123!");
     await dialog.selectRoles(["Borrower"]);
     await dialog.clickSave();
     await dialog.expectClosed();
@@ -74,12 +77,14 @@ test.describe("L2-2.2: Add/Edit User Dialog", () => {
     await dialog.clickSave();
     await dialog.expectFieldError("name", "required");
     await dialog.expectFieldError("email", "required");
+    await dialog.expectFieldError("role_ids", "required");
   });
 
   test("shows inline error for duplicate email", async () => {
     await userList.clickAddUser();
     await dialog.fillName("Duplicate User");
     await dialog.fillEmail("creditor@family.com");
+    await dialog.fillPassword("Password123!");
     await dialog.selectRoles(["Borrower"]);
     await dialog.clickSave();
     await dialog.expectFieldError("email", "already exists");
@@ -102,6 +107,7 @@ test.describe("L2-2.2: Add/Edit User Dialog", () => {
     await userList.clickAddUser();
     await dialog.fillName("Loading Test");
     await dialog.fillEmail(`loading_${Date.now()}@family.com`);
+    await dialog.fillPassword("Password123!");
     await dialog.selectRoles(["Borrower"]);
     await dialog.clickSave();
     await dialog.expectSaving();

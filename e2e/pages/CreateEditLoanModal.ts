@@ -11,6 +11,7 @@ export class CreateEditLoanModal {
   readonly principalInput: Locator;
   readonly interestRateInput: Locator;
   readonly frequencySelect: Locator;
+  readonly numPaymentsInput: Locator;
   readonly startDateInput: Locator;
   readonly notesTextarea: Locator;
   readonly saveButton: Locator;
@@ -28,6 +29,7 @@ export class CreateEditLoanModal {
     this.principalInput = this.dialog.getByLabel(/Principal/i);
     this.interestRateInput = this.dialog.getByLabel(/Interest Rate/i);
     this.frequencySelect = this.dialog.getByLabel(/Repayment Frequency/i);
+    this.numPaymentsInput = this.dialog.getByLabel(/Installment Count/i);
     this.startDateInput = this.dialog.getByLabel(/Start Date/i);
     this.notesTextarea = this.dialog.getByLabel(/Notes/i);
     this.saveButton = this.dialog.getByRole("button", { name: /Create Loan|Save/i });
@@ -57,6 +59,11 @@ export class CreateEditLoanModal {
 
   async selectFrequency(freq: string) {
     await this.frequencySelect.selectOption(freq);
+  }
+
+  async fillNumPayments(value: string) {
+    await this.numPaymentsInput.clear();
+    await this.numPaymentsInput.fill(value);
   }
 
   async fillStartDate(date: string) {

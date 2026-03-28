@@ -12,29 +12,35 @@ test.describe("End-to-end: Admin user management @smoke", () => {
     const deleteDialog = new DeleteUserDialog(adminPage);
     const toast = new ToastComponent(adminPage);
 
-    const uniqueEmail = `e2euser_${Date.now()}@family.com`;
+    const suffix = Date.now();
+    const uniqueName = `E2E Test User ${suffix}`;
+    const uniqueEmail = `e2euser_${suffix}@family.com`;
 
     // Step 1: Create user
     await userList.goto();
     await userList.clickAddUser();
-    await addDialog.fillName("E2E Test User");
+    await addDialog.fillName(uniqueName);
     await addDialog.fillEmail(uniqueEmail);
+    await addDialog.fillPassword("Password123!");
     await addDialog.selectRoles(["Borrower"]);
     await addDialog.clickSave();
     await addDialog.expectClosed();
     await toast.expectToast("success", "created");
 
     // Step 2: Verify in list
-    await userList.search("E2E Test User");
-    await expect(userList.userRows.first()).toContainText("E2E Test User");
+    await userList.search(uniqueName);
+    await expect(userList.userRows.first()).toContainText(uniqueName);
 
     // Step 3: Edit user roles
     await userList.clickEditUser(0);
     await addDialog.expectOpen();
-    await addDialog.selectRoles(["Creditor"]);
+    const updatedName = `${uniqueName} Updated`;
+    await addDialog.fillName(updatedName);
     await addDialog.clickSave();
     await addDialog.expectClosed();
     await toast.expectToast("success", "updated");
+    await userList.search(updatedName);
+    await expect(userList.userRows.first()).toContainText(updatedName);
 
     // Step 4: Deactivate user
     await userList.clickDeleteUser(0);

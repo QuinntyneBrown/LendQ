@@ -8,11 +8,9 @@ import { Input } from "@/ui/Input";
 import { Toggle } from "@/ui/Toggle";
 import { Button } from "@/ui/Button";
 import { useToast } from "@/notifications/useToast";
-import { useCreateUser, useUpdateUser } from "./hooks";
+import { useCreateUser, useRoles, useUpdateUser } from "./hooks";
 import { userSchema } from "./schemas";
 import type { UserFormData } from "./schemas";
-
-const AVAILABLE_ROLES = ["Admin", "Creditor", "Borrower"] as const;
 
 interface AddEditUserDialogProps {
   open: boolean;
@@ -25,6 +23,7 @@ export function AddEditUserDialog({ open, onClose, user, onSuccess }: AddEditUse
   const toast = useToast();
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
+  const rolesQuery = useRoles();
 
   const {
     register,
@@ -39,7 +38,8 @@ export function AddEditUserDialog({ open, onClose, user, onSuccess }: AddEditUse
     defaultValues: {
       name: "",
       email: "",
-      roles: [],
+      password: "",
+      role_ids: [],
       is_active: true,
     },
   });
@@ -50,23 +50,24 @@ export function AddEditUserDialog({ open, onClose, user, onSuccess }: AddEditUse
         reset({
           name: user.name,
           email: user.email,
-          roles: user.roles.map((r) => r.name),
+          password: "",
+          role_ids: user.roles.map((r) => r.id),
           is_active: user.is_active,
         });
       } else {
-        reset({ name: "", email: "", roles: [], is_active: true });
+        reset({ name: "", email: "", password: "", role_ids: [], is_active: true });
       }
     }
   }, [open, user, reset]);
 
-  const selectedRoles = watch("roles");
+  const selectedRoleIds = watch("role_ids");
   const isActive = watch("is_active");
-  const isPending = createUser.isPending || updateUser.isPending;
+  const isPending = createUser.isPending || updateUser.isPending || rolesQuery.isLoading;
 
-  function handleRoleToggle(role: string, checked: boolean) {
-    const current = selectedRoles ?? [];
-    const next = checked ? [...current, role] : current.filter((r) => r !== role);
-    setValue("roles", next, { shouldValidate: true });
+  function handleRoleToggle(roleId: string, checked: boolean) {
+    const current = selectedRoleIds ?? [];
+    const next = checked ? [...current, roleId] : current.filter((value) => value !== roleId);
+    setValue("role_ids", next, { shouldValidate: true });
   }
 
   function handleError(err: unknown) {
@@ -89,7 +90,13 @@ export function AddEditUserDialog({ open, onClose, user, onSuccess }: AddEditUse
   function onSubmit(data: UserFormData) {
     if (user) {
       updateUser.mutate(
-        { id: user.id, ...data },
+        {
+          id: user.id,
+          name: data.name,
+          email: data.email,
+          role_ids: data.role_ids,
+          is_active: data.is_active,
+        },
         {
           onSuccess: () => {
             toast.success("User updated successfully");
@@ -100,14 +107,27 @@ export function AddEditUserDialog({ open, onClose, user, onSuccess }: AddEditUse
         },
       );
     } else {
-      createUser.mutate(data, {
-        onSuccess: () => {
-          toast.success("User created successfully");
-          onClose();
-          onSuccess();
+      if (!data.password || data.password.length < 8) {
+        setError("password", { message: "Password must be at least 8 characters" });
+        return;
+      }
+
+      createUser.mutate(
+        {
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          role_ids: data.role_ids,
         },
-        onError: handleError,
-      });
+        {
+          onSuccess: () => {
+            toast.success("User created successfully");
+            onClose();
+            onSuccess();
+          },
+          onError: handleError,
+        },
+      );
     }
   }
 
@@ -144,33 +164,43 @@ export function AddEditUserDialog({ open, onClose, user, onSuccess }: AddEditUse
           {...register("email")}
           error={errors.email?.message}
         />
+        {!user && (
+          <Input
+            label="Password"
+            type="password"
+            {...register("password")}
+            error={errors.password?.message}
+          />
+        )}
         <fieldset className="flex flex-col gap-2">
           <legend className="text-text-secondary text-[13px] font-medium font-body mb-1">
             Role
           </legend>
-          {AVAILABLE_ROLES.map((role) => (
-            <label key={role} className="inline-flex items-center gap-2 cursor-pointer">
+          {rolesQuery.data?.map((role) => (
+            <label key={role.id} className="inline-flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
-                checked={selectedRoles?.includes(role) ?? false}
-                onChange={(e) => handleRoleToggle(role, e.target.checked)}
+                checked={selectedRoleIds?.includes(role.id) ?? false}
+                onChange={(e) => handleRoleToggle(role.id, e.target.checked)}
                 className="rounded border-border-strong text-primary focus:ring-primary/30"
               />
-              <span className="font-body text-sm text-text-primary">{role}</span>
+              <span className="font-body text-sm text-text-primary">{role.name}</span>
             </label>
           ))}
-          {errors.roles && (
-            <p data-testid="error-roles" className="text-danger-text text-xs font-body">
-              {errors.roles.message}
+          {errors.role_ids && (
+            <p data-testid="error-role_ids" className="text-danger-text text-xs font-body">
+              {errors.role_ids.message}
             </p>
           )}
         </fieldset>
-        <Toggle
-          label="Active Status"
-          description="Inactive users cannot log in to the system"
-          checked={isActive}
-          onChange={(checked) => setValue("is_active", checked)}
-        />
+        {user && (
+          <Toggle
+            label="Active Status"
+            description="Inactive users cannot log in to the system"
+            checked={isActive}
+            onChange={(checked) => setValue("is_active", checked)}
+          />
+        )}
       </form>
     </Modal>
   );

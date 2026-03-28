@@ -3,12 +3,14 @@ import { LoanDetailPage } from "../../pages/LoanDetailPage";
 import { PaymentScheduleSection } from "../../pages/PaymentScheduleSection";
 import { RecordPaymentDialog } from "../../pages/RecordPaymentDialog";
 import { ToastComponent } from "../../pages/ToastComponent";
+import { isoDateFromToday } from "../../helpers/date-values";
 
 test.describe("L2-4.4: Record Payment / Lump Sum Dialog", () => {
   let detail: LoanDetailPage;
   let schedule: PaymentScheduleSection;
   let dialog: RecordPaymentDialog;
   let toast: ToastComponent;
+  const paymentDate = isoDateFromToday();
 
   test.beforeEach(async ({ creditorPage, seededLoanId }) => {
     detail = new LoanDetailPage(creditorPage);
@@ -41,7 +43,7 @@ test.describe("L2-4.4: Record Payment / Lump Sum Dialog", () => {
 
   test("records exact scheduled amount", async () => {
     await schedule.clickRecordPayment(0);
-    await dialog.fillDate("2025-04-01");
+    await dialog.fillDate(paymentDate);
     await dialog.clickRecord();
     await dialog.expectClosed();
     await toast.expectToast("success", "Payment recorded");
@@ -50,7 +52,7 @@ test.describe("L2-4.4: Record Payment / Lump Sum Dialog", () => {
   test("records partial payment", async () => {
     await schedule.clickRecordPayment(0);
     await dialog.fillAmount("100");
-    await dialog.fillDate("2025-04-01");
+    await dialog.fillDate(paymentDate);
     await dialog.clickRecord();
     await dialog.expectClosed();
     await toast.expectToast("success", "recorded");
@@ -59,7 +61,7 @@ test.describe("L2-4.4: Record Payment / Lump Sum Dialog", () => {
   test("records lump-sum payment", async () => {
     await schedule.clickRecordPayment(0);
     await dialog.fillAmount("1000");
-    await dialog.fillDate("2025-04-01");
+    await dialog.fillDate(paymentDate);
     await dialog.clickRecord();
     await dialog.expectClosed();
     await toast.expectToast("success", "recorded");
@@ -74,21 +76,21 @@ test.describe("L2-4.4: Record Payment / Lump Sum Dialog", () => {
   test("updates loan status to Paid Off when balance reaches zero", async () => {
     await schedule.clickRecordPayment(0);
     await dialog.fillAmount("5000");
-    await dialog.fillDate("2025-04-01");
+    await dialog.fillDate(paymentDate);
     await dialog.clickRecord();
     await expect(detail.statusBadge).toContainText("Paid Off");
   });
 
   test("shows success toast after recording", async () => {
     await schedule.clickRecordPayment(0);
-    await dialog.fillDate("2025-04-01");
+    await dialog.fillDate(paymentDate);
     await dialog.clickRecord();
     await toast.expectToast("success", "recorded");
   });
 
   test("refreshes schedule and loan detail after recording", async () => {
     await schedule.clickRecordPayment(0);
-    await dialog.fillDate("2025-04-01");
+    await dialog.fillDate(paymentDate);
     await dialog.clickRecord();
     await dialog.expectClosed();
     await schedule.expectPaymentStatus(0, "Paid");
@@ -110,7 +112,7 @@ test.describe("L2-4.4: Record Payment / Lump Sum Dialog", () => {
 
   test("prevents duplicate submission", async () => {
     await schedule.clickRecordPayment(0);
-    await dialog.fillDate("2025-04-01");
+    await dialog.fillDate(paymentDate);
     await dialog.clickRecord();
     await dialog.expectRecording();
   });

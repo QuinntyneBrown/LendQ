@@ -19,7 +19,7 @@ interface CreateEditLoanModalProps {
   open: boolean;
   onClose: () => void;
   loan?: Loan;
-  onSuccess?: () => void;
+  onSuccess?: (loan?: Loan) => void;
 }
 
 const frequencyOptions = [
@@ -43,6 +43,7 @@ export function CreateEditLoanModal({
   const {
     register,
     handleSubmit,
+    setError,
     setValue,
     watch,
     reset,
@@ -55,6 +56,7 @@ export function CreateEditLoanModal({
       principal: undefined as unknown as number,
       interest_rate: 0,
       repayment_frequency: "MONTHLY",
+      num_payments: undefined,
       start_date: "",
       notes: "",
     },
@@ -69,6 +71,7 @@ export function CreateEditLoanModal({
           principal: loan.principal,
           interest_rate: loan.interest_rate,
           repayment_frequency: loan.repayment_frequency,
+          num_payments: undefined,
           start_date: loan.start_date,
           notes: loan.notes || "",
         });
@@ -79,6 +82,7 @@ export function CreateEditLoanModal({
           principal: undefined as unknown as number,
           interest_rate: 0,
           repayment_frequency: "MONTHLY",
+          num_payments: undefined,
           start_date: "",
           notes: "",
         });
@@ -89,20 +93,27 @@ export function CreateEditLoanModal({
   const borrowerId = watch("borrower_id");
 
   const onSubmit = (data: FormValues) => {
+    if (!isEdit && (!data.num_payments || Number.isNaN(data.num_payments))) {
+      setError("num_payments", { message: "Installment count is required" });
+      return;
+    }
+
     if (isEdit) {
+      const { num_payments, ...updateData } = data;
+      void num_payments;
       updateMutation.mutate(
-        { id: loan.id, ...data } as Record<string, unknown> & { id: string },
+        { id: loan.id, ...updateData } as Record<string, unknown> & { id: string },
         {
-          onSuccess: () => {
-            onSuccess?.();
+          onSuccess: (updatedLoan) => {
+            onSuccess?.(updatedLoan);
             onClose();
           },
         },
       );
     } else {
       createMutation.mutate(data as unknown as Record<string, unknown>, {
-        onSuccess: () => {
-          onSuccess?.();
+        onSuccess: (createdLoan) => {
+          onSuccess?.(createdLoan);
           onClose();
         },
       });
@@ -183,6 +194,18 @@ export function CreateEditLoanModal({
             }
             error={errors.repayment_frequency?.message}
           />
+          {!isEdit && (
+            <Input
+              label="Installment Count"
+              type="number"
+              step="1"
+              {...register("num_payments", { valueAsNumber: true })}
+              error={errors.num_payments?.message}
+            />
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Start Date"
             icon={Calendar}

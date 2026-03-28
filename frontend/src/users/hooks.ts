@@ -15,7 +15,7 @@ export function useUsers(page: number, search: string) {
 export function useCreateUser() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { name: string; email: string; roles: string[]; is_active: boolean }) =>
+    mutationFn: (data: { name: string; email: string; password: string; role_ids: string[] }) =>
       apiPost<User>("/users", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -26,7 +26,16 @@ export function useCreateUser() {
 export function useUpdateUser() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: { id: string; name: string; email: string; roles: string[]; is_active: boolean }) =>
+    mutationFn: ({
+      id,
+      ...data
+    }: {
+      id: string;
+      name: string;
+      email: string;
+      role_ids: string[];
+      is_active: boolean;
+    }) =>
       apiPut<User>(`/users/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });

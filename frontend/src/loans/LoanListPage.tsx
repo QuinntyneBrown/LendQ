@@ -155,6 +155,11 @@ export function LoanListPage() {
       <CreateEditLoanModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
+        onSuccess={(loan) => {
+          if (loan?.id) {
+            navigate(`/loans/${loan.id}`);
+          }
+        }}
       />
     </div>
   );

@@ -6,7 +6,7 @@ export class AddEditUserDialog {
   readonly titleText: Locator;
   readonly nameInput: Locator;
   readonly emailInput: Locator;
-  readonly roleSelect: Locator;
+  readonly passwordInput: Locator;
   readonly activeToggle: Locator;
   readonly saveButton: Locator;
   readonly cancelButton: Locator;
@@ -18,7 +18,7 @@ export class AddEditUserDialog {
     this.titleText = this.dialog.getByRole("heading");
     this.nameInput = this.dialog.getByLabel("Full Name");
     this.emailInput = this.dialog.getByLabel("Email Address");
-    this.roleSelect = this.dialog.getByLabel("Role");
+    this.passwordInput = this.dialog.getByLabel("Password");
     this.activeToggle = this.dialog.getByLabel(/Active/i);
     this.saveButton = this.dialog.getByRole("button", { name: /Save/i });
     this.cancelButton = this.dialog.getByRole("button", { name: "Cancel" });
@@ -35,9 +35,14 @@ export class AddEditUserDialog {
     await this.emailInput.fill(email);
   }
 
+  async fillPassword(password: string) {
+    await this.passwordInput.clear();
+    await this.passwordInput.fill(password);
+  }
+
   async selectRoles(roles: string[]) {
     for (const role of roles) {
-      await this.dialog.getByLabel(role).check();
+      await this.dialog.getByLabel(role, { exact: true }).check();
     }
   }
 

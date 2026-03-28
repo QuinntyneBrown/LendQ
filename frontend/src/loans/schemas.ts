@@ -6,6 +6,7 @@ export const createLoanSchema = z.object({
   principal: z.number({ error: "Principal is required" }).positive("Principal must be positive").max(999999.99, "Principal must be at most $999,999.99"),
   interest_rate: z.number().min(0).max(100).optional(),
   repayment_frequency: z.enum(["WEEKLY", "BIWEEKLY", "MONTHLY", "CUSTOM"]),
+  num_payments: z.number().int().positive().optional(),
   start_date: z.string().min(1, "Start date is required"),
   notes: z.string().max(2000, "Notes must be at most 2000 characters").optional(),
 });

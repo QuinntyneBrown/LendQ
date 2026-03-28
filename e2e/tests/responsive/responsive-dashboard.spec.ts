@@ -1,4 +1,4 @@
-import { test, expect } from "../../fixtures/auth.fixture";
+import { test, expect } from "../../fixtures/data.fixture";
 import { DashboardPage } from "../../pages/DashboardPage";
 import { VIEWPORTS } from "../../fixtures/viewport.fixture";
 
@@ -29,14 +29,16 @@ test.describe("Dashboard responsive layouts @responsive", () => {
     await expect(dashboard.overduePayments).toBeVisible();
   });
 
-  test("desktop: active loans as data table", async ({ creditorPage }) => {
+  test("desktop: active loans as data table", async ({ creditorPage, seededLoanId }) => {
+    void seededLoanId;
     await creditorPage.setViewportSize(VIEWPORTS.desktop);
     const dashboard = new DashboardPage(creditorPage);
     await dashboard.goto();
     await expect(dashboard.loanRows.first()).toBeVisible();
   });
 
-  test("mobile: active loans as card list", async ({ creditorPage }) => {
+  test("mobile: active loans as card list", async ({ creditorPage, seededLoanId }) => {
+    void seededLoanId;
     await creditorPage.setViewportSize(VIEWPORTS.mobile);
     const dashboard = new DashboardPage(creditorPage);
     await dashboard.goto();

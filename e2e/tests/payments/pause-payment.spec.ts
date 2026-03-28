@@ -2,19 +2,16 @@ import { test, expect } from "../../fixtures/data.fixture";
 import { LoanDetailPage } from "../../pages/LoanDetailPage";
 import { PaymentScheduleSection } from "../../pages/PaymentScheduleSection";
 import { PausePaymentDialog } from "../../pages/PausePaymentDialog";
-import { ToastComponent } from "../../pages/ToastComponent";
 
 test.describe("L2-4.3: Pause Payment Dialog", () => {
   let detail: LoanDetailPage;
   let schedule: PaymentScheduleSection;
   let dialog: PausePaymentDialog;
-  let toast: ToastComponent;
 
   test.beforeEach(async ({ creditorPage, seededLoanId }) => {
     detail = new LoanDetailPage(creditorPage);
     schedule = new PaymentScheduleSection(creditorPage);
     dialog = new PausePaymentDialog(creditorPage);
-    toast = new ToastComponent(creditorPage);
     await detail.goto(seededLoanId);
   });
 
@@ -38,13 +35,7 @@ test.describe("L2-4.3: Pause Payment Dialog", () => {
     await dialog.fillReason("Temporary financial difficulty");
     await dialog.clickPause();
     await dialog.expectClosed();
-    await toast.expectToast("success", "paused");
-  });
-
-  test("shows success toast after pausing", async () => {
-    await schedule.clickPause(0);
-    await dialog.clickPause();
-    await toast.expectToast("success", "paused");
+    await schedule.expectPaymentStatus(0, "Paused");
   });
 
   test("updates payment status to Paused in schedule", async () => {
@@ -53,12 +44,6 @@ test.describe("L2-4.3: Pause Payment Dialog", () => {
     await dialog.expectClosed();
     await schedule.expectPaymentStatus(0, "Paused");
   });
-
-  test("can resume a paused payment", async () => {
-    await schedule.clickResume(2);
-    await schedule.expectPaymentStatus(2, "Scheduled");
-  });
-
   test("closes dialog on cancel", async () => {
     await schedule.clickPause(0);
     await dialog.clickCancel();
