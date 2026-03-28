@@ -50,10 +50,10 @@ jobs:
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
           echo "ACR_LOGIN_SERVER=$ACR_LOGIN_SERVER" >> $GITHUB_ENV
 
-      - name: Update all container app images
+      - name: Update container app images
         run: |
           FULL_IMAGE="$ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG"
-          echo "Updating all apps to image: $FULL_IMAGE"
+          echo "Updating apps to image: $FULL_IMAGE"
 
           az containerapp update \
             --name $API_APP_NAME \
@@ -67,11 +67,6 @@ jobs:
 
           az containerapp update \
             --name $BEAT_APP_NAME \
-            --resource-group $AZURE_RESOURCE_GROUP \
-            --image "$FULL_IMAGE"
-
-          az containerapp job update \
-            --name $MIGRATION_JOB_NAME \
             --resource-group $AZURE_RESOURCE_GROUP \
             --image "$FULL_IMAGE"
 
