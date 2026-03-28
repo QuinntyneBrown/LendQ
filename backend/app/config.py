@@ -33,6 +33,7 @@ class DevelopmentConfig(Config):
     LOG_LEVEL = "DEBUG"
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-not-for-production")
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "dev-jwt-secret-not-for-production")
+    RATE_LIMIT_AUTH = "100/minute"
 
 
 class TestingConfig(Config):

@@ -1,4 +1,4 @@
-from flask import Blueprint, g, jsonify, make_response, request
+from flask import Blueprint, current_app, g, jsonify, make_response, request
 
 from app.extensions import limiter
 from app.middleware.auth_middleware import require_auth
@@ -48,7 +48,7 @@ def _clear_session_cookie(response):
 
 
 @auth_bp.route("/login", methods=["POST"])
-@limiter.limit("5/minute")
+@limiter.limit(lambda: current_app.config.get("RATE_LIMIT_AUTH", "5/minute"))
 def login():
     data = login_schema.load(request.get_json())
     auth_service = AuthService()
@@ -64,7 +64,7 @@ def login():
 
 
 @auth_bp.route("/signup", methods=["POST"])
-@limiter.limit("5/minute")
+@limiter.limit(lambda: current_app.config.get("RATE_LIMIT_AUTH", "5/minute"))
 def signup():
     data = signup_schema.load(request.get_json())
     auth_service = AuthService()
@@ -90,7 +90,7 @@ def signup():
 
 
 @auth_bp.route("/email-verification/resend", methods=["POST"])
-@limiter.limit("5/minute")
+@limiter.limit(lambda: current_app.config.get("RATE_LIMIT_AUTH", "5/minute"))
 def resend_verification():
     data = verification_resend_schema.load(request.get_json())
     auth_service = AuthService()
@@ -111,7 +111,7 @@ def resend_verification():
 
 
 @auth_bp.route("/email-verification/confirm", methods=["POST"])
-@limiter.limit("5/minute")
+@limiter.limit(lambda: current_app.config.get("RATE_LIMIT_AUTH", "5/minute"))
 def confirm_verification():
     data = verification_confirm_schema.load(request.get_json())
     auth_service = AuthService()
@@ -120,7 +120,7 @@ def confirm_verification():
 
 
 @auth_bp.route("/forgot-password", methods=["POST"])
-@limiter.limit("5/minute")
+@limiter.limit(lambda: current_app.config.get("RATE_LIMIT_AUTH", "5/minute"))
 def forgot_password():
     data = forgot_password_schema.load(request.get_json())
     auth_service = AuthService()
@@ -134,7 +134,7 @@ def forgot_password():
 
 
 @auth_bp.route("/reset-password", methods=["POST"])
-@limiter.limit("5/minute")
+@limiter.limit(lambda: current_app.config.get("RATE_LIMIT_AUTH", "5/minute"))
 def reset_password():
     data = reset_password_schema.load(request.get_json())
     auth_service = AuthService()
