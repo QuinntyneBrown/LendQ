@@ -50,25 +50,57 @@ jobs:
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
           echo "ACR_LOGIN_SERVER=$ACR_LOGIN_SERVER" >> $GITHUB_ENV
 
+      - name: Update all container app images
+        run: |
+          FULL_IMAGE="$ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG"
+          echo "Updating all apps to image: $FULL_IMAGE"
+
+          az containerapp update \
+            --name $API_APP_NAME \
+            --resource-group $AZURE_RESOURCE_GROUP \
+            --image "$FULL_IMAGE"
+
+          az containerapp update \
+            --name $WORKER_APP_NAME \
+            --resource-group $AZURE_RESOURCE_GROUP \
+            --image "$FULL_IMAGE"
+
+          az containerapp update \
+            --name $BEAT_APP_NAME \
+            --resource-group $AZURE_RESOURCE_GROUP \
+            --image "$FULL_IMAGE"
+
+          az containerapp job update \
+            --name $MIGRATION_JOB_NAME \
+            --resource-group $AZURE_RESOURCE_GROUP \
+            --image "$FULL_IMAGE"
+
       - name: Run database migrations
         run: |
           az containerapp job start \
             --name $MIGRATION_JOB_NAME \
-            --resource-group $AZURE_RESOURCE_GROUP \
-            --image $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
+            --resource-group $AZURE_RESOURCE_GROUP
 
-          # Wait for migration job to complete
-          for i in $(seq 1 30); do
+          # Wait for migration job to complete (image already cached from update)
+          for i in $(seq 1 60); do
             STATUS=$(az containerapp job execution list \
               --name $MIGRATION_JOB_NAME \
               --resource-group $AZURE_RESOURCE_GROUP \
               --query "[0].properties.status" -o tsv)
-            echo "Migration status: $STATUS"
+            echo "Migration status: $STATUS (attempt $i/60)"
             if [ "$STATUS" = "Succeeded" ]; then
               echo "Migration completed successfully"
               exit 0
             elif [ "$STATUS" = "Failed" ]; then
-              echo "Migration failed"
+              echo "Migration failed — fetching logs"
+              EXECUTION=$(az containerapp job execution list \
+                --name $MIGRATION_JOB_NAME \
+                --resource-group $AZURE_RESOURCE_GROUP \
+                --query "[0].name" -o tsv)
+              az containerapp job execution show \
+                --name $MIGRATION_JOB_NAME \
+                --resource-group $AZURE_RESOURCE_GROUP \
+                --job-execution-name "$EXECUTION" 2>&1 || true
               exit 1
             fi
             sleep 10
@@ -76,36 +108,16 @@ jobs:
           echo "Migration timed out"
           exit 1
 
-      - name: Update API container app
-        run: |
-          az containerapp update \
-            --name $API_APP_NAME \
-            --resource-group $AZURE_RESOURCE_GROUP \
-            --image $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
-
-      - name: Update worker container app
-        run: |
-          az containerapp update \
-            --name $WORKER_APP_NAME \
-            --resource-group $AZURE_RESOURCE_GROUP \
-            --image $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
-
-      - name: Update beat container app
-        run: |
-          az containerapp update \
-            --name $BEAT_APP_NAME \
-            --resource-group $AZURE_RESOURCE_GROUP \
-            --image $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
-
       - name: Verify API health
         run: |
           API_FQDN=$(az containerapp show \
             --name $API_APP_NAME \
             --resource-group $AZURE_RESOURCE_GROUP \
             --query "properties.configuration.ingress.fqdn" -o tsv)
+          echo "Waiting for API at https://$API_FQDN ..."
           for i in $(seq 1 30); do
             if curl -fsS "https://$API_FQDN/api/v1/health/ready" > /dev/null 2>&1; then
-              echo "API is healthy at https://$API_FQDN"
+              echo "API is healthy"
               exit 0
             fi
             sleep 5
