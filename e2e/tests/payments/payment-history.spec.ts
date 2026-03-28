@@ -6,10 +6,10 @@ test.describe("L2-4.5: Payment History with Change Log", () => {
   let detail: LoanDetailPage;
   let history: PaymentHistorySection;
 
-  test.beforeEach(async ({ creditorPage, seededLoanId }) => {
+  test.beforeEach(async ({ creditorPage, paymentHistoryScenario }) => {
     detail = new LoanDetailPage(creditorPage);
     history = new PaymentHistorySection(creditorPage);
-    await detail.goto(seededLoanId);
+    await detail.goto(paymentHistoryScenario.loanId);
   });
 
   test("displays payment history timeline", async () => {
@@ -23,14 +23,18 @@ test.describe("L2-4.5: Payment History with Change Log", () => {
     await expect(history.entryTimestamp(0)).toBeVisible();
   });
 
-  test("shows reschedule entries with old/new dates", async () => {
+  test("shows reschedule entries with old/new dates", async ({ paymentHistoryScenario }) => {
     await history.filterByType("Reschedule");
-    await history.expectChangeDetail(0, "Mar 1", "Mar 15");
+    await history.expectChangeDetail(
+      0,
+      paymentHistoryScenario.originalDueDateLabel!,
+      paymentHistoryScenario.newDueDateLabel!,
+    );
   });
 
   test("shows pause entries with reason", async () => {
     await history.filterByType("Pause");
-    await expect(history.entryDescription(0)).toContainText(/paused/i);
+    await expect(history.entryDescription(0)).toContainText(/pause/i);
   });
 
   test("shows who made each change and when", async () => {

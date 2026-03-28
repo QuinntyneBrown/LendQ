@@ -1,52 +1,147 @@
+import type { APIRequestContext } from "@playwright/test";
 import { test as authTest } from "./auth.fixture";
-import { ApiClient } from "../helpers/api-client";
+import {
+  seedHistoryScenario,
+  seedLoan,
+  seedPartialPaymentLoan,
+  seedPausedLoan,
+  seedPaidOffLoan,
+  seedReadOnlyLoan,
+  seedRescheduledLoan,
+  seedTestData,
+  type LoanScenario,
+  type SeededData,
+} from "../helpers/seed";
 
 type DataFixtures = {
   seededLoanId: string;
+  loanDetailScenario: LoanScenario;
+  rescheduledLoanScenario: LoanScenario;
+  pausedLoanScenario: LoanScenario;
+  partialPaymentLoanScenario: LoanScenario;
+  paidOffLoanScenario: LoanScenario;
+  paymentHistoryScenario: LoanScenario;
 };
 
-export const test = authTest.extend<DataFixtures>({
-  seededLoanId: async ({ playwright }, use) => {
-    const request = await playwright.request.newContext();
-    const api = new ApiClient(request);
-    const { access_token } = await api.login(
-      "creditor@family.com",
-      "password123",
-    );
+type DataWorkerFixtures = {
+  requestContext: APIRequestContext;
+  seededData: SeededData;
+  loanDetailScenarioWorker: LoanScenario;
+  rescheduledLoanScenarioWorker: LoanScenario;
+  pausedLoanScenarioWorker: LoanScenario;
+  partialPaymentLoanScenarioWorker: LoanScenario;
+  paidOffLoanScenarioWorker: LoanScenario;
+  paymentHistoryScenarioWorker: LoanScenario;
+};
 
-    // Get the borrower's ID
-    const borrowerLogin = await api.login(
-      "borrower@family.com",
-      "password123",
+export const test = authTest.extend<DataFixtures, DataWorkerFixtures>({
+  requestContext: [async ({ playwright }, use) => {
+    const request = await playwright.request.newContext();
+    await use(request);
+    await request.dispose();
+  }, { scope: "worker" }],
+
+  seededData: [async ({ requestContext }, use) => {
+    const data = await seedTestData(requestContext);
+    await use(data);
+  }, { scope: "worker" }],
+
+  loanDetailScenarioWorker: [async ({ requestContext, seededData }, use) => {
+    await use(
+      await seedReadOnlyLoan(
+        requestContext,
+        seededData.creditorToken,
+        seededData.borrowerId,
+      ),
     );
-    const borrowerMeRes = await request.get(
-      "http://localhost:5000/api/v1/auth/me",
+  }, { scope: "worker" }],
+
+  rescheduledLoanScenarioWorker: [async ({ requestContext, seededData }, use) => {
+    await use(
+      await seedRescheduledLoan(
+        requestContext,
+        seededData.creditorToken,
+        seededData.borrowerId,
+      ),
+    );
+  }, { scope: "worker" }],
+
+  pausedLoanScenarioWorker: [async ({ requestContext, seededData }, use) => {
+    await use(
+      await seedPausedLoan(
+        requestContext,
+        seededData.creditorToken,
+        seededData.borrowerId,
+      ),
+    );
+  }, { scope: "worker" }],
+
+  partialPaymentLoanScenarioWorker: [async ({ requestContext, seededData }, use) => {
+    await use(
+      await seedPartialPaymentLoan(
+        requestContext,
+        seededData.creditorToken,
+        seededData.borrowerId,
+      ),
+    );
+  }, { scope: "worker" }],
+
+  paidOffLoanScenarioWorker: [async ({ requestContext, seededData }, use) => {
+    await use(
+      await seedPaidOffLoan(
+        requestContext,
+        seededData.creditorToken,
+        seededData.borrowerId,
+      ),
+    );
+  }, { scope: "worker" }],
+
+  paymentHistoryScenarioWorker: [async ({ requestContext, seededData }, use) => {
+    await use(
+      await seedHistoryScenario(
+        requestContext,
+        seededData.creditorToken,
+        seededData.borrowerId,
+      ),
+    );
+  }, { scope: "worker" }],
+
+  loanDetailScenario: async ({ loanDetailScenarioWorker }, use) => {
+    await use(loanDetailScenarioWorker);
+  },
+
+  rescheduledLoanScenario: async ({ rescheduledLoanScenarioWorker }, use) => {
+    await use(rescheduledLoanScenarioWorker);
+  },
+
+  pausedLoanScenario: async ({ pausedLoanScenarioWorker }, use) => {
+    await use(pausedLoanScenarioWorker);
+  },
+
+  partialPaymentLoanScenario: async ({ partialPaymentLoanScenarioWorker }, use) => {
+    await use(partialPaymentLoanScenarioWorker);
+  },
+
+  paidOffLoanScenario: async ({ paidOffLoanScenarioWorker }, use) => {
+    await use(paidOffLoanScenarioWorker);
+  },
+
+  paymentHistoryScenario: async ({ paymentHistoryScenarioWorker }, use) => {
+    await use(paymentHistoryScenarioWorker);
+  },
+
+  seededLoanId: async ({ requestContext, seededData }, use) => {
+    const loanId = await seedLoan(
+      requestContext,
+      seededData.creditorToken,
+      seededData.borrowerId,
       {
-        headers: {
-          Authorization: `Bearer ${borrowerLogin.access_token}`,
-        },
+        description: `E2E Mutable Loan ${Date.now()}`,
+        principal: 2000,
+        num_payments: 10,
       },
     );
-    const borrower = await borrowerMeRes.json();
-
-    // Create a fresh loan with future start date so all payments are Scheduled
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const startDate = tomorrow.toISOString().split("T")[0];
-
-    const loan = await api.createLoan(access_token, {
-      borrower_id: borrower.id,
-      description: "E2E Test Loan",
-      principal: 2000,
-      interest_rate: 0,
-      repayment_frequency: "MONTHLY",
-      num_payments: 10,
-      start_date: startDate,
-    });
-    const loanId = loan.id;
-
     await use(loanId);
-    await request.dispose();
   },
 });
 
