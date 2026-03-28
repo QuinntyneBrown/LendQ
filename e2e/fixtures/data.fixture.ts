@@ -14,46 +14,36 @@ export const test = authTest.extend<DataFixtures>({
       "password123",
     );
 
-    // Get first existing creditor loan
-    const loansRes = await request.get(
-      "http://localhost:5000/api/v1/loans?view=creditor&page=1",
-      { headers: { Authorization: `Bearer ${access_token}` } },
+    // Get the borrower's ID
+    const borrowerLogin = await api.login(
+      "borrower@family.com",
+      "password123",
     );
-    const loansData = await loansRes.json();
-
-    let loanId: string;
-    if (loansData.items && loansData.items.length > 0) {
-      // Use the first active loan
-      const activeLoan = loansData.items.find(
-        (l: { status: string }) => l.status === "ACTIVE",
-      );
-      loanId = activeLoan ? activeLoan.id : loansData.items[0].id;
-    } else {
-      // Create a new loan if none exist
-      const borrowerLogin = await api.login(
-        "borrower@family.com",
-        "password123",
-      );
-      const borrowerMeRes = await request.get(
-        "http://localhost:5000/api/v1/auth/me",
-        {
-          headers: {
-            Authorization: `Bearer ${borrowerLogin.access_token}`,
-          },
+    const borrowerMeRes = await request.get(
+      "http://localhost:5000/api/v1/auth/me",
+      {
+        headers: {
+          Authorization: `Bearer ${borrowerLogin.access_token}`,
         },
-      );
-      const borrower = await borrowerMeRes.json();
+      },
+    );
+    const borrower = await borrowerMeRes.json();
 
-      const loan = await api.createLoan(access_token, {
-        borrower_id: borrower.id,
-        description: "E2E Test Loan",
-        principal: 5000,
-        interest_rate: 0,
-        repayment_frequency: "MONTHLY",
-        start_date: new Date().toISOString().split("T")[0],
-      });
-      loanId = loan.id;
-    }
+    // Create a fresh loan with future start date so all payments are Scheduled
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const startDate = tomorrow.toISOString().split("T")[0];
+
+    const loan = await api.createLoan(access_token, {
+      borrower_id: borrower.id,
+      description: "E2E Test Loan",
+      principal: 2000,
+      interest_rate: 0,
+      repayment_frequency: "MONTHLY",
+      num_payments: 10,
+      start_date: startDate,
+    });
+    const loanId = loan.id;
 
     await use(loanId);
     await request.dispose();
