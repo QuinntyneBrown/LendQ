@@ -1,4 +1,8 @@
-import bcrypt
+try:
+    import bcrypt
+except ImportError:
+    bcrypt = None
+
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 
@@ -13,6 +17,8 @@ class PasswordService:
     def verify_password(self, password, password_hash):
         # Transparent upgrade: detect bcrypt hashes by prefix
         if password_hash.startswith("$2b$") or password_hash.startswith("$2a$"):
+            if bcrypt is None:
+                return False
             return bcrypt.checkpw(
                 password.encode("utf-8"), password_hash.encode("utf-8")
             )
