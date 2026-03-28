@@ -18,7 +18,6 @@ export function BorrowerSelect({ value, onChange, error }: BorrowerSelectProps) 
 
   useEffect(() => {
     if (!search.trim()) {
-      setResults([]);
       return;
     }
 
@@ -77,7 +76,11 @@ export function BorrowerSelect({ value, onChange, error }: BorrowerSelectProps) 
               onChange("", "");
               setDisplayName("");
             }
-            setSearch(e.target.value);
+            const newSearch = e.target.value;
+            setSearch(newSearch);
+            if (!newSearch.trim()) {
+              setResults([]);
+            }
           }}
           placeholder="Select a family member"
           className={`w-full rounded-input border border-border-strong px-4 py-3 font-body text-[15px] text-text-primary placeholder:text-text-muted outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors ${error ? "border-danger-text" : ""}`}

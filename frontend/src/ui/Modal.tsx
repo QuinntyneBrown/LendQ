@@ -36,18 +36,20 @@ export function Modal({
   }, []);
 
   useEffect(() => {
-    if (open) {
-      previousFocusRef.current = document.activeElement as HTMLElement | null;
-      requestAnimationFrame(() => setVisible(true));
-      const timer = setTimeout(() => {
-        const first = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
-        first?.focus();
-      }, 50);
-      return () => clearTimeout(timer);
-    } else {
+    if (!open) return;
+
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+    requestAnimationFrame(() => setVisible(true));
+    const timer = setTimeout(() => {
+      const first = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+      first?.focus();
+    }, 50);
+
+    return () => {
+      clearTimeout(timer);
       setVisible(false);
       previousFocusRef.current?.focus();
-    }
+    };
   }, [open]);
 
   const handleKeyDown = useCallback(

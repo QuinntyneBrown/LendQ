@@ -1,21 +1,10 @@
-import { createContext, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { apiGet, apiPost } from "@/api/client";
-import type { User, TokenResponse } from "@/api/types";
+import type { TokenResponse } from "@/api/types";
+import type { User } from "@/api/types";
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/utils/constants";
-
-export interface AuthContextValue {
-  user: User | null;
-  roles: string[];
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (data: { name: string; email: string; password: string; confirm_password: string }) => Promise<void>;
-  logout: () => void;
-  refreshToken: () => Promise<void>;
-}
-
-export const AuthContext = createContext<AuthContextValue | null>(null);
+import { AuthContext } from "./authContext";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

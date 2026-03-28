@@ -172,7 +172,8 @@ export function LoanDetailPage() {
   );
 }
 
-function PaymentScheduleView({ loanId: _loanId }: { loanId: string }) {
+function PaymentScheduleView({ loanId }: { loanId: string }) {
+  void loanId;
   return (
     <p className="font-body text-sm text-text-muted">
       Payment schedule will be displayed here.
@@ -180,7 +181,8 @@ function PaymentScheduleView({ loanId: _loanId }: { loanId: string }) {
   );
 }
 
-function PaymentHistoryView({ loanId: _loanId }: { loanId: string }) {
+function PaymentHistoryView({ loanId }: { loanId: string }) {
+  void loanId;
   return (
     <p className="font-body text-sm text-text-muted">
       Payment history will be displayed here.
@@ -189,14 +191,16 @@ function PaymentHistoryView({ loanId: _loanId }: { loanId: string }) {
 }
 
 function RecordPaymentDialog({
-  open: _open,
+  open,
   onClose,
-  loanId: _loanId,
+  loanId,
 }: {
   open: boolean;
   onClose: () => void;
   loanId: string;
 }) {
+  void open;
+  void loanId;
   return (
     <div>
       <button type="button" onClick={onClose} className="hidden">

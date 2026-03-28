@@ -1,5 +1,5 @@
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from "lucide-react";
-import type { ToastType } from "./ToastProvider";
+import type { ToastType } from "./toastContext";
 
 interface ToastMessageProps {
   id: string;

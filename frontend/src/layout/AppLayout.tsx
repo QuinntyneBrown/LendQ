@@ -7,7 +7,7 @@ import { MobileBottomNav } from "./MobileBottomNav";
 import { MobileHeader } from "./MobileHeader";
 
 export function AppLayout() {
-  const { isDesktop, isTablet, isMobile } = useBreakpoint();
+  const { isDesktop, isTablet } = useBreakpoint();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (isDesktop) {

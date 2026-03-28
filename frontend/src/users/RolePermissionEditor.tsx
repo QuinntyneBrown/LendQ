@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { Role } from "@/api/types";
 import { Modal } from "@/ui/Modal";
 import { Button } from "@/ui/Button";
@@ -30,12 +30,14 @@ export function RolePermissionEditor({ open, onClose, role }: RolePermissionEdit
   const toast = useToast();
   const updatePermissions = useUpdatePermissions();
   const [selected, setSelected] = useState<string[]>([]);
+  const [prevOpen, setPrevOpen] = useState(false);
 
-  useEffect(() => {
-    if (open && role) {
-      setSelected([...role.permissions]);
-    }
-  }, [open, role]);
+  if (open && !prevOpen && role) {
+    setSelected([...role.permissions]);
+  }
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+  }
 
   function handleToggle(permission: string, checked: boolean) {
     setSelected((prev) =>
