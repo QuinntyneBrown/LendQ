@@ -23,12 +23,25 @@ class ResetPasswordRequestSchema(Schema):
     confirm_password = fields.String(required=True)
 
 
-class RefreshRequestSchema(Schema):
-    refresh_token = fields.String(required=True)
+class EmailVerificationConfirmSchema(Schema):
+    token = fields.String(required=True)
+
+
+class EmailVerificationResendSchema(Schema):
+    email = fields.Email(required=True)
 
 
 class TokenResponseSchema(Schema):
     access_token = fields.String()
-    refresh_token = fields.String()
-    token_type = fields.String()
-    expires_in = fields.Integer()
+    expires_in_seconds = fields.Integer()
+    csrf_token = fields.String()
+    user = fields.Dict()
+
+
+class SessionResponseSchema(Schema):
+    id = fields.String()
+    created_at = fields.DateTime()
+    last_seen_at = fields.DateTime()
+    user_agent = fields.String()
+    ip_address = fields.String()
+    is_current = fields.Boolean()

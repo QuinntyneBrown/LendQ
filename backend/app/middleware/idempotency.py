@@ -2,46 +2,52 @@ import functools
 import hashlib
 import json
 import logging
+from datetime import datetime, timedelta, timezone
 
-from flask import g, request
+from flask import g, jsonify, request
+
+from app.errors.exceptions import ValidationError
+from app.extensions import db
+from app.models.idempotency_record import IdempotencyRecord
 
 logger = logging.getLogger(__name__)
 
-_idempotency_store = {}
+IDEMPOTENCY_TTL_HOURS = 24
 
 
 def require_idempotency(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
-        idempotency_key = request.headers.get("Idempotency-Key")
-        if not idempotency_key:
-            return f(*args, **kwargs)
+        key = request.headers.get("Idempotency-Key")
+        if not key:
+            raise ValidationError("Idempotency-Key header is required", details={"Idempotency-Key": ["This header is required for this endpoint"]})
 
-        user_id = getattr(g, "current_user", None)
-        user_id = user_id.id if user_id else "anonymous"
-        cache_key = f"{user_id}:{idempotency_key}"
+        if len(key) < 8 or len(key) > 128:
+            raise ValidationError("Idempotency-Key must be between 8 and 128 characters")
 
-        if cache_key in _idempotency_store:
-            logger.info("Idempotent replay for key=%s", idempotency_key)
-            cached = _idempotency_store[cache_key]
-            return cached["body"], cached["status_code"], cached["headers"]
+        # Check for existing record
+        existing = IdempotencyRecord.query.filter_by(idempotency_key=key).first()
+        if existing and not existing.is_expired:
+            logger.info("Idempotency replay for key: %s", key)
+            return jsonify(existing.response_body), existing.response_status or 200
 
+        # Execute the actual handler
         response = f(*args, **kwargs)
 
-        if isinstance(response, tuple):
-            body, status_code = response[0], response[1]
-            headers = response[2] if len(response) > 2 else {}
-        else:
-            body = response.get_data(as_text=True)
-            status_code = response.status_code
-            headers = dict(response.headers)
+        # Store the result
+        resp_data = response[0].get_json() if isinstance(response, tuple) else response.get_json()
+        resp_status = response[1] if isinstance(response, tuple) else 200
 
-        if 200 <= status_code < 300:
-            _idempotency_store[cache_key] = {
-                "body": body,
-                "status_code": status_code,
-                "headers": headers,
-            }
+        user = getattr(g, "current_user", None)
+        record = IdempotencyRecord(
+            idempotency_key=key,
+            user_id=user.id if user else None,
+            response_body=resp_data,
+            response_status=resp_status,
+            expires_at=datetime.now(timezone.utc) + timedelta(hours=IDEMPOTENCY_TTL_HOURS),
+        )
+        db.session.add(record)
+        db.session.commit()
 
         return response
 

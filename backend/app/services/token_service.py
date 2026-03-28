@@ -1,4 +1,5 @@
 import hashlib
+import hmac
 import logging
 import uuid
 from datetime import datetime, timezone
@@ -7,17 +8,13 @@ import jwt
 from flask import current_app
 
 from app.extensions import db
-from app.models.refresh_token import RefreshToken
-from app.repositories.user_repository import UserRepository
+from app.models.auth_session import AuthSession
 
 logger = logging.getLogger(__name__)
 
 
 class TokenService:
-    def __init__(self):
-        self.user_repo = UserRepository()
-
-    def generate_access_token(self, user):
+    def generate_access_token(self, user, session_id):
         now = datetime.now(timezone.utc)
         expires = now + current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
         payload = {
@@ -25,6 +22,8 @@ class TokenService:
             "email": user.email,
             "name": user.name,
             "roles": user.role_names,
+            "session_id": session_id,
+            "session_version": user.session_version,
             "iat": now,
             "exp": expires,
         }
@@ -35,53 +34,84 @@ class TokenService:
         )
         return token, int(current_app.config["JWT_ACCESS_TOKEN_EXPIRES"].total_seconds())
 
-    def generate_refresh_token(self, user):
-        raw_token = str(uuid.uuid4())
-        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
-        expires_at = datetime.now(timezone.utc) + current_app.config["JWT_REFRESH_TOKEN_EXPIRES"]
+    def create_session(self, user, user_agent=None, ip_address=None):
+        raw_session_token = str(uuid.uuid4())
+        session_hash = hashlib.sha256(raw_session_token.encode()).hexdigest()
 
-        refresh_token = RefreshToken(
+        session = AuthSession(
             user_id=user.id,
-            token_hash=token_hash,
-            expires_at=expires_at,
+            session_hash=session_hash,
+            user_agent=user_agent,
+            ip_address=ip_address,
         )
-        db.session.add(refresh_token)
+        db.session.add(session)
         db.session.flush()
 
-        return raw_token
+        return raw_session_token, session
 
-    def verify_refresh_token(self, raw_token):
-        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
-        refresh_token = RefreshToken.query.filter_by(token_hash=token_hash).first()
+    def verify_session(self, raw_session_token):
+        session_hash = hashlib.sha256(raw_session_token.encode()).hexdigest()
+        session = AuthSession.query.filter_by(
+            session_hash=session_hash
+        ).first()
 
-        if not refresh_token:
+        if not session or session.is_revoked:
             return None
-        if refresh_token.is_revoked or refresh_token.is_expired:
-            return None
 
-        return refresh_token
+        return session
 
-    def revoke_refresh_token(self, raw_token):
-        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
-        refresh_token = RefreshToken.query.filter_by(token_hash=token_hash).first()
-        if refresh_token:
-            refresh_token.revoked_at = datetime.now(timezone.utc)
+    def revoke_session(self, session):
+        session.revoked_at = datetime.now(timezone.utc)
+        db.session.flush()
+
+    def revoke_session_by_id(self, session_id, user_id):
+        session = AuthSession.query.filter_by(id=session_id, user_id=user_id).first()
+        if session and not session.is_revoked:
+            session.revoked_at = datetime.now(timezone.utc)
             db.session.flush()
+            return True
+        return False
 
-    def revoke_all_user_tokens(self, user_id):
+    def revoke_all_user_sessions(self, user_id):
         now = datetime.now(timezone.utc)
-        RefreshToken.query.filter(
-            RefreshToken.user_id == user_id,
-            RefreshToken.revoked_at.is_(None),
+        AuthSession.query.filter(
+            AuthSession.user_id == user_id,
+            AuthSession.revoked_at.is_(None),
         ).update({"revoked_at": now})
         db.session.flush()
 
-    def generate_token_pair(self, user):
-        access_token, expires_in = self.generate_access_token(user)
-        refresh_token = self.generate_refresh_token(user)
+    def get_active_sessions(self, user_id):
+        return AuthSession.query.filter(
+            AuthSession.user_id == user_id,
+            AuthSession.revoked_at.is_(None),
+        ).order_by(AuthSession.last_seen_at.desc()).all()
+
+    def update_last_seen(self, session):
+        session.last_seen_at = datetime.now(timezone.utc)
+        db.session.flush()
+
+    def generate_csrf_token(self, session_id):
+        secret = current_app.config["JWT_SECRET_KEY"]
+        return hmac.HMAC(
+            secret.encode(), session_id.encode(), hashlib.sha256
+        ).hexdigest()
+
+    def verify_csrf_token(self, token, session_id):
+        expected = self.generate_csrf_token(session_id)
+        return hmac.compare_digest(token, expected)
+
+    def generate_token_bundle(self, user, session_id):
+        access_token, expires_in = self.generate_access_token(user, session_id)
+        csrf_token = self.generate_csrf_token(session_id)
         return {
             "access_token": access_token,
-            "refresh_token": refresh_token,
-            "token_type": "Bearer",
-            "expires_in": expires_in,
+            "expires_in_seconds": expires_in,
+            "csrf_token": csrf_token,
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "roles": user.role_names,
+                "email_verified": user.email_verified,
+            },
         }

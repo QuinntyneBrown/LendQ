@@ -24,7 +24,7 @@ change_log_schema = ChangeLogSchema()
 @require_auth
 def get_schedule(loan_id):
     payment_service = PaymentService()
-    schedule = payment_service.get_schedule(loan_id)
+    schedule = payment_service.get_schedule(loan_id, g.current_user)
     return jsonify(payment_schema.dump(schedule, many=True)), 200
 
 
@@ -60,5 +60,5 @@ def pause_payments(loan_id):
 @require_auth
 def get_history(loan_id):
     payment_service = PaymentService()
-    history = payment_service.get_history(loan_id)
+    history = payment_service.get_history(loan_id, g.current_user)
     return jsonify(change_log_schema.dump(history, many=True)), 200

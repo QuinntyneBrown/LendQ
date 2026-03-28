@@ -44,8 +44,14 @@ def require_auth(f):
         if not user or not user.is_active:
             raise AuthenticationError("Invalid credentials")
 
+        # Validate session_version matches
+        token_session_version = payload.get("session_version")
+        if token_session_version is not None and token_session_version != user.session_version:
+            raise AuthenticationError("Session has been invalidated")
+
         g.current_user = user
         g.token_payload = payload
+        g.session_id = payload.get("session_id")
         return f(*args, **kwargs)
 
     return decorated

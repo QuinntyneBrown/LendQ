@@ -33,8 +33,8 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
-    reset_token_hash = db.Column(db.String(255), nullable=True)
-    reset_token_expires = db.Column(db.DateTime, nullable=True)
+    email_verified = db.Column(db.Boolean, default=False, nullable=False)
+    session_version = db.Column(db.Integer, default=1, nullable=False)
     created_at = db.Column(
         db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
     )
@@ -46,8 +46,8 @@ class User(db.Model):
     )
 
     roles = db.relationship("Role", secondary="user_roles", back_populates="users")
-    refresh_tokens = db.relationship(
-        "RefreshToken", back_populates="user", cascade="all, delete-orphan"
+    auth_sessions = db.relationship(
+        "AuthSession", foreign_keys="AuthSession.user_id", cascade="all, delete-orphan"
     )
     notifications = db.relationship("Notification", back_populates="user")
 

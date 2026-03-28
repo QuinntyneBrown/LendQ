@@ -12,32 +12,32 @@ class AuthenticationError(AppError):
     status_code = 401
     code = "AUTHENTICATION_ERROR"
 
-    def __init__(self, message="Invalid credentials"):
-        super().__init__(message)
+    def __init__(self, message="Invalid credentials", details=None):
+        super().__init__(message, details)
 
 
 class AuthorizationError(AppError):
     status_code = 403
     code = "AUTHORIZATION_ERROR"
 
-    def __init__(self, message="You do not have permission to perform this action"):
-        super().__init__(message)
+    def __init__(self, message="You do not have permission to perform this action", details=None):
+        super().__init__(message, details)
 
 
 class NotFoundError(AppError):
     status_code = 404
     code = "NOT_FOUND"
 
-    def __init__(self, message="Resource not found"):
-        super().__init__(message)
+    def __init__(self, message="Resource not found", details=None):
+        super().__init__(message, details)
 
 
 class ConflictError(AppError):
     status_code = 409
     code = "CONFLICT"
 
-    def __init__(self, message="Resource already exists"):
-        super().__init__(message)
+    def __init__(self, message="Resource already exists", details=None):
+        super().__init__(message, details)
 
 
 class ValidationError(AppError):

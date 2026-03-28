@@ -64,7 +64,9 @@ def auth_headers():
         from app.services.token_service import TokenService
 
         token_service = TokenService()
-        access_token, _ = token_service.generate_access_token(user)
+        _, session = token_service.create_session(user)
+        access_token, _ = token_service.generate_access_token(user, session.id)
+        _db.session.commit()
         return {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
@@ -94,6 +96,8 @@ def _create_user(name, email, role_name):
         name=name,
         email=email,
         password_hash=password_service.hash_password("testpassword123"),
+        email_verified=True,
+        session_version=1,
     )
     role = Role.query.filter_by(name=role_name).first()
     if role:
@@ -101,3 +105,15 @@ def _create_user(name, email, role_name):
     _db.session.add(user)
     _db.session.commit()
     return user
+
+
+def assert_error_response(resp, expected_status, expected_code=None):
+    """Assert an error response follows the standard envelope format."""
+    assert resp.status_code == expected_status
+    data = resp.get_json()
+    assert "message" in data
+    assert "code" in data
+    assert "request_id" in data
+    if expected_code:
+        assert data["code"] == expected_code
+    return data

@@ -3,8 +3,8 @@ from datetime import timedelta
 
 
 class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY", "change-me")
-    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "change-me")
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=15)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=7)
     JWT_ALGORITHM = "HS256"
@@ -31,10 +31,14 @@ class Config:
 class DevelopmentConfig(Config):
     DEBUG = True
     LOG_LEVEL = "DEBUG"
+    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-not-for-production")
+    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "dev-jwt-secret-not-for-production")
 
 
 class TestingConfig(Config):
     TESTING = True
+    SECRET_KEY = "test-secret-key"
+    JWT_SECRET_KEY = "test-jwt-secret-key"
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "TEST_DATABASE_URL", "sqlite:///test.db"
     )
@@ -44,6 +48,13 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
+
+    def __init__(self):
+        super().__init__()
+        if not self.SECRET_KEY:
+            raise RuntimeError("SECRET_KEY must be set in production")
+        if not self.JWT_SECRET_KEY:
+            raise RuntimeError("JWT_SECRET_KEY must be set in production")
 
 
 config_by_name = {
