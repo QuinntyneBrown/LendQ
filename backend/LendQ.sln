@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LendQ.Api", "LendQ.Api\LendQ.Api.csproj", "{E36115D8-783C-4A38-94A7-96B009868D0B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LendQ.Core", "LendQ.Core\LendQ.Core.csproj", "{2D232096-88AC-4150-86D9-3C279A5B66A5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LendQ.Application", "LendQ.Application\LendQ.Application.csproj", "{00FC3C7D-145D-4951-A0B8-D8B86E825ED0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LendQ.Infrastructure", "LendQ.Infrastructure\LendQ.Infrastructure.csproj", "{F17BFE2F-8DE8-45EB-8C97-016E539F9E3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LendQ.Tests", "LendQ.Tests\LendQ.Tests.csproj", "{9E6383D6-E22D-4F63-8B29-CB65EE6748A3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E36115D8-783C-4A38-94A7-96B009868D0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E36115D8-783C-4A38-94A7-96B009868D0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E36115D8-783C-4A38-94A7-96B009868D0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E36115D8-783C-4A38-94A7-96B009868D0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D232096-88AC-4150-86D9-3C279A5B66A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D232096-88AC-4150-86D9-3C279A5B66A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D232096-88AC-4150-86D9-3C279A5B66A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D232096-88AC-4150-86D9-3C279A5B66A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00FC3C7D-145D-4951-A0B8-D8B86E825ED0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00FC3C7D-145D-4951-A0B8-D8B86E825ED0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00FC3C7D-145D-4951-A0B8-D8B86E825ED0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00FC3C7D-145D-4951-A0B8-D8B86E825ED0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F17BFE2F-8DE8-45EB-8C97-016E539F9E3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F17BFE2F-8DE8-45EB-8C97-016E539F9E3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F17BFE2F-8DE8-45EB-8C97-016E539F9E3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F17BFE2F-8DE8-45EB-8C97-016E539F9E3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E6383D6-E22D-4F63-8B29-CB65EE6748A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E6383D6-E22D-4F63-8B29-CB65EE6748A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E6383D6-E22D-4F63-8B29-CB65EE6748A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E6383D6-E22D-4F63-8B29-CB65EE6748A3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
