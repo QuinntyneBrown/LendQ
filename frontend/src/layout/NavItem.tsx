@@ -10,10 +10,17 @@ interface NavItemProps {
 
 export function NavItem({ icon: Icon, label, href, onClick }: NavItemProps) {
   const location = useLocation();
-  const isActive =
-    href === "/dashboard"
+  const [targetPath, targetSearch = ""] = href.split("?");
+  const currentParams = new URLSearchParams(location.search);
+  const targetParams = new URLSearchParams(targetSearch);
+  const pathnameMatches =
+    targetPath === "/dashboard"
       ? location.pathname === "/dashboard"
-      : location.pathname.startsWith(href.split("?")[0]);
+      : location.pathname.startsWith(targetPath);
+  const searchMatches = Array.from(targetParams.entries()).every(
+    ([key, value]) => currentParams.get(key) === value,
+  );
+  const isActive = pathnameMatches && searchMatches;
 
   return (
     <Link
