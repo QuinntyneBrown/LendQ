@@ -1,5 +1,7 @@
 # LendQ
 
+[![Deploy to Staging](https://github.com/QuinntyneBrown/LendQ/actions/workflows/deploy-staging.yml/badge.svg)](https://github.com/QuinntyneBrown/LendQ/actions/workflows/deploy-staging.yml)
+
 LendQ is a lending management platform for tracking private, family, and small-circle loans with structured workflows for authentication, role-based access control, loan governance, payment tracking, dashboards, notifications, and auditability.
 
 This repository contains the application stack plus supporting project assets:
