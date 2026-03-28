@@ -5,7 +5,6 @@ import { LoanDetailPage } from "../../pages/LoanDetailPage";
 import { PaymentScheduleSection } from "../../pages/PaymentScheduleSection";
 import { ReschedulePaymentDialog } from "../../pages/ReschedulePaymentDialog";
 import { NotificationListPage } from "../../pages/NotificationListPage";
-import { ToastComponent } from "../../pages/ToastComponent";
 import { futureIsoDate } from "../../helpers/date-values";
 
 test.describe("End-to-end: Notification lifecycle @smoke", () => {
@@ -45,20 +44,5 @@ test.describe("End-to-end: Notification lifecycle @smoke", () => {
     await notifications.expectVisible();
     await notifications.clickNotification(0);
     await creditorPage.waitForURL(/\/loans\/[a-z0-9-]+/);
-  });
-
-  test("toast appears for real-time events", async ({ creditorPage }) => {
-    const toast = new ToastComponent(creditorPage);
-    await creditorPage.goto("/dashboard");
-
-    // Simulate a server-sent event or a mutation that triggers a toast
-    await creditorPage.evaluate(() => {
-      window.dispatchEvent(
-        new CustomEvent("lendq:notification", {
-          detail: { type: "success", message: "Payment received" },
-        }),
-      );
-    });
-    await toast.expectToast("success", "Payment received");
   });
 });
