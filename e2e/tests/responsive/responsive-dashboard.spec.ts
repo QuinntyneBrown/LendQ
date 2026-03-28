@@ -34,7 +34,8 @@ test.describe("Dashboard responsive layouts @responsive", () => {
     await creditorPage.setViewportSize(VIEWPORTS.desktop);
     const dashboard = new DashboardPage(creditorPage);
     await dashboard.goto();
-    await expect(dashboard.loanRows.first()).toBeVisible();
+    await expect(creditorPage.getByRole("table")).toBeVisible();
+    await expect.poll(async () => dashboard.loanRows.count()).toBeGreaterThan(0);
   });
 
   test("mobile: active loans as card list", async ({ creditorPage, seededLoanId }) => {
