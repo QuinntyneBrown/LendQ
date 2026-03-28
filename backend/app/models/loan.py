@@ -1,7 +1,5 @@
-import uuid
-from datetime import datetime, timezone
-
 from app.extensions import db
+from app.models.base import TimestampMixin, UUIDMixin
 
 
 class LoanStatus:
@@ -19,16 +17,11 @@ class RepaymentFrequency:
     CUSTOM = "CUSTOM"
 
 
-class Loan(db.Model):
+class Loan(UUIDMixin, TimestampMixin, db.Model):
     __tablename__ = "loans"
 
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    creditor_id = db.Column(
-        db.String(36), db.ForeignKey("users.id"), nullable=False, index=True
-    )
-    borrower_id = db.Column(
-        db.String(36), db.ForeignKey("users.id"), nullable=False, index=True
-    )
+    creditor_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False, index=True)
+    borrower_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False, index=True)
     description = db.Column(db.String(500), nullable=False)
     principal = db.Column(db.Numeric(12, 2), nullable=False)
     interest_rate = db.Column(db.Numeric(5, 2), default=0.00)
@@ -42,16 +35,6 @@ class Loan(db.Model):
     current_schedule_version_id = db.Column(
         db.String(36), db.ForeignKey("schedule_versions.id"), nullable=True
     )
-    created_at = db.Column(
-        db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
-    )
-    updated_at = db.Column(
-        db.DateTime,
-        nullable=False,
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
-    )
-
     creditor = db.relationship("User", foreign_keys=[creditor_id], backref="loans_as_creditor")
     borrower = db.relationship("User", foreign_keys=[borrower_id], backref="loans_as_borrower")
     payments = db.relationship("Payment", back_populates="loan", cascade="all, delete-orphan")
@@ -62,9 +45,9 @@ class Loan(db.Model):
         "ScheduleVersion", foreign_keys=[current_schedule_version_id], post_update=True
     )
     terms_versions = db.relationship(
-        "LoanTermsVersion", foreign_keys="LoanTermsVersion.loan_id",
-        order_by="LoanTermsVersion.version", overlaps="loan"
+        "LoanTermsVersion",
+        foreign_keys="LoanTermsVersion.loan_id",
+        order_by="LoanTermsVersion.version",
+        overlaps="loan",
     )
-    change_requests = db.relationship(
-        "LoanChangeRequest", foreign_keys="LoanChangeRequest.loan_id"
-    )
+    change_requests = db.relationship("LoanChangeRequest", foreign_keys="LoanChangeRequest.loan_id")

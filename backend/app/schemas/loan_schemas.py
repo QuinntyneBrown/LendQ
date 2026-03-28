@@ -26,9 +26,7 @@ class LoanSchema(Schema):
 
 class CreateLoanRequestSchema(Schema):
     borrower_id = fields.String(required=True)
-    description = fields.String(
-        required=True, validate=validate.Length(min=1, max=500)
-    )
+    description = fields.String(required=True, validate=validate.Length(min=1, max=500))
     principal = fields.Decimal(required=True, as_string=True)
     interest_rate = fields.Decimal(load_default="0.00", as_string=True)
     repayment_frequency = fields.String(

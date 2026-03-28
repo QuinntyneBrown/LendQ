@@ -1,7 +1,7 @@
-import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.extensions import db
+from app.models.base import UUIDMixin
 
 
 class ChangeRequestType:
@@ -16,17 +16,16 @@ class ChangeRequestStatus:
     REJECTED = "REJECTED"
 
 
-class LoanChangeRequest(db.Model):
+class LoanChangeRequest(UUIDMixin, db.Model):
     __tablename__ = "loan_change_requests"
 
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     loan_id = db.Column(db.String(36), db.ForeignKey("loans.id"), nullable=False, index=True)
     requested_by = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
     type = db.Column(db.String(30), nullable=False)
     status = db.Column(db.String(20), nullable=False, default=ChangeRequestStatus.PENDING)
     reason = db.Column(db.Text)
     proposed_changes = db.Column(db.JSON)
-    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC))
     resolved_at = db.Column(db.DateTime)
     resolved_by = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True)
     outcome_terms_version_id = db.Column(

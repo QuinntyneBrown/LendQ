@@ -22,9 +22,7 @@ def configure_logging(app):
             rename_fields={"asctime": "timestamp", "levelname": "level"},
         )
     else:
-        formatter = logging.Formatter(
-            "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-        )
+        formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 
     handler.setFormatter(formatter)
     root_logger.addHandler(handler)

@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import Blueprint, g, jsonify, request
 
 from app.middleware.auth_middleware import require_auth
@@ -25,7 +27,7 @@ change_log_schema = ChangeLogSchema()
 def get_schedule(loan_id):
     payment_service = PaymentService()
     schedule = payment_service.get_schedule(loan_id, g.current_user)
-    return jsonify(payment_schema.dump(schedule, many=True)), 200
+    return jsonify(payment_schema.dump(schedule, many=True)), HTTPStatus.OK
 
 
 @payment_bp.route("/api/v1/loans/<loan_id>/payments", methods=["POST"])
@@ -35,7 +37,7 @@ def record_payment(loan_id):
     data = record_payment_schema.load(request.get_json())
     payment_service = PaymentService()
     payment_service.record_payment(loan_id, data, g.current_user)
-    return jsonify({"message": "Payment recorded"}), 201
+    return jsonify({"message": "Payment recorded"}), HTTPStatus.CREATED
 
 
 @payment_bp.route("/api/v1/payments/<payment_id>/reschedule", methods=["PUT"])
@@ -44,7 +46,7 @@ def reschedule_payment(payment_id):
     data = reschedule_schema.load(request.get_json())
     payment_service = PaymentService()
     payment_service.reschedule_payment(payment_id, data, g.current_user)
-    return jsonify({"message": "Payment rescheduled"}), 200
+    return jsonify({"message": "Payment rescheduled"}), HTTPStatus.OK
 
 
 @payment_bp.route("/api/v1/loans/<loan_id>/pause", methods=["POST"])
@@ -53,7 +55,7 @@ def pause_payments(loan_id):
     data = pause_schema.load(request.get_json())
     payment_service = PaymentService()
     payment_service.pause_payments(loan_id, data, g.current_user)
-    return jsonify({"message": "Payments paused"}), 200
+    return jsonify({"message": "Payments paused"}), HTTPStatus.OK
 
 
 @payment_bp.route("/api/v1/loans/<loan_id>/history", methods=["GET"])
@@ -61,4 +63,4 @@ def pause_payments(loan_id):
 def get_history(loan_id):
     payment_service = PaymentService()
     history = payment_service.get_history(loan_id, g.current_user)
-    return jsonify(change_log_schema.dump(history, many=True)), 200
+    return jsonify(change_log_schema.dump(history, many=True)), HTTPStatus.OK

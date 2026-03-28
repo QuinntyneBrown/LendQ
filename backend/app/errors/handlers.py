@@ -1,4 +1,5 @@
 import logging
+from http import HTTPStatus
 
 from flask import g, jsonify
 from marshmallow import ValidationError as MarshmallowValidationError
@@ -26,21 +27,42 @@ def register_error_handlers(app):
 
     @app.errorhandler(MarshmallowValidationError)
     def handle_marshmallow_error(error):
-        return _error_response("VALIDATION_ERROR", "Validation failed", 422, error.messages)
+        return _error_response(
+            "VALIDATION_ERROR",
+            "Validation failed",
+            HTTPStatus.UNPROCESSABLE_ENTITY,
+            error.messages,
+        )
 
-    @app.errorhandler(404)
+    @app.errorhandler(HTTPStatus.NOT_FOUND)
     def handle_not_found(error):
-        return _error_response("NOT_FOUND", "Not found", 404)
+        return _error_response(
+            "NOT_FOUND",
+            "Not found",
+            HTTPStatus.NOT_FOUND,
+        )
 
-    @app.errorhandler(405)
+    @app.errorhandler(HTTPStatus.METHOD_NOT_ALLOWED)
     def handle_method_not_allowed(error):
-        return _error_response("METHOD_NOT_ALLOWED", "Method not allowed", 405)
+        return _error_response(
+            "METHOD_NOT_ALLOWED",
+            "Method not allowed",
+            HTTPStatus.METHOD_NOT_ALLOWED,
+        )
 
-    @app.errorhandler(429)
+    @app.errorhandler(HTTPStatus.TOO_MANY_REQUESTS)
     def handle_rate_limit(error):
-        return _error_response("RATE_LIMIT_EXCEEDED", "Too many requests", 429)
+        return _error_response(
+            "RATE_LIMIT_EXCEEDED",
+            "Too many requests",
+            HTTPStatus.TOO_MANY_REQUESTS,
+        )
 
-    @app.errorhandler(500)
+    @app.errorhandler(HTTPStatus.INTERNAL_SERVER_ERROR)
     def handle_internal_error(error):
         logger.exception("Unhandled exception: %s", error)
-        return _error_response("INTERNAL_ERROR", "An unexpected error occurred", 500)
+        return _error_response(
+            "INTERNAL_ERROR",
+            "An unexpected error occurred",
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+        )

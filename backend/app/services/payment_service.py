@@ -1,15 +1,17 @@
+from __future__ import annotations
+
 import logging
-from datetime import date
 from decimal import Decimal
 
 from app.errors.exceptions import NotFoundError, ValidationError
 from app.extensions import db
 from app.models.loan import LoanStatus
 from app.models.payment import PaymentStatus
+from app.models.user import User
 from app.repositories.loan_repository import LoanRepository
 from app.repositories.payment_repository import PaymentRepository
 from app.services.activity_service import ActivityService
-from app.services.authorization import assert_loan_participant, load_loan_and_assert_participant
+from app.services.authorization import load_loan_and_assert_participant
 from app.services.balance_service import BalanceService
 from app.services.notification_service import NotificationService
 
@@ -17,18 +19,47 @@ logger = logging.getLogger(__name__)
 
 
 class PaymentService:
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize PaymentService with required repositories and services."""
         self.payment_repo = PaymentRepository()
         self.loan_repo = LoanRepository()
         self.balance_service = BalanceService()
         self.notification_service = NotificationService()
         self.activity_service = ActivityService()
 
-    def get_schedule(self, loan_id, user):
+    def get_schedule(self, loan_id: str, user: User) -> list:
+        """Fetch the payment schedule for a loan.
+
+        Args:
+            loan_id: The loan's unique identifier.
+            user: The authenticated user requesting the schedule.
+
+        Returns:
+            A list of Payment instances for the loan.
+
+        Raises:
+            NotFoundError: If the loan does not exist.
+            AuthorizationError: If the user is not a loan participant.
+        """
         load_loan_and_assert_participant(loan_id, user)
         return self.payment_repo.get_schedule(loan_id)
 
-    def record_payment(self, loan_id, data, user):
+    def record_payment(self, loan_id: str, data: dict, user: User) -> None:
+        """Record a payment against a loan's pending installments.
+
+        Applies the payment amount across pending installments in order.
+        Marks the loan as paid off when the outstanding balance reaches zero.
+
+        Args:
+            loan_id: The loan's unique identifier.
+            data: Validated payload containing amount, paid_date, and optional notes.
+            user: The authenticated user recording the payment.
+
+        Raises:
+            NotFoundError: If the loan does not exist.
+            AuthorizationError: If the user is not a loan participant.
+            ValidationError: If the amount is non-positive or no pending payments exist.
+        """
         loan = load_loan_and_assert_participant(loan_id, user)
 
         amount = Decimal(str(data["amount"]))
@@ -80,7 +111,19 @@ class PaymentService:
         db.session.commit()
         logger.info("Payment recorded for loan %s: $%s", loan_id, amount)
 
-    def reschedule_payment(self, payment_id, data, user):
+    def reschedule_payment(self, payment_id: str, data: dict, user: User) -> None:
+        """Reschedule a single payment to a new due date.
+
+        Args:
+            payment_id: The payment's unique identifier.
+            data: Validated payload with new_date and optional reason.
+            user: The authenticated user performing the reschedule.
+
+        Raises:
+            NotFoundError: If the payment does not exist.
+            AuthorizationError: If the user is not a loan participant.
+            ValidationError: If the payment is not in a schedulable status.
+        """
         payment = self.payment_repo.get_by_id(payment_id)
         if not payment:
             raise NotFoundError("Payment not found")
@@ -98,12 +141,16 @@ class PaymentService:
         payment.status = PaymentStatus.RESCHEDULED
 
         from app.services.change_log_service import ChangeLogService
+
         change_log_service = ChangeLogService()
         change_log_service.log_change(
-            entity_type="Payment", entity_id=payment.id,
+            entity_type="Payment",
+            entity_id=payment.id,
             field_name="due_date",
-            old_value=str(old_date), new_value=str(data["new_date"]),
-            changed_by=user.id, reason=data.get("reason"),
+            old_value=str(old_date),
+            new_value=str(data["new_date"]),
+            changed_by=user.id,
+            reason=data.get("reason"),
         )
 
         loan = self.loan_repo.get_by_id(payment.loan_id)
@@ -118,10 +165,22 @@ class PaymentService:
         db.session.commit()
         logger.info("Payment %s rescheduled to %s", payment_id, data["new_date"])
 
-    def pause_payments(self, loan_id, data, user):
+    def pause_payments(self, loan_id: str, data: dict, user: User) -> None:
+        """Pause one or more scheduled payments for a loan.
+
+        Args:
+            loan_id: The loan's unique identifier.
+            data: Validated payload with payment_ids list and optional reason.
+            user: The authenticated user pausing payments.
+
+        Raises:
+            NotFoundError: If the loan does not exist.
+            AuthorizationError: If the user is not a loan participant.
+        """
         loan = load_loan_and_assert_participant(loan_id, user)
 
         from app.services.change_log_service import ChangeLogService
+
         change_log_service = ChangeLogService()
 
         for pid in data["payment_ids"]:
@@ -133,10 +192,13 @@ class PaymentService:
 
             payment.status = PaymentStatus.PAUSED
             change_log_service.log_change(
-                entity_type="Payment", entity_id=payment.id,
+                entity_type="Payment",
+                entity_id=payment.id,
                 field_name="status",
-                old_value=PaymentStatus.SCHEDULED, new_value=PaymentStatus.PAUSED,
-                changed_by=user.id, reason=data.get("reason"),
+                old_value=PaymentStatus.SCHEDULED,
+                new_value=PaymentStatus.PAUSED,
+                changed_by=user.id,
+                reason=data.get("reason"),
             )
 
         self.activity_service.log_activity(
@@ -150,8 +212,22 @@ class PaymentService:
         db.session.commit()
         logger.info("Payments paused for loan %s", loan_id)
 
-    def get_history(self, loan_id, user):
+    def get_history(self, loan_id: str, user: User) -> list:
+        """Fetch the change history for a loan's payments.
+
+        Args:
+            loan_id: The loan's unique identifier.
+            user: The authenticated user requesting the history.
+
+        Returns:
+            A list of ChangeLog entries for the loan.
+
+        Raises:
+            NotFoundError: If the loan does not exist.
+            AuthorizationError: If the user is not a loan participant.
+        """
         load_loan_and_assert_participant(loan_id, user)
         from app.repositories.change_log_repository import ChangeLogRepository
+
         change_log_repo = ChangeLogRepository()
         return change_log_repo.get_by_loan(loan_id)

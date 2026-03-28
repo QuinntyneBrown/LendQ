@@ -1,7 +1,7 @@
-import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.extensions import db
+from app.models.base import UUIDMixin
 
 
 class InstallmentStatus:
@@ -13,10 +13,9 @@ class InstallmentStatus:
     OVERDUE = "OVERDUE"
 
 
-class ScheduleInstallment(db.Model):
+class ScheduleInstallment(UUIDMixin, db.Model):
     __tablename__ = "schedule_installments"
 
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     schedule_version_id = db.Column(
         db.String(36), db.ForeignKey("schedule_versions.id"), nullable=False, index=True
     )
@@ -25,6 +24,6 @@ class ScheduleInstallment(db.Model):
     amount_due = db.Column(db.Numeric(12, 2), nullable=False)
     status = db.Column(db.String(20), nullable=False, default=InstallmentStatus.SCHEDULED)
     original_due_date = db.Column(db.Date, nullable=True)
-    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC))
 
     schedule_version = db.relationship("ScheduleVersion", back_populates="installments")

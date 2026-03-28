@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import Blueprint, jsonify, request
 
 from app.middleware.auth_middleware import require_role
@@ -26,21 +28,25 @@ def list_audit_events():
 
     items = []
     for event in pagination.items:
-        items.append({
-            "id": event.id,
-            "user_id": event.user_id,
-            "action": event.action,
-            "outcome": event.outcome,
-            "request_id": event.request_id,
-            "ip_address": event.ip_address,
-            "created_at": event.created_at.isoformat() if event.created_at else None,
-            "before_values": event.before_values,
-            "after_values": event.after_values,
-        })
+        items.append(
+            {
+                "id": event.id,
+                "user_id": event.user_id,
+                "action": event.action,
+                "outcome": event.outcome,
+                "request_id": event.request_id,
+                "ip_address": event.ip_address,
+                "created_at": event.created_at.isoformat() if event.created_at else None,
+                "before_values": event.before_values,
+                "after_values": event.after_values,
+            }
+        )
 
-    return jsonify({
-        "items": items,
-        "total": pagination.total,
-        "page": page,
-        "per_page": per_page,
-    }), 200
+    return jsonify(
+        {
+            "items": items,
+            "total": pagination.total,
+            "page": page,
+            "per_page": per_page,
+        }
+    ), HTTPStatus.OK

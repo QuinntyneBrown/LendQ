@@ -20,7 +20,10 @@ def require_idempotency(f):
     def decorated(*args, **kwargs):
         key = request.headers.get("Idempotency-Key")
         if not key:
-            raise ValidationError("Idempotency-Key header is required", details={"Idempotency-Key": ["This header is required for this endpoint"]})
+            raise ValidationError(
+                "Idempotency-Key header is required",
+                details={"Idempotency-Key": ["This header is required for this endpoint"]},
+            )
 
         if len(key) < 8 or len(key) > 128:
             raise ValidationError("Idempotency-Key must be between 8 and 128 characters")

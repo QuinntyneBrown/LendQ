@@ -13,9 +13,12 @@ logger = logging.getLogger(__name__)
 @celery.task(bind=True, max_retries=3, default_retry_delay=60)
 def process_outbox_events(self):
     """Process unpublished outbox events."""
-    events = OutboxEvent.query.filter(
-        OutboxEvent.published_at.is_(None)
-    ).order_by(OutboxEvent.created_at.asc()).limit(100).all()
+    events = (
+        OutboxEvent.query.filter(OutboxEvent.published_at.is_(None))
+        .order_by(OutboxEvent.created_at.asc())
+        .limit(100)
+        .all()
+    )
 
     for event in events:
         try:

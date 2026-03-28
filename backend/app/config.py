@@ -41,9 +41,7 @@ class TestingConfig(Config):
     TESTING = True
     SECRET_KEY = "test-secret-key"
     JWT_SECRET_KEY = "test-jwt-secret-key"
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "TEST_DATABASE_URL", "sqlite:///test.db"
-    )
+    SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL", "sqlite:///test.db")
     RATE_LIMIT_AUTH = "100/minute"
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=60)
 

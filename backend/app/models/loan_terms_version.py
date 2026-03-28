@@ -1,13 +1,12 @@
-import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.extensions import db
+from app.models.base import UUIDMixin
 
 
-class LoanTermsVersion(db.Model):
+class LoanTermsVersion(UUIDMixin, db.Model):
     __tablename__ = "loan_terms_versions"
 
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     loan_id = db.Column(db.String(36), db.ForeignKey("loans.id"), nullable=False, index=True)
     version = db.Column(db.Integer, nullable=False, default=1)
     principal_amount = db.Column(db.Numeric(12, 2), nullable=False)
@@ -18,9 +17,9 @@ class LoanTermsVersion(db.Model):
     maturity_date = db.Column(db.Date, nullable=True)
     start_date = db.Column(db.Date, nullable=False)
     creditor_notes = db.Column(db.Text, nullable=True)
-    effective_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    effective_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC))
     created_by = db.Column(db.String(36), db.ForeignKey("users.id"))
-    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC))
 
     loan = db.relationship("Loan", foreign_keys=[loan_id], overlaps="terms_versions")
     actor = db.relationship("User", foreign_keys=[created_by])

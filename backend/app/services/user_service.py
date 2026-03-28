@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 
 from app.errors.exceptions import ConflictError, NotFoundError
@@ -12,24 +14,61 @@ logger = logging.getLogger(__name__)
 
 
 class UserService:
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize UserService with required repositories and services."""
         self.user_repo = UserRepository()
         self.role_repo = RoleRepository()
         self.password_service = PasswordService()
         self.audit_service = AuditService()
 
-    def list_users(self, page=1, per_page=20, search=None, role=None, is_active=None):
+    def list_users(
+        self,
+        page: int = 1,
+        per_page: int = 20,
+        search: str | None = None,
+        role: str | None = None,
+        is_active: bool | None = None,
+    ) -> dict:
+        """List users with optional filtering and pagination.
+
+        Args:
+            page: Page number (1-indexed).
+            per_page: Number of results per page.
+            search: Optional search string for name/email.
+            role: Optional role name filter.
+            is_active: Optional active-status filter.
+
+        Returns:
+            A paginated result dict.
+        """
         return self.user_repo.search(
             query_str=search, page=page, per_page=per_page, role=role, is_active=is_active
         )
 
-    def get_user(self, user_id):
+    def get_user(self, user_id: str) -> User:
+        """Fetch a user by ID.
+
+        Raises:
+            NotFoundError: If no user exists with the given ID.
+        """
         user = self.user_repo.get_by_id(user_id)
         if not user:
             raise NotFoundError("User not found")
         return user
 
-    def create_user(self, data, actor_id=None):
+    def create_user(self, data: dict, actor_id: str | None = None) -> User:
+        """Create a new user with roles and an audit log entry.
+
+        Args:
+            data: Validated user creation payload (name, email, password, role_ids).
+            actor_id: The ID of the admin performing the action.
+
+        Returns:
+            The newly created User instance.
+
+        Raises:
+            ConflictError: If a user with the given email already exists.
+        """
         existing = self.user_repo.get_by_email(data["email"])
         if existing:
             raise ConflictError("A user with this email already exists")
@@ -52,14 +91,36 @@ class UserService:
                 user.roles.append(borrower)
 
         self.user_repo.create(user)
-        self.audit_service.log("CREATE", "User", user.id, actor_id=actor_id, after_value={
-            "name": user.name, "email": user.email, "roles": user.role_names,
-        })
+        self.audit_service.log(
+            "CREATE",
+            "User",
+            user.id,
+            actor_id=actor_id,
+            after_value={
+                "name": user.name,
+                "email": user.email,
+                "roles": user.role_names,
+            },
+        )
         db.session.commit()
         logger.info("User created: %s by %s", user.id, actor_id)
         return user
 
-    def update_user(self, user_id, data, actor_id=None):
+    def update_user(self, user_id: str, data: dict, actor_id: str | None = None) -> User:
+        """Update an existing user's profile and roles.
+
+        Args:
+            user_id: The ID of the user to update.
+            data: Validated update payload (name, email, is_active, role_ids).
+            actor_id: The ID of the admin performing the action.
+
+        Returns:
+            The updated User instance.
+
+        Raises:
+            NotFoundError: If no user exists with the given ID.
+            ConflictError: If the new email is already in use.
+        """
         user = self.get_user(user_id)
         before = {"name": user.name, "email": user.email, "is_active": user.is_active}
 
@@ -80,14 +141,28 @@ class UserService:
                 if role:
                     user.roles.append(role)
 
-        self.audit_service.log("UPDATE", "User", user.id, actor_id=actor_id,
-                               before_value=before,
-                               after_value={"name": user.name, "email": user.email, "is_active": user.is_active})
+        self.audit_service.log(
+            "UPDATE",
+            "User",
+            user.id,
+            actor_id=actor_id,
+            before_value=before,
+            after_value={"name": user.name, "email": user.email, "is_active": user.is_active},
+        )
         db.session.commit()
         logger.info("User updated: %s by %s", user.id, actor_id)
         return user
 
-    def delete_user(self, user_id, actor_id=None):
+    def delete_user(self, user_id: str, actor_id: str | None = None) -> None:
+        """Soft-delete a user by deactivating their account.
+
+        Args:
+            user_id: The ID of the user to deactivate.
+            actor_id: The ID of the admin performing the action.
+
+        Raises:
+            NotFoundError: If no user exists with the given ID.
+        """
         user = self.get_user(user_id)
         user.is_active = False
         self.audit_service.log("DEACTIVATE", "User", user.id, actor_id=actor_id)

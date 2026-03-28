@@ -16,6 +16,7 @@ def create_app(config_name=None):
     app = Flask(__name__)
     app.url_map.strict_slashes = False
     app.config.from_object(config_by_name[config_name])
+    app.config.from_prefixed_env("LENDQ")
 
     # Initialize extensions
     db.init_app(app)
@@ -60,6 +61,7 @@ def create_app(config_name=None):
 
     # Initialize metrics
     from app.observability.metrics import init_metrics
+
     init_metrics(app)
 
     # Configure logging

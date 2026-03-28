@@ -1,13 +1,28 @@
+from __future__ import annotations
+
 from datetime import timedelta
 from decimal import Decimal
 
 from dateutil.relativedelta import relativedelta
 
+from app.models.loan import Loan
 from app.models.payment import Payment, PaymentStatus
 
 
 class ScheduleService:
-    def generate_schedule(self, loan):
+    def generate_schedule(self, loan: Loan) -> list[Payment]:
+        """Generate an amortized payment schedule for a loan.
+
+        Computes equal installment amounts based on the loan's principal,
+        interest rate, and repayment frequency. Adjusts the final payment
+        to account for rounding differences on zero-interest loans.
+
+        Args:
+            loan: The Loan instance (must have _num_payments attribute set).
+
+        Returns:
+            A list of Payment instances representing the schedule.
+        """
         principal = Decimal(str(loan.principal))
         rate = Decimal(str(loan.interest_rate)) / Decimal("100")
         frequency = loan.repayment_frequency

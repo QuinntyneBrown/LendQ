@@ -15,6 +15,10 @@ addopts = "-v --tb=short"
 target-version = "py311"
 line-length = 100
 
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
 

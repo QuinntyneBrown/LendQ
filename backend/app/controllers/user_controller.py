@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import Blueprint, g, jsonify, request
 
 from app.middleware.auth_middleware import require_role
@@ -27,7 +29,7 @@ def list_users():
     result = user_service.list_users(
         page=page, per_page=per_page, search=search, role=role, is_active=is_active
     )
-    return jsonify(paginated_response(user_schema, result)), 200
+    return jsonify(paginated_response(user_schema, result)), HTTPStatus.OK
 
 
 @user_bp.route("/", methods=["POST"])
@@ -36,7 +38,7 @@ def create_user():
     data = create_user_schema.load(request.get_json())
     user_service = UserService()
     user = user_service.create_user(data, actor_id=g.current_user.id)
-    return jsonify(user_schema.dump(user)), 201
+    return jsonify(user_schema.dump(user)), HTTPStatus.CREATED
 
 
 @user_bp.route("/borrowers", methods=["GET"])
@@ -64,12 +66,14 @@ def list_borrowers():
 
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     items = [{"id": u.id, "name": u.name, "email": u.email} for u in pagination.items]
-    return jsonify({
-        "items": items,
-        "total": pagination.total,
-        "page": page,
-        "per_page": per_page,
-    }), 200
+    return jsonify(
+        {
+            "items": items,
+            "total": pagination.total,
+            "page": page,
+            "per_page": per_page,
+        }
+    ), HTTPStatus.OK
 
 
 @user_bp.route("/<user_id>", methods=["GET"])
@@ -77,7 +81,7 @@ def list_borrowers():
 def get_user(user_id):
     user_service = UserService()
     user = user_service.get_user(user_id)
-    return jsonify(user_schema.dump(user)), 200
+    return jsonify(user_schema.dump(user)), HTTPStatus.OK
 
 
 @user_bp.route("/<user_id>", methods=["PATCH"])
@@ -86,7 +90,7 @@ def update_user(user_id):
     data = update_user_schema.load(request.get_json())
     user_service = UserService()
     user = user_service.update_user(user_id, data, actor_id=g.current_user.id)
-    return jsonify(user_schema.dump(user)), 200
+    return jsonify(user_schema.dump(user)), HTTPStatus.OK
 
 
 @user_bp.route("/<user_id>", methods=["DELETE"])
@@ -94,4 +98,4 @@ def update_user(user_id):
 def delete_user(user_id):
     user_service = UserService()
     user_service.delete_user(user_id, actor_id=g.current_user.id)
-    return jsonify({"message": "User deleted"}), 200
+    return jsonify({"message": "User deleted"}), HTTPStatus.OK

@@ -1,5 +1,6 @@
 import json
 import time
+from http import HTTPStatus
 
 from flask import Blueprint, Response, g, jsonify, request
 
@@ -23,7 +24,7 @@ def list_notifications():
     notification_type = request.args.get("type")
     service = NotificationService()
     result = service.list_notifications(g.current_user.id, page, per_page, notification_type)
-    return jsonify(paginated_response(notification_schema, result)), 200
+    return jsonify(paginated_response(notification_schema, result)), HTTPStatus.OK
 
 
 @notification_bp.route("/unread-count", methods=["GET"])
@@ -31,7 +32,7 @@ def list_notifications():
 def get_unread_count():
     service = NotificationService()
     count = service.get_unread_count(g.current_user.id)
-    return jsonify({"count": count}), 200
+    return jsonify({"count": count}), HTTPStatus.OK
 
 
 @notification_bp.route("/<notification_id>/read", methods=["POST"])
@@ -39,7 +40,7 @@ def get_unread_count():
 def mark_read(notification_id):
     service = NotificationService()
     service.mark_read(notification_id, g.current_user.id)
-    return "", 204
+    return "", HTTPStatus.NO_CONTENT
 
 
 @notification_bp.route("/read-all", methods=["POST"])
@@ -47,7 +48,7 @@ def mark_read(notification_id):
 def mark_all_read():
     service = NotificationService()
     service.mark_all_read(g.current_user.id)
-    return "", 204
+    return "", HTTPStatus.NO_CONTENT
 
 
 @notification_bp.route("/stream", methods=["GET"])
@@ -59,10 +60,16 @@ def notification_stream():
         last_id = 0
         while True:
             from app.models.notification import Notification
-            notifications = Notification.query.filter(
-                Notification.user_id == user_id,
-                Notification.is_read == False,
-            ).order_by(Notification.created_at.desc()).limit(10).all()
+
+            notifications = (
+                Notification.query.filter(
+                    Notification.user_id == user_id,
+                    Notification.is_read == False,
+                )
+                .order_by(Notification.created_at.desc())
+                .limit(10)
+                .all()
+            )
 
             for n in notifications:
                 data = {
@@ -90,7 +97,9 @@ def notification_stream():
 
 
 # Notification Preferences endpoints
-pref_bp = Blueprint("notification_preferences", __name__, url_prefix="/api/v1/notification-preferences")
+pref_bp = Blueprint(
+    "notification_preferences", __name__, url_prefix="/api/v1/notification-preferences"
+)
 
 
 @pref_bp.route("/", methods=["GET"])
@@ -99,23 +108,27 @@ def get_preferences():
     pref = NotificationPreference.query.get(g.current_user.id)
     if not pref:
         # Return defaults
-        return jsonify({
-            "payment_due_email": True,
-            "payment_overdue_email": True,
-            "payment_received_email": True,
-            "schedule_changed_email": True,
-            "loan_modified_email": True,
-            "system_email": True,
-        }), 200
+        return jsonify(
+            {
+                "payment_due_email": True,
+                "payment_overdue_email": True,
+                "payment_received_email": True,
+                "schedule_changed_email": True,
+                "loan_modified_email": True,
+                "system_email": True,
+            }
+        ), HTTPStatus.OK
 
-    return jsonify({
-        "payment_due_email": pref.payment_due_email,
-        "payment_overdue_email": pref.payment_overdue_email,
-        "payment_received_email": pref.payment_received_email,
-        "schedule_changed_email": pref.schedule_changed_email,
-        "loan_modified_email": pref.loan_modified_email,
-        "system_email": pref.system_email,
-    }), 200
+    return jsonify(
+        {
+            "payment_due_email": pref.payment_due_email,
+            "payment_overdue_email": pref.payment_overdue_email,
+            "payment_received_email": pref.payment_received_email,
+            "schedule_changed_email": pref.schedule_changed_email,
+            "loan_modified_email": pref.loan_modified_email,
+            "system_email": pref.system_email,
+        }
+    ), HTTPStatus.OK
 
 
 @pref_bp.route("/", methods=["PUT"])
@@ -129,8 +142,12 @@ def update_preferences():
         db.session.add(pref)
 
     allowed_fields = [
-        "payment_due_email", "payment_overdue_email", "payment_received_email",
-        "schedule_changed_email", "loan_modified_email", "system_email",
+        "payment_due_email",
+        "payment_overdue_email",
+        "payment_received_email",
+        "schedule_changed_email",
+        "loan_modified_email",
+        "system_email",
     ]
     for field in allowed_fields:
         if field in data:
@@ -138,11 +155,13 @@ def update_preferences():
 
     db.session.commit()
 
-    return jsonify({
-        "payment_due_email": pref.payment_due_email,
-        "payment_overdue_email": pref.payment_overdue_email,
-        "payment_received_email": pref.payment_received_email,
-        "schedule_changed_email": pref.schedule_changed_email,
-        "loan_modified_email": pref.loan_modified_email,
-        "system_email": pref.system_email,
-    }), 200
+    return jsonify(
+        {
+            "payment_due_email": pref.payment_due_email,
+            "payment_overdue_email": pref.payment_overdue_email,
+            "payment_received_email": pref.payment_received_email,
+            "schedule_changed_email": pref.schedule_changed_email,
+            "loan_modified_email": pref.loan_modified_email,
+            "system_email": pref.system_email,
+        }
+    ), HTTPStatus.OK

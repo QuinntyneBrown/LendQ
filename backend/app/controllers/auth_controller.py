@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 
 from app.extensions import limiter
@@ -58,7 +60,7 @@ def login():
         user_agent=request.headers.get("User-Agent"),
         ip_address=request.remote_addr,
     )
-    response = make_response(jsonify(token_response_schema.dump(token_bundle)), 200)
+    response = make_response(jsonify(token_response_schema.dump(token_bundle)), HTTPStatus.OK)
     _set_session_cookie(response, raw_session_token)
     return response
 
@@ -86,7 +88,7 @@ def signup():
         except Exception:
             pass  # Don't fail signup if email fails
 
-    return "", 201
+    return "", HTTPStatus.CREATED
 
 
 @auth_bp.route("/email-verification/resend", methods=["POST"])
@@ -107,7 +109,7 @@ def resend_verification():
         except Exception:
             pass
 
-    return "", 202
+    return "", HTTPStatus.ACCEPTED
 
 
 @auth_bp.route("/email-verification/confirm", methods=["POST"])
@@ -116,7 +118,7 @@ def confirm_verification():
     data = verification_confirm_schema.load(request.get_json())
     auth_service = AuthService()
     auth_service.verify_email(data["token"])
-    return "", 200
+    return "", HTTPStatus.OK
 
 
 @auth_bp.route("/forgot-password", methods=["POST"])
@@ -130,7 +132,8 @@ def forgot_password():
         email_service = EmailService()
         email_service.send_password_reset(data["email"], reset_token)
 
-    return jsonify({"message": "If the email exists, a reset link has been sent"}), 202
+    msg = {"message": "If the email exists, a reset link has been sent"}
+    return jsonify(msg), HTTPStatus.ACCEPTED
 
 
 @auth_bp.route("/reset-password", methods=["POST"])
@@ -143,7 +146,7 @@ def reset_password():
         password=data["password"],
         confirm_password=data["confirm_password"],
     )
-    return "", 200
+    return "", HTTPStatus.OK
 
 
 @auth_bp.route("/refresh", methods=["POST"])
@@ -151,6 +154,7 @@ def refresh():
     raw_session_token = request.cookies.get(SESSION_COOKIE_NAME)
     if not raw_session_token:
         from app.errors.exceptions import AuthenticationError
+
         raise AuthenticationError("No session cookie present")
 
     auth_service = AuthService()
@@ -159,7 +163,7 @@ def refresh():
         user_agent=request.headers.get("User-Agent"),
         ip_address=request.remote_addr,
     )
-    response = make_response(jsonify(token_response_schema.dump(token_bundle)), 200)
+    response = make_response(jsonify(token_response_schema.dump(token_bundle)), HTTPStatus.OK)
     _set_session_cookie(response, new_raw_token)
     return response
 
@@ -168,7 +172,7 @@ def refresh():
 @require_auth
 def get_me():
     user_schema = UserSchema()
-    return jsonify(user_schema.dump(g.current_user)), 200
+    return jsonify(user_schema.dump(g.current_user)), HTTPStatus.OK
 
 
 @auth_bp.route("/logout", methods=["POST"])
@@ -177,7 +181,7 @@ def logout():
     raw_session_token = request.cookies.get(SESSION_COOKIE_NAME)
     auth_service = AuthService()
     auth_service.logout(raw_session_token)
-    response = make_response("", 204)
+    response = make_response("", HTTPStatus.NO_CONTENT)
     _clear_session_cookie(response)
     return response
 
@@ -187,7 +191,7 @@ def logout():
 def logout_all():
     auth_service = AuthService()
     auth_service.logout_all(g.current_user.id)
-    response = make_response("", 204)
+    response = make_response("", HTTPStatus.NO_CONTENT)
     _clear_session_cookie(response)
     return response
 
@@ -200,15 +204,17 @@ def list_sessions():
     current_session_id = g.token_payload.get("session_id")
     result = []
     for s in sessions:
-        result.append({
-            "id": s.id,
-            "created_at": s.created_at.isoformat() if s.created_at else None,
-            "last_seen_at": s.last_seen_at.isoformat() if s.last_seen_at else None,
-            "user_agent": s.user_agent,
-            "ip_address": s.ip_address,
-            "is_current": s.id == current_session_id,
-        })
-    return jsonify({"items": result}), 200
+        result.append(
+            {
+                "id": s.id,
+                "created_at": s.created_at.isoformat() if s.created_at else None,
+                "last_seen_at": s.last_seen_at.isoformat() if s.last_seen_at else None,
+                "user_agent": s.user_agent,
+                "ip_address": s.ip_address,
+                "is_current": s.id == current_session_id,
+            }
+        )
+    return jsonify({"items": result}), HTTPStatus.OK
 
 
 @auth_bp.route("/sessions/<session_id>", methods=["DELETE"])
@@ -216,4 +222,4 @@ def list_sessions():
 def revoke_session(session_id):
     auth_service = AuthService()
     auth_service.revoke_session(session_id, g.current_user.id)
-    return "", 204
+    return "", HTTPStatus.NO_CONTENT

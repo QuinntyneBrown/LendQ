@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import logging
 from decimal import Decimal
 
 from app.errors.exceptions import AuthorizationError, NotFoundError, ValidationError
 from app.extensions import db
-from app.models.loan import Loan, LoanStatus
+from app.models.loan import Loan
+from app.models.user import User
 from app.repositories.loan_repository import LoanRepository
 from app.repositories.user_repository import UserRepository
 from app.services.activity_service import ActivityService
@@ -15,7 +18,8 @@ logger = logging.getLogger(__name__)
 
 
 class LoanService:
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize LoanService with required repositories and services."""
         self.loan_repo = LoanRepository()
         self.user_repo = UserRepository()
         self.schedule_service = ScheduleService()
@@ -23,26 +27,78 @@ class LoanService:
         self.activity_service = ActivityService()
         self.audit_service = AuditService()
 
-    def list_loans(self, user, page=1, per_page=20, tab=None, status=None):
+    def list_loans(
+        self,
+        user: User,
+        page: int = 1,
+        per_page: int = 20,
+        tab: str | None = None,
+        status: str | None = None,
+    ) -> dict:
+        """List loans visible to the user with optional filtering and pagination.
+
+        Args:
+            user: The authenticated user.
+            page: Page number (1-indexed).
+            per_page: Number of results per page.
+            tab: View perspective ('creditor' or 'borrower').
+            status: Optional loan status filter.
+
+        Returns:
+            A paginated result dict.
+        """
         if user.has_role("Admin"):
             return self.loan_repo.get_paginated(
-                page=page, per_page=per_page,
+                page=page,
+                per_page=per_page,
                 filters=[Loan.status == status] if status else None,
                 order_by=Loan.created_at.desc(),
             )
         if tab == "creditor" or (not tab and user.has_role("Creditor")):
-            return self.loan_repo.get_by_creditor(user.id, page=page, per_page=per_page, status=status)
+            return self.loan_repo.get_by_creditor(
+                user.id, page=page, per_page=per_page, status=status
+            )
         return self.loan_repo.get_by_borrower(user.id, page=page, per_page=per_page, status=status)
 
-    def get_loan(self, loan_id, user):
+    def get_loan(self, loan_id: str, user: User) -> Loan:
+        """Fetch a loan by ID with authorization check.
+
+        Args:
+            loan_id: The loan's unique identifier.
+            user: The authenticated user requesting access.
+
+        Returns:
+            The requested Loan instance.
+
+        Raises:
+            NotFoundError: If no loan exists with the given ID.
+            AuthorizationError: If the user is not a participant or admin.
+        """
         loan = self.loan_repo.get_by_id(loan_id)
         if not loan:
             raise NotFoundError("Loan not found")
-        if not user.has_role("Admin") and loan.creditor_id != user.id and loan.borrower_id != user.id:
+        if (
+            not user.has_role("Admin")
+            and loan.creditor_id != user.id
+            and loan.borrower_id != user.id
+        ):
             raise AuthorizationError("You do not have access to this loan")
         return loan
 
-    def create_loan(self, data, user):
+    def create_loan(self, data: dict, user: User) -> Loan:
+        """Create a new loan with an initial payment schedule.
+
+        Args:
+            data: Validated loan creation payload.
+            user: The authenticated creditor creating the loan.
+
+        Returns:
+            The newly created Loan instance.
+
+        Raises:
+            AuthorizationError: If the user is not a creditor or admin.
+            ValidationError: If the borrower is invalid or principal is non-positive.
+        """
         if not user.has_role("Creditor") and not user.has_role("Admin"):
             raise AuthorizationError("Only creditors can create loans")
 
@@ -85,7 +141,21 @@ class LoanService:
         logger.info("Loan created: %s by %s", loan.id, user.id)
         return loan
 
-    def update_loan(self, loan_id, data, user):
+    def update_loan(self, loan_id: str, data: dict, user: User) -> Loan:
+        """Update loan terms and log changes.
+
+        Args:
+            loan_id: The loan's unique identifier.
+            data: Validated update payload with changed fields.
+            user: The authenticated user performing the update.
+
+        Returns:
+            The updated Loan instance.
+
+        Raises:
+            NotFoundError: If the loan does not exist.
+            AuthorizationError: If the user lacks permission to modify the loan.
+        """
         loan = self.get_loan(loan_id, user)
 
         if loan.borrower_id == user.id and not user.has_role("Admin"):
@@ -93,7 +163,15 @@ class LoanService:
                 raise AuthorizationError("Borrowers cannot modify the principal")
 
         changes = {}
-        for field in ["description", "interest_rate", "repayment_frequency", "start_date", "status", "notes", "principal"]:
+        for field in [
+            "description",
+            "interest_rate",
+            "repayment_frequency",
+            "start_date",
+            "status",
+            "notes",
+            "principal",
+        ]:
             if field in data:
                 old_val = str(getattr(loan, field))
                 new_val = str(data[field])
@@ -103,11 +181,15 @@ class LoanService:
 
         if changes:
             from app.services.change_log_service import ChangeLogService
+
             change_log_service = ChangeLogService()
             for field, (old_val, new_val) in changes.items():
                 change_log_service.log_change(
-                    entity_type="Loan", entity_id=loan.id,
-                    field_name=field, old_value=old_val, new_value=new_val,
+                    entity_type="Loan",
+                    entity_id=loan.id,
+                    field_name=field,
+                    old_value=old_val,
+                    new_value=new_val,
                     changed_by=user.id,
                 )
 
