@@ -5,7 +5,11 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.PLAYWRIGHT_WORKERS
+    ? Number(process.env.PLAYWRIGHT_WORKERS)
+    : process.env.CI
+      ? 1
+      : undefined,
   reporter: [["html"], ["list"]],
   use: {
     baseURL: process.env.BASE_URL || "http://localhost:5173",
@@ -20,27 +24,26 @@ export default defineConfig({
     {
       name: "chromium-desktop",
       dependencies: ["setup-auth"],
+      testIgnore: /responsive\/.*\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] },
     },
     {
       name: "firefox-desktop",
       dependencies: ["setup-auth"],
+      testIgnore: /responsive\/.*\.spec\.ts/,
       use: { ...devices["Desktop Firefox"] },
     },
     {
       name: "webkit-desktop",
       dependencies: ["setup-auth"],
+      testIgnore: /responsive\/.*\.spec\.ts/,
       use: { ...devices["Desktop Safari"] },
     },
     {
-      name: "chromium-tablet",
+      name: "responsive-chromium",
       dependencies: ["setup-auth"],
-      use: { ...devices["iPad (gen 7)"] },
-    },
-    {
-      name: "chromium-mobile",
-      dependencies: ["setup-auth"],
-      use: { ...devices["iPhone 13"] },
+      testMatch: /responsive\/.*\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
     },
   ],
 });

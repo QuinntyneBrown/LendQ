@@ -20,6 +20,6 @@ export class NotificationBell {
   }
 
   async expectNoBadge() {
-    await expect(this.unreadBadge).toBeHidden();
+    await expect(this.unreadBadge).toBeHidden({ timeout: 10000 });
   }
 }

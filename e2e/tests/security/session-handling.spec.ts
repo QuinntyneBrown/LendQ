@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { LoginPage } from "../../pages/LoginPage";
 
-test.describe("L2-1.4, L2-8.1: Session Security", () => {
+test.describe("L2-1.4, L2-8.1: Session Security @cross-browser", () => {
   test("expired session redirects to login", async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();

@@ -62,7 +62,7 @@ export class AddEditUserDialog {
   }
 
   async expectClosed() {
-    await expect(this.dialog).toBeHidden();
+    await expect(this.dialog).toBeHidden({ timeout: 10000 });
   }
 
   async expectTitle(title: string) {

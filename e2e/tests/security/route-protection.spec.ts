@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { LoginPage } from "../../pages/LoginPage";
 
-test.describe("L2-10.1: Client Route Protection", () => {
+test.describe("L2-10.1: Client Route Protection @cross-browser", () => {
   const protectedRoutes = ["/dashboard", "/loans", "/users", "/notifications", "/settings"];
 
   for (const route of protectedRoutes) {

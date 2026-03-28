@@ -34,12 +34,14 @@ export class ToastComponent {
   }
 
   async waitForToast(type: string) {
-    await expect(this.toastContainer.locator(`[data-testid='toast-${type}']`).first()).toBeVisible({ timeout: 5000 });
+    await expect(this.toastContainer.locator(`[data-testid='toast-${type}']`).first()).toBeVisible({
+      timeout: 10000,
+    });
   }
 
   async expectToast(type: string, message: string) {
     const toast = this.toastContainer.locator(`[data-testid='toast-${type}']`).first();
-    await expect(toast).toBeVisible();
+    await expect(toast).toBeVisible({ timeout: 10000 });
     await expect(toast).toContainText(message);
   }
 

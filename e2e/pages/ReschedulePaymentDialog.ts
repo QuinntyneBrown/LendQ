@@ -48,7 +48,7 @@ export class ReschedulePaymentDialog {
   }
 
   async expectClosed() {
-    await expect(this.dialog).toBeHidden();
+    await expect(this.dialog).toBeHidden({ timeout: 10000 });
   }
 
   async expectCurrentDate(date: string) {

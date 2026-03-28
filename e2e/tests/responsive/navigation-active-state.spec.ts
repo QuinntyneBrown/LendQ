@@ -23,7 +23,7 @@ async function loginAsCreditor() {
 
 test.use({ viewport: VIEWPORTS.desktop });
 
-test.describe("Navigation Active State", () => {
+test.describe("Navigation Active State @responsive", () => {
   test("desktop sidebar highlights only the clicked loan navigation item", async ({ page }) => {
     const { access_token: accessToken } = await loginAsCreditor();
 

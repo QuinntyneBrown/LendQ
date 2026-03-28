@@ -1,7 +1,7 @@
 import { test, expect } from "../../fixtures/auth.fixture";
 import { VIEWPORTS } from "../../fixtures/viewport.fixture";
 
-test.describe("Responsive table/card layouts", () => {
+test.describe("Responsive table/card layouts @responsive", () => {
   test("desktop: user list as data table", async ({ adminPage }) => {
     await adminPage.setViewportSize(VIEWPORTS.desktop);
     await adminPage.goto("/users");

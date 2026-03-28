@@ -2,7 +2,7 @@ import { test, expect } from "../../fixtures/auth.fixture";
 import { DashboardPage } from "../../pages/DashboardPage";
 import { VIEWPORTS } from "../../fixtures/viewport.fixture";
 
-test.describe("Dashboard responsive layouts", () => {
+test.describe("Dashboard responsive layouts @responsive", () => {
   test("desktop: 4 metric cards in a row", async ({ creditorPage }) => {
     await creditorPage.setViewportSize(VIEWPORTS.desktop);
     const dashboard = new DashboardPage(creditorPage);
