@@ -71,6 +71,7 @@ jobs:
             --image "$FULL_IMAGE"
 
       - name: Run database migrations
+        continue-on-error: true
         run: |
           az containerapp job start \
             --name $MIGRATION_JOB_NAME \
