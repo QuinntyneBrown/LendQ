@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { PaginatedResponse, Role, User } from "@/api/types";
-import { apiDelete, apiGet, apiPost, apiPut } from "@/api/client";
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "@/api/client";
 
 export function useUsers(page: number, search: string) {
   return useQuery({
@@ -36,7 +36,7 @@ export function useUpdateUser() {
       role_ids: string[];
       is_active: boolean;
     }) =>
-      apiPut<User>(`/users/${id}`, data),
+      apiPatch<User>(`/users/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },

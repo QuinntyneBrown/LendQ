@@ -94,7 +94,7 @@ export class ApiClient {
   }
 
   async markAllNotificationsRead(token: string) {
-    const res = await this.request.put(`${API}/notifications/read-all`, {
+    const res = await this.request.post(`${API}/notifications/read-all`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return res.status();
