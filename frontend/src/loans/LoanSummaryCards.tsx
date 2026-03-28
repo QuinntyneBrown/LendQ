@@ -8,7 +8,7 @@ interface LoanSummaryCardsProps {
 }
 
 export function LoanSummaryCards({ loan }: LoanSummaryCardsProps) {
-  const totalPaid = loan.principal - loan.outstanding_balance;
+  const totalPaid = Number(loan.principal) - Number(loan.outstanding_balance);
   const nextPayment = loan.start_date ? formatDate(loan.start_date) : "—";
 
   return (

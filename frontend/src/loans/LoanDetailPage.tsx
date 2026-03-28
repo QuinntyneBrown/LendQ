@@ -10,6 +10,8 @@ import { StatusBadge } from "./StatusBadge";
 import { LoanSummaryCards } from "./LoanSummaryCards";
 import { CreateEditLoanModal } from "./CreateEditLoanModal";
 import { useLoanDetail } from "./hooks";
+import { PaymentScheduleView } from "@/payments/PaymentScheduleView";
+import { PaymentHistoryView } from "@/payments/PaymentHistoryView";
 
 export function LoanDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -18,7 +20,6 @@ export function LoanDetailPage() {
   const { data: loan, isLoading } = useLoanDetail(id!);
 
   const [editOpen, setEditOpen] = useState(false);
-  const [paymentOpen, setPaymentOpen] = useState(false);
 
   const isBorrower =
     roles.length === 1 && roles[0] === "Borrower";
@@ -73,7 +74,7 @@ export function LoanDetailPage() {
               Edit Loan
             </Button>
           )}
-          <Button icon={CreditCard} onClick={() => setPaymentOpen(true)}>
+          <Button icon={CreditCard} onClick={() => document.getElementById("payment-schedule-card")?.scrollIntoView({ behavior: "smooth" })}>
             Record Payment
           </Button>
         </div>
@@ -161,51 +162,7 @@ export function LoanDetailPage() {
         loan={loan}
       />
 
-      {paymentOpen && (
-        <RecordPaymentDialog
-          open={paymentOpen}
-          onClose={() => setPaymentOpen(false)}
-          loanId={loan.id}
-        />
-      )}
-    </div>
-  );
-}
-
-function PaymentScheduleView({ loanId }: { loanId: string }) {
-  void loanId;
-  return (
-    <p className="font-body text-sm text-text-muted">
-      Payment schedule will be displayed here.
-    </p>
-  );
-}
-
-function PaymentHistoryView({ loanId }: { loanId: string }) {
-  void loanId;
-  return (
-    <p className="font-body text-sm text-text-muted">
-      Payment history will be displayed here.
-    </p>
-  );
-}
-
-function RecordPaymentDialog({
-  open,
-  onClose,
-  loanId,
-}: {
-  open: boolean;
-  onClose: () => void;
-  loanId: string;
-}) {
-  void open;
-  void loanId;
-  return (
-    <div>
-      <button type="button" onClick={onClose} className="hidden">
-        Close
-      </button>
+      {/* Record Payment button scrolls to the payment schedule */}
     </div>
   );
 }

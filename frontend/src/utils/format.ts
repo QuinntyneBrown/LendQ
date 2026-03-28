@@ -5,8 +5,8 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
-export function formatCurrency(n: number): string {
-  return currencyFormatter.format(n);
+export function formatCurrency(n: number | string): string {
+  return currencyFormatter.format(Number(n));
 }
 
 export function formatDate(d: string): string {
