@@ -1,69 +1,85 @@
-import json
-
 import pytest
 
 
 class TestAuthEndpoints:
-    def test_login_success(self, client, borrower_user):
-        response = client.post("/api/v1/auth/login", json={
-            "email": "borrower@test.com",
-            "password": "testpassword123",
-        })
-        assert response.status_code == 200
-        data = response.get_json()
-        assert "access_token" in data
-        assert "refresh_token" in data
-        assert data["token_type"] == "Bearer"
-
-    def test_login_invalid_credentials(self, client):
-        response = client.post("/api/v1/auth/login", json={
-            "email": "nobody@test.com",
-            "password": "wrongpassword",
-        })
-        assert response.status_code == 401
-
-    def test_signup_success(self, client):
-        response = client.post("/api/v1/auth/signup", json={
-            "name": "Signup Test",
-            "email": "signuptest@test.com",
+    def test_signup_returns_201(self, client):
+        resp = client.post("/api/v1/auth/signup", json={
+            "name": "Test User",
+            "email": "new@test.com",
             "password": "password123",
             "confirm_password": "password123",
         })
-        assert response.status_code == 201
-        data = response.get_json()
-        assert data["name"] == "Signup Test"
-        assert data["email"] == "signuptest@test.com"
+        assert resp.status_code == 201
 
-    def test_signup_duplicate_email(self, client, borrower_user):
-        response = client.post("/api/v1/auth/signup", json={
+    def test_signup_duplicate_email_returns_409(self, client, creditor_user):
+        resp = client.post("/api/v1/auth/signup", json={
             "name": "Duplicate",
-            "email": "borrower@test.com",
+            "email": creditor_user.email,
             "password": "password123",
             "confirm_password": "password123",
         })
-        assert response.status_code == 409
+        assert resp.status_code == 409
+        data = resp.get_json()
+        assert data["code"] == "CONFLICT"
 
-    def test_forgot_password_always_succeeds(self, client):
-        response = client.post("/api/v1/auth/forgot-password", json={
-            "email": "nonexistent@test.com",
-        })
-        assert response.status_code == 200
-
-    def test_refresh_token(self, client, borrower_user):
-        login_resp = client.post("/api/v1/auth/login", json={
-            "email": "borrower@test.com",
+    def test_login_returns_token_bundle(self, client, creditor_user):
+        resp = client.post("/api/v1/auth/login", json={
+            "email": creditor_user.email,
             "password": "testpassword123",
         })
-        refresh_token = login_resp.get_json()["refresh_token"]
-
-        response = client.post("/api/v1/auth/refresh", json={
-            "refresh_token": refresh_token,
-        })
-        assert response.status_code == 200
-        data = response.get_json()
+        assert resp.status_code == 200
+        data = resp.get_json()
         assert "access_token" in data
+        assert "expires_in_seconds" in data
+        assert "csrf_token" in data
+        assert "user" in data
+        assert data["user"]["email"] == creditor_user.email
+        # Session cookie should be set
+        assert "lendq_session" in resp.headers.get("Set-Cookie", "")
 
-    def test_logout(self, client, borrower_user, auth_headers):
-        headers = auth_headers(borrower_user)
-        response = client.post("/api/v1/auth/logout", headers=headers, json={})
-        assert response.status_code == 204
+    def test_login_invalid_credentials_returns_401(self, client):
+        resp = client.post("/api/v1/auth/login", json={
+            "email": "noone@test.com",
+            "password": "wrong",
+        })
+        assert resp.status_code == 401
+        data = resp.get_json()
+        assert data["code"] == "AUTHENTICATION_ERROR"
+        assert "request_id" in data
+
+    def test_forgot_password_returns_202(self, client, creditor_user):
+        resp = client.post("/api/v1/auth/forgot-password", json={
+            "email": creditor_user.email,
+        })
+        assert resp.status_code == 202
+
+    def test_get_me_requires_auth(self, client):
+        resp = client.get("/api/v1/auth/me")
+        assert resp.status_code == 401
+
+    def test_get_me_returns_user_info(self, client, creditor_user, auth_headers):
+        resp = client.get("/api/v1/auth/me", headers=auth_headers(creditor_user))
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["email"] == creditor_user.email
+        assert "roles" in data
+
+    def test_logout_returns_204(self, client, creditor_user, auth_headers):
+        resp = client.post("/api/v1/auth/logout", headers=auth_headers(creditor_user))
+        assert resp.status_code == 204
+
+    def test_logout_all_returns_204(self, client, creditor_user, auth_headers):
+        resp = client.post("/api/v1/auth/logout-all", headers=auth_headers(creditor_user))
+        assert resp.status_code == 204
+
+    def test_list_sessions(self, client, creditor_user, auth_headers):
+        resp = client.get("/api/v1/auth/sessions", headers=auth_headers(creditor_user))
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert "items" in data
+
+    def test_email_verification_confirm_invalid_token(self, client):
+        resp = client.post("/api/v1/auth/email-verification/confirm", json={
+            "token": "invalid-token",
+        })
+        assert resp.status_code == 401

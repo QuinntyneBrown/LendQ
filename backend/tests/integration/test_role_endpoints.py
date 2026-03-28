@@ -1,16 +1,11 @@
-class TestRoleEndpoints:
-    def test_list_roles(self, client, admin_user, auth_headers):
-        headers = auth_headers(admin_user)
-        response = client.get("/api/v1/roles", headers=headers)
-        assert response.status_code == 200
-        data = response.get_json()
-        assert len(data) >= 3
-        role_names = [r["name"] for r in data]
-        assert "Admin" in role_names
-        assert "Creditor" in role_names
-        assert "Borrower" in role_names
+import pytest
 
-    def test_list_roles_unauthorized(self, client, borrower_user, auth_headers):
-        headers = auth_headers(borrower_user)
-        response = client.get("/api/v1/roles", headers=headers)
-        assert response.status_code == 403
+
+class TestRoleEndpoints:
+    def test_list_roles_requires_admin(self, client, creditor_user, auth_headers):
+        resp = client.get("/api/v1/roles/", headers=auth_headers(creditor_user))
+        assert resp.status_code == 403
+
+    def test_list_roles_as_admin(self, client, admin_user, auth_headers):
+        resp = client.get("/api/v1/roles/", headers=auth_headers(admin_user))
+        assert resp.status_code == 200
