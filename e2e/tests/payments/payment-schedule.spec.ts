@@ -1,4 +1,4 @@
-import { test, expect } from "../../fixtures/auth.fixture";
+import { test, expect } from "../../fixtures/data.fixture";
 import { LoanDetailPage } from "../../pages/LoanDetailPage";
 import { PaymentScheduleSection } from "../../pages/PaymentScheduleSection";
 
@@ -6,10 +6,10 @@ test.describe("L2-4.1: Payment Schedule View", () => {
   let detail: LoanDetailPage;
   let schedule: PaymentScheduleSection;
 
-  test.beforeEach(async ({ creditorPage }) => {
+  test.beforeEach(async ({ creditorPage, seededLoanId }) => {
     detail = new LoanDetailPage(creditorPage);
     schedule = new PaymentScheduleSection(creditorPage);
-    await detail.goto("test-loan-id");
+    await detail.goto(seededLoanId);
   });
 
   test("displays all scheduled payments with date, amount, status", async () => {

@@ -1,4 +1,4 @@
-import { test, expect } from "../../fixtures/auth.fixture";
+import { test, expect } from "../../fixtures/data.fixture";
 import { LoanDetailPage } from "../../pages/LoanDetailPage";
 import { PaymentScheduleSection } from "../../pages/PaymentScheduleSection";
 import { PausePaymentDialog } from "../../pages/PausePaymentDialog";
@@ -10,12 +10,12 @@ test.describe("L2-4.3: Pause Payment Dialog", () => {
   let dialog: PausePaymentDialog;
   let toast: ToastComponent;
 
-  test.beforeEach(async ({ creditorPage }) => {
+  test.beforeEach(async ({ creditorPage, seededLoanId }) => {
     detail = new LoanDetailPage(creditorPage);
     schedule = new PaymentScheduleSection(creditorPage);
     dialog = new PausePaymentDialog(creditorPage);
     toast = new ToastComponent(creditorPage);
-    await detail.goto("test-loan-id");
+    await detail.goto(seededLoanId);
   });
 
   test("opens pause dialog from schedule row", async () => {

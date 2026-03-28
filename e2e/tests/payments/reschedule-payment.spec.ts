@@ -1,4 +1,4 @@
-import { test, expect } from "../../fixtures/auth.fixture";
+import { test, expect } from "../../fixtures/data.fixture";
 import { LoanDetailPage } from "../../pages/LoanDetailPage";
 import { PaymentScheduleSection } from "../../pages/PaymentScheduleSection";
 import { ReschedulePaymentDialog } from "../../pages/ReschedulePaymentDialog";
@@ -10,12 +10,12 @@ test.describe("L2-4.2: Reschedule Payment Dialog", () => {
   let dialog: ReschedulePaymentDialog;
   let toast: ToastComponent;
 
-  test.beforeEach(async ({ creditorPage }) => {
+  test.beforeEach(async ({ creditorPage, seededLoanId }) => {
     detail = new LoanDetailPage(creditorPage);
     schedule = new PaymentScheduleSection(creditorPage);
     dialog = new ReschedulePaymentDialog(creditorPage);
     toast = new ToastComponent(creditorPage);
-    await detail.goto("test-loan-id");
+    await detail.goto(seededLoanId);
   });
 
   test("opens reschedule dialog from schedule row", async () => {
