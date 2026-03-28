@@ -26,11 +26,15 @@ export class SidebarNav {
   }
 
   async clickNavItem(label: string) {
-    await this.sidebar.getByRole("link", { name: new RegExp(label, "i") }).click();
+    await this.navItem(label).click();
   }
 
   activeItem() {
     return this.sidebar.locator("[data-active='true']");
+  }
+
+  navItem(label: string) {
+    return this.sidebar.getByRole("link", { name: new RegExp(label, "i") });
   }
 
   async expectVisible() {
@@ -43,6 +47,11 @@ export class SidebarNav {
 
   async expectActiveItem(label: string) {
     await expect(this.activeItem()).toContainText(label);
+  }
+
+  async expectOnlyActiveItem(label: string) {
+    await expect(this.activeItem()).toHaveCount(1);
+    await expect(this.navItem(label)).toHaveAttribute("data-active", "true");
   }
 
   async expectNavItemHidden(label: string) {
