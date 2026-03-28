@@ -61,8 +61,7 @@ test.describe("L2-1.4, L2-8.1: Session Security @cross-browser", () => {
     await loginPage.login("creditor@family.com", "password123");
     await page.waitForURL("/dashboard");
 
-    await page.getByTestId("user-avatar").click();
-    await page.getByRole("button", { name: /Logout/i }).click();
+    await page.getByTestId("sidebar-sign-out").click();
 
     const accessToken = await page.evaluate(() => localStorage.getItem("lendq_access_token"));
     const refreshToken = await page.evaluate(() => localStorage.getItem("lendq_refresh_token"));
