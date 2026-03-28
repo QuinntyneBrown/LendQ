@@ -20,14 +20,14 @@ This repository contains the application stack plus supporting project assets:
 - [Repository Layout](#repository-layout)
 - [Quick Start](#quick-start)
 - [Testing](#testing)
-- [Current Integration Notes](#current-integration-notes)
+- [Current Development Notes](#current-development-notes)
 - [Documentation Map](#documentation-map)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Project Status
 
-LendQ is now a full-stack repository with implemented backend and frontend foundations, but it is still an actively aligning codebase rather than a fully polished production release.
+LendQ is an active full-stack repository with a working backend, frontend, seeded demo data, and end-to-end coverage. It is not a polished production release yet; the main remaining work is around auth-storage cleanup, async worker bootstrapping, and keeping older planning documents aligned with the implemented code.
 
 ### What exists today
 
@@ -40,7 +40,7 @@ LendQ is now a full-stack repository with implemented backend and frontend found
 | Requirements and architecture docs | Implemented | L1/L2 specs and detailed design modules live in [`docs/`](./docs) |
 | Backend tests | Implemented | Unit, integration, and security coverage under [`backend/tests/`](./backend/tests) |
 | End-to-end tests | Implemented | Playwright coverage for auth, dashboard, loans, payments, notifications, responsive states, accessibility, and security |
-| Full frontend/backend contract alignment | In progress | Some frontend and E2E assumptions still target older auth and seed-data conventions |
+| Frontend/backend operational alignment | In progress | Local proxying and seed-data alignment are in place, but auth storage and async worker startup still need cleanup |
 
 ## Feature Coverage
 
@@ -138,44 +138,52 @@ docker compose -f ops/docker-compose.dev.yml up -d
 
 This starts PostgreSQL, Redis, and Mailpit.
 
-### 2. Create a Python virtual environment and install backend dependencies
+### 2. Configure the backend and install Python dependencies
 
-```bash
-python -m venv .venv
-```
+Create `backend/.env` from `backend/.env.example`, then create a virtual environment and install the backend dependencies.
 
 Windows PowerShell:
 
 ```powershell
+Copy-Item backend\.env.example backend\.env -Force
+python -m venv .venv
 .venv\Scripts\Activate.ps1
+pip install -r backend\requirements-dev.txt
 ```
 
 macOS/Linux:
 
 ```bash
+cp backend/.env.example backend/.env
+python -m venv .venv
 source .venv/bin/activate
-```
-
-Install backend dependencies:
-
-```bash
 pip install -r backend/requirements-dev.txt
 ```
 
-### 3. Run database migrations
+### 3. Install frontend dependencies
+
+```bash
+npm --prefix frontend install
+```
+
+### 4. Run database migrations
 
 ```bash
 cd backend
 python -m flask --app app:create_app db upgrade
 ```
 
-### 4. Seed demo data
+### 5. Seed demo data
+
+From the same `backend/` shell:
 
 ```bash
 python -m app.seed --profile demo
 ```
 
-Demo accounts created by the seed script:
+The `demo` seed creates both the manual demo accounts used in the app and the `@family.com` accounts used by Playwright.
+
+Primary demo accounts:
 
 | Role | Email | Password |
 | --- | --- | --- |
@@ -184,7 +192,13 @@ Demo accounts created by the seed script:
 | Borrower | `borrower1@lendq.local` | `password123` |
 | Borrower | `borrower2@lendq.local` | `password123` |
 
-### 5. Start the backend API
+Playwright fixture accounts:
+
+- `admin@family.com` / `password123`
+- `creditor@family.com` / `password123`
+- `borrower@family.com` / `password123`
+
+### 6. Start the backend API
 
 From the `backend/` directory:
 
@@ -198,18 +212,17 @@ Useful endpoints:
 - Liveness: `http://localhost:5000/health/live`
 - Readiness: `http://localhost:5000/health/ready`
 
-### 6. Start the frontend
+### 7. Start the frontend
 
 From the repository root in a new terminal:
 
 ```bash
-npm --prefix frontend install
 npm --prefix frontend run dev
 ```
 
-The frontend runs at `http://localhost:5173`.
+The frontend runs at `http://localhost:5173`. The checked-in Vite config already proxies `/api` to `http://localhost:5000` during local development.
 
-### 7. Inspect email traffic
+### 8. Inspect email traffic
 
 Mailpit UI is available at `http://localhost:8025`.
 
@@ -217,11 +230,13 @@ It captures verification and password-reset emails sent by the backend.
 
 ## Testing
 
-### Backend tests
+### Backend quality checks
 
 From the `backend/` directory with the virtual environment active:
 
 ```bash
+ruff check .
+ruff format --check .
 pytest
 ```
 
@@ -235,10 +250,13 @@ The backend test suite includes:
 
 ```bash
 npm --prefix frontend run lint
+npm --prefix frontend run test
 npm --prefix frontend run build
 ```
 
 ### Playwright end-to-end tests
+
+With PostgreSQL, Redis, Mailpit, the backend, and the frontend running locally, and after applying the demo seed:
 
 ```bash
 npm --prefix e2e install
@@ -258,6 +276,7 @@ npm --prefix e2e run test:cross-browser
 npm --prefix e2e run test:full
 npm --prefix e2e run test:headed
 npm --prefix e2e run test:ui
+npm --prefix e2e run test:debug
 npm --prefix e2e run test:chromium
 ```
 
@@ -269,27 +288,15 @@ Recommended usage:
 - `test:full` runs the reduced full regression across the kept browser and responsive projects.
 - Use file-targeted and `--grep` Playwright commands for the tightest inner loop.
 
-## Current Integration Notes
+## Current Development Notes
 
-The backend is implemented, but there are still a few practical alignment issues worth knowing before you expect turnkey full-stack behavior:
+A few repo-level details are worth knowing before you assume everything is production-ready:
 
-- The frontend API client uses a same-origin base path of `/api/v1`, while the backend dev server runs on `http://localhost:5000`.
-- The current Vite config does not proxy `/api` to the backend.
-- The backend auth flow now uses an `HttpOnly` session cookie plus an access token response, while the current frontend client still stores refresh-token state in `localStorage`.
-- The backend demo seed creates `@lendq.local` accounts, while the current Playwright fixtures still reference `@family.com` users.
-
-For local browser development, you will likely want to proxy API traffic from Vite to Flask. A minimal example in [`frontend/vite.config.ts`](./frontend/vite.config.ts) would look like:
-
-```ts
-server: {
-  port: 5173,
-  proxy: {
-    "/api": "http://localhost:5000",
-  },
-}
-```
-
-Treat the repository as having implemented backend and frontend foundations, with some integration cleanup still needed between the live frontend, seeded backend data, and E2E fixtures.
+- Local browser development already works through the checked-in proxy in [`frontend/vite.config.ts`](./frontend/vite.config.ts), so the SPA can call `/api/v1` while Flask runs on `http://localhost:5000`.
+- `python -m app.seed --profile demo` creates both the `@lendq.local` demo accounts and the `@family.com` accounts used by the Playwright fixtures.
+- The backend refresh flow is session/cookie-based, but the frontend still keeps the short-lived access token in `localStorage`, so auth storage is only partially aligned with the target design.
+- Redis and Celery wiring exist in the backend, but [`ops/docker-compose.dev.yml`](./ops/docker-compose.dev.yml) currently boots only PostgreSQL, Redis, and Mailpit. Worker and beat processes are not part of the default local startup yet.
+- Some planning documents, especially [`docs/local-development-workflow.md`](./docs/local-development-workflow.md), were written before implementation landed and are better read as architecture/convention guidance than exact current commands.
 
 ## Documentation Map
 
