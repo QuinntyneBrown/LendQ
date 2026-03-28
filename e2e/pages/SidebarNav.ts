@@ -11,6 +11,9 @@ export class SidebarNav {
   readonly notificationsLink: Locator;
   readonly settingsLink: Locator;
   readonly userAvatar: Locator;
+  readonly userName: Locator;
+  readonly userEmail: Locator;
+  readonly signOutButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -23,6 +26,9 @@ export class SidebarNav {
     this.notificationsLink = this.sidebar.getByRole("link", { name: /Notifications/i });
     this.settingsLink = this.sidebar.getByRole("link", { name: /Settings/i });
     this.userAvatar = this.sidebar.getByTestId("user-avatar");
+    this.userName = this.sidebar.getByTestId("sidebar-user-name");
+    this.userEmail = this.sidebar.getByTestId("sidebar-user-email");
+    this.signOutButton = this.sidebar.getByTestId("sidebar-sign-out");
   }
 
   async clickNavItem(label: string) {
@@ -56,5 +62,18 @@ export class SidebarNav {
 
   async expectNavItemHidden(label: string) {
     await expect(this.sidebar.getByRole("link", { name: new RegExp(label, "i") })).toBeHidden();
+  }
+
+  async expectSignOutVisible() {
+    await expect(this.signOutButton).toBeVisible();
+  }
+
+  async expectUserInfo(name: string, email: string) {
+    await expect(this.userName).toHaveText(name);
+    await expect(this.userEmail).toHaveText(email);
+  }
+
+  async signOut() {
+    await this.signOutButton.click();
   }
 }
