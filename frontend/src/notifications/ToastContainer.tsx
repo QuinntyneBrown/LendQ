@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { ToastContext } from "./toastContext";
+import { ToastContext } from "./toast-context";
 import { ToastMessage } from "./ToastMessage";
 
 export function ToastContainer() {

@@ -8,10 +8,9 @@ class TestAuthService:
     def test_login_success(self, app, borrower_user):
         with app.app_context():
             service = AuthService()
-            result = service.login("borrower@test.com", "testpassword123")
-            assert "access_token" in result
-            assert "refresh_token" in result
-            assert result["token_type"] == "Bearer"
+            token_bundle, raw_session_token = service.login("borrower@test.com", "testpassword123")
+            assert "access_token" in token_bundle
+            assert raw_session_token is not None
 
     def test_login_wrong_password(self, app, borrower_user):
         with app.app_context():
@@ -28,7 +27,7 @@ class TestAuthService:
     def test_signup_success(self, app):
         with app.app_context():
             service = AuthService()
-            user = service.signup("New User", "new@test.com", "password123", "password123")
+            user, verification_token = service.signup("New User", "new@test.com", "password123", "password123")
             assert user.name == "New User"
             assert user.email == "new@test.com"
             assert user.has_role("Borrower")

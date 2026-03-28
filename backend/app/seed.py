@@ -49,12 +49,34 @@ def seed_baseline():
             name="LendQ Admin",
             email="admin@lendq.local",
             password_hash=password_service.hash_password("admin123"),
+            email_verified=True,
+            session_version=1,
         )
         admin.roles.append(roles["Admin"])
         db.session.add(admin)
         print("  Created admin user: admin@lendq.local / admin123")
     else:
         print("  Admin user already exists")
+
+    # E2E test users
+    e2e_users = [
+        ("Admin Family", "admin@family.com", "password123", roles["Admin"]),
+        ("Creditor Family", "creditor@family.com", "password123", roles["Creditor"]),
+        ("Borrower Family", "borrower@family.com", "password123", roles["Borrower"]),
+    ]
+    for name, email, password, role in e2e_users:
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            user = User(
+                name=name,
+                email=email,
+                password_hash=password_service.hash_password(password),
+                email_verified=True,
+                session_version=1,
+            )
+            user.roles.append(role)
+            db.session.add(user)
+            print(f"  Created e2e user: {email} / {password}")
 
     db.session.commit()
     print("Baseline seed complete.")
@@ -74,6 +96,8 @@ def seed_demo():
             name="Jane Creditor",
             email="creditor@lendq.local",
             password_hash=password_service.hash_password("password123"),
+            email_verified=True,
+            session_version=1,
         )
         creditor.roles.append(creditor_role)
         db.session.add(creditor)
@@ -85,6 +109,8 @@ def seed_demo():
             name="Bob Borrower",
             email="borrower1@lendq.local",
             password_hash=password_service.hash_password("password123"),
+            email_verified=True,
+            session_version=1,
         )
         borrower1.roles.append(borrower_role)
         db.session.add(borrower1)
@@ -96,6 +122,8 @@ def seed_demo():
             name="Alice Borrower",
             email="borrower2@lendq.local",
             password_hash=password_service.hash_password("password123"),
+            email_verified=True,
+            session_version=1,
         )
         borrower2.roles.append(borrower_role)
         db.session.add(borrower2)
@@ -117,7 +145,7 @@ def seed_demo():
         creditor_id=creditor.id, borrower_id=borrower1.id,
         description="Personal loan for home improvement",
         principal=Decimal("5000.00"), interest_rate=Decimal("5.00"),
-        repayment_frequency="monthly", start_date=today - timedelta(days=60),
+        repayment_frequency="MONTHLY", start_date=today - timedelta(days=60),
         status=LoanStatus.ACTIVE,
     )
     db.session.add(loan1)
@@ -139,7 +167,7 @@ def seed_demo():
         creditor_id=creditor.id, borrower_id=borrower2.id,
         description="Emergency fund loan",
         principal=Decimal("2000.00"), interest_rate=Decimal("0.00"),
-        repayment_frequency="monthly", start_date=today - timedelta(days=90),
+        repayment_frequency="MONTHLY", start_date=today - timedelta(days=90),
         status=LoanStatus.OVERDUE,
     )
     db.session.add(loan2)
@@ -166,7 +194,7 @@ def seed_demo():
         creditor_id=creditor.id, borrower_id=borrower1.id,
         description="Short-term bridge loan",
         principal=Decimal("1000.00"), interest_rate=Decimal("0.00"),
-        repayment_frequency="monthly", start_date=today - timedelta(days=120),
+        repayment_frequency="MONTHLY", start_date=today - timedelta(days=120),
         status=LoanStatus.PAID_OFF,
     )
     db.session.add(loan3)

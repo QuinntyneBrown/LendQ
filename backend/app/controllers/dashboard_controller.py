@@ -17,7 +17,7 @@ loan_schema = DashboardLoanSchema()
 activity_schema = ActivityItemSchema()
 
 
-@dashboard_bp.route("", methods=["GET"])
+@dashboard_bp.route("/", methods=["GET"])
 @require_auth
 def get_dashboard():
     tab = request.args.get("tab", "creditor")

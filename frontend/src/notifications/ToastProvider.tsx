@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { ToastContext } from "./toastContext";
-import type { Toast, ToastType } from "./toastContext";
+import { ToastContext } from "./toast-context";
+import type { Toast, ToastType } from "./toast-context";
 
 let toastId = 0;
 

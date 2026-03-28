@@ -9,7 +9,7 @@ import { apiPost } from "@/api/client";
 import { Input } from "@/ui/Input";
 import { Button } from "@/ui/Button";
 
-export function ResetPasswordPage() {
+export default function ResetPasswordPage() {
   const { token } = useParams<{ token: string }>();
   const [success, setSuccess] = useState(false);
   const [tokenError, setTokenError] = useState<string | null>(null);

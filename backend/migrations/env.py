@@ -14,7 +14,10 @@ from app.models import *  # noqa: F401,F403
 config = context.config
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    try:
+        fileConfig(config.config_file_name)
+    except KeyError:
+        pass
 
 app = create_app()
 config.set_main_option("sqlalchemy.url", app.config["SQLALCHEMY_DATABASE_URI"])

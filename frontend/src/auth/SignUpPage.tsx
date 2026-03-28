@@ -10,7 +10,7 @@ import { Input } from "@/ui/Input";
 import { Button } from "@/ui/Button";
 import { isAxiosError } from "axios";
 
-export function SignUpPage() {
+export default function SignUpPage() {
   const auth = useAuth();
   const [success, setSuccess] = useState(false);
 

@@ -89,7 +89,6 @@ export function PausePaymentDialog({
 
         <Textarea
           label="Reason (optional)"
-          name="reason"
           {...register("reason")}
           error={errors.reason?.message}
         />

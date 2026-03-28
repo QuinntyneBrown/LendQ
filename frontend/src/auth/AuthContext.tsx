@@ -4,7 +4,7 @@ import { apiGet, apiPost } from "@/api/client";
 import type { TokenResponse } from "@/api/types";
 import type { User } from "@/api/types";
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/utils/constants";
-import { AuthContext } from "./authContext";
+import { AuthContext } from "./auth-context";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

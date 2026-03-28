@@ -33,7 +33,7 @@ class CreateLoanRequestSchema(Schema):
     interest_rate = fields.Decimal(load_default="0.00", as_string=True)
     repayment_frequency = fields.String(
         required=True,
-        validate=validate.OneOf(["weekly", "biweekly", "monthly", "custom"]),
+        validate=validate.OneOf(["WEEKLY", "BIWEEKLY", "MONTHLY", "CUSTOM"]),
     )
     num_payments = fields.Integer(required=True, validate=validate.Range(min=1))
     start_date = fields.Date(required=True)
@@ -45,7 +45,7 @@ class UpdateLoanRequestSchema(Schema):
     principal = fields.Decimal(as_string=True)
     interest_rate = fields.Decimal(as_string=True)
     repayment_frequency = fields.String(
-        validate=validate.OneOf(["weekly", "biweekly", "monthly", "custom"])
+        validate=validate.OneOf(["WEEKLY", "BIWEEKLY", "MONTHLY", "CUSTOM"])
     )
     start_date = fields.Date()
     status = fields.String(

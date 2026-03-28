@@ -4,7 +4,7 @@ import { ActiveLoansPanel } from "./ActiveLoansPanel";
 import { ActivityFeed } from "./ActivityFeed";
 import { useDashboardSummary, useDashboardActivity } from "./hooks";
 
-export function DashboardPage() {
+export default function DashboardPage() {
   const { user } = useAuth();
   const summary = useDashboardSummary();
   const activity = useDashboardActivity();

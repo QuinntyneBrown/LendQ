@@ -93,7 +93,6 @@ export function ReschedulePaymentDialog({
 
         <Textarea
           label="Reason (optional)"
-          name="reason"
           {...register("reason")}
           error={errors.reason?.message}
         />

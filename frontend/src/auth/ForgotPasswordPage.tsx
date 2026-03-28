@@ -9,7 +9,7 @@ import { apiPost } from "@/api/client";
 import { Input } from "@/ui/Input";
 import { Button } from "@/ui/Button";
 
-export function ForgotPasswordPage() {
+export default function ForgotPasswordPage() {
   const [submitted, setSubmitted] = useState(false);
 
   const {

@@ -6,7 +6,11 @@ from flask import Blueprint, Response, g, jsonify, request
 from app.extensions import db
 from app.middleware.auth_middleware import require_auth
 from app.models.notification_preference import NotificationPreference
+from app.schemas.notification_schemas import NotificationSchema
+from app.schemas.pagination import paginated_response
 from app.services.notification_service import NotificationService
+
+notification_schema = NotificationSchema()
 
 notification_bp = Blueprint("notifications", __name__, url_prefix="/api/v1/notifications")
 
@@ -19,7 +23,7 @@ def list_notifications():
     notification_type = request.args.get("type")
     service = NotificationService()
     result = service.list_notifications(g.current_user.id, page, per_page, notification_type)
-    return jsonify(result), 200
+    return jsonify(paginated_response(notification_schema, result)), 200
 
 
 @notification_bp.route("/unread-count", methods=["GET"])

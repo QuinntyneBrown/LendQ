@@ -14,7 +14,7 @@ depends_on = None
 
 def upgrade():
     # Add new columns to users
-    op.add_column("users", sa.Column("email_verified", sa.Boolean(), nullable=False, server_default=sa.text("0")))
+    op.add_column("users", sa.Column("email_verified", sa.Boolean(), nullable=False, server_default=sa.text("false")))
     op.add_column("users", sa.Column("session_version", sa.Integer(), nullable=False, server_default=sa.text("1")))
 
     # Create auth_sessions table

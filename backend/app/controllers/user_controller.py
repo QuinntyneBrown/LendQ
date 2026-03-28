@@ -12,7 +12,7 @@ create_user_schema = CreateUserRequestSchema()
 update_user_schema = UpdateUserRequestSchema()
 
 
-@user_bp.route("", methods=["GET"])
+@user_bp.route("/", methods=["GET"])
 @require_role("Admin")
 def list_users():
     page = request.args.get("page", 1, type=int)
@@ -30,7 +30,7 @@ def list_users():
     return jsonify(paginated_response(user_schema, result)), 200
 
 
-@user_bp.route("", methods=["POST"])
+@user_bp.route("/", methods=["POST"])
 @require_role("Admin")
 def create_user():
     data = create_user_schema.load(request.get_json())
@@ -94,4 +94,4 @@ def update_user(user_id):
 def delete_user(user_id):
     user_service = UserService()
     user_service.delete_user(user_id, actor_id=g.current_user.id)
-    return "", 204
+    return jsonify({"message": "User deleted"}), 200

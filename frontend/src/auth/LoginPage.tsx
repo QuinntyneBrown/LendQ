@@ -11,7 +11,7 @@ import { Input } from "@/ui/Input";
 import { Button } from "@/ui/Button";
 import { isAxiosError } from "axios";
 
-export function LoginPage() {
+export default function LoginPage() {
   const auth = useAuth();
   const navigate = useNavigate();
   const toast = useToast();

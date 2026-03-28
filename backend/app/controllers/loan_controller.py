@@ -2,6 +2,7 @@ from flask import Blueprint, g, jsonify, request
 
 from app.middleware.auth_middleware import require_auth
 from app.schemas.loan_schemas import CreateLoanRequestSchema, LoanSchema, UpdateLoanRequestSchema
+from app.schemas.pagination import paginated_response
 from app.services.loan_governance_service import LoanGovernanceService
 from app.services.loan_service import LoanService
 
@@ -21,7 +22,7 @@ def list_loans():
     status = request.args.get("status")
     loan_service = LoanService()
     result = loan_service.list_loans(g.current_user, page, per_page, tab, status)
-    return jsonify(result), 200
+    return jsonify(paginated_response(loan_schema, result)), 200
 
 
 @loan_bp.route("/<loan_id>", methods=["GET"])

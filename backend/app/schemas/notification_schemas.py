@@ -5,6 +5,8 @@ class NotificationSchema(Schema):
     id = fields.String(dump_only=True)
     user_id = fields.String()
     type = fields.String()
+    title = fields.String()
+    body = fields.String()
     message = fields.String()
     loan_id = fields.String()
     is_read = fields.Boolean()

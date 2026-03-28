@@ -47,12 +47,12 @@ def upgrade():
     op.create_table(
         "notification_preferences",
         sa.Column("user_id", sa.String(36), sa.ForeignKey("users.id"), primary_key=True),
-        sa.Column("payment_due_email", sa.Boolean(), nullable=False, server_default=sa.text("1")),
-        sa.Column("payment_overdue_email", sa.Boolean(), nullable=False, server_default=sa.text("1")),
-        sa.Column("payment_received_email", sa.Boolean(), nullable=False, server_default=sa.text("1")),
-        sa.Column("schedule_changed_email", sa.Boolean(), nullable=False, server_default=sa.text("1")),
-        sa.Column("loan_modified_email", sa.Boolean(), nullable=False, server_default=sa.text("1")),
-        sa.Column("system_email", sa.Boolean(), nullable=False, server_default=sa.text("1")),
+        sa.Column("payment_due_email", sa.Boolean(), nullable=False, server_default=sa.text("true")),
+        sa.Column("payment_overdue_email", sa.Boolean(), nullable=False, server_default=sa.text("true")),
+        sa.Column("payment_received_email", sa.Boolean(), nullable=False, server_default=sa.text("true")),
+        sa.Column("schedule_changed_email", sa.Boolean(), nullable=False, server_default=sa.text("true")),
+        sa.Column("loan_modified_email", sa.Boolean(), nullable=False, server_default=sa.text("true")),
+        sa.Column("system_email", sa.Boolean(), nullable=False, server_default=sa.text("true")),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
     )
 

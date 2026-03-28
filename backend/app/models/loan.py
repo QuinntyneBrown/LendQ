@@ -13,10 +13,10 @@ class LoanStatus:
 
 
 class RepaymentFrequency:
-    WEEKLY = "weekly"
-    BIWEEKLY = "biweekly"
-    MONTHLY = "monthly"
-    CUSTOM = "custom"
+    WEEKLY = "WEEKLY"
+    BIWEEKLY = "BIWEEKLY"
+    MONTHLY = "MONTHLY"
+    CUSTOM = "CUSTOM"
 
 
 class Loan(db.Model):

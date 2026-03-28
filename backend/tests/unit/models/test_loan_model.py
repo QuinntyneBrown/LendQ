@@ -9,6 +9,6 @@ class TestLoanModel:
         assert LoanStatus.PAID_OFF == "PAID_OFF"
 
     def test_repayment_frequency_values(self):
-        assert RepaymentFrequency.WEEKLY == "weekly"
-        assert RepaymentFrequency.BIWEEKLY == "biweekly"
-        assert RepaymentFrequency.MONTHLY == "monthly"
+        assert RepaymentFrequency.WEEKLY == "WEEKLY"
+        assert RepaymentFrequency.BIWEEKLY == "BIWEEKLY"
+        assert RepaymentFrequency.MONTHLY == "MONTHLY"

@@ -8,7 +8,7 @@ class TestPasswordService:
     def test_hash_password_returns_hash(self):
         hashed = self.service.hash_password("testpassword")
         assert hashed != "testpassword"
-        assert hashed.startswith("$2b$")
+        assert hashed.startswith("$argon2")
 
     def test_verify_correct_password(self):
         hashed = self.service.hash_password("testpassword")

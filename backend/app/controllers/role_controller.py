@@ -10,7 +10,7 @@ role_schema = RoleSchema()
 permission_update_schema = PermissionUpdateRequestSchema()
 
 
-@role_bp.route("", methods=["GET"])
+@role_bp.route("/", methods=["GET"])
 @require_role("Admin")
 def list_roles():
     role_service = RoleService()
