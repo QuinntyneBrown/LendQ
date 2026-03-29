@@ -27,7 +27,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         {Icon && (
           <Icon
             size={18}
-            className="absolute left-3 text-text-muted w-[18px]"
+            className="absolute left-4 text-text-muted w-[18px]"
             aria-hidden="true"
           />
         )}
@@ -35,7 +35,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           ref={ref}
           id={inputId}
           name={name}
-          className={`w-full rounded-input border border-border-strong px-4 py-3 font-body text-[15px] text-text-primary placeholder:text-text-muted outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors ${Icon ? "pl-10" : ""} ${error ? "border-danger-text" : ""}`}
+          className={`w-full rounded-input border border-border-strong px-4 py-3 font-body text-[15px] text-text-primary placeholder:text-text-muted outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors ${Icon ? "pl-[42px]" : ""} ${error ? "border-danger-text" : ""}`}
           {...rest}
         />
       </div>

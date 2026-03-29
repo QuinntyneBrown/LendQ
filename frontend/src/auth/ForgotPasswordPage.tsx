@@ -59,11 +59,11 @@ export default function ForgotPasswordPage() {
       <div className="flex flex-1 items-center justify-center px-6">
         <div className="w-full max-w-[400px]">
           <h2 className="font-heading text-[32px] font-bold text-text-primary">Reset your password</h2>
-          <p className="mt-1 text-text-secondary">
+          <p className="mt-1 text-[15px] text-text-secondary">
             Enter your email and we&apos;ll send you a reset link
           </p>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-6">
             <Input
               label="Email Address"
               icon={Mail}
@@ -78,15 +78,15 @@ export default function ForgotPasswordPage() {
               type="submit"
               isLoading={isSubmitting}
               disabled={isSubmitting}
-              className="w-full mt-2"
+              className="w-full"
             >
               Send Reset Link
             </Button>
 
-            <p className="text-center text-sm text-text-secondary mt-2">
+            <p className="text-center text-sm text-text-secondary">
               Remember your password?{" "}
-              <Link to="/login" className="text-primary font-medium hover:underline">
-                Back to Login
+              <Link to="/login" className="text-primary font-semibold hover:underline">
+                Sign in
               </Link>
             </p>
           </form>

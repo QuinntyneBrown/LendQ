@@ -89,7 +89,7 @@ export function NotificationDropdown({ open, onClose }: NotificationDropdownProp
           navigate("/notifications");
           onClose();
         }}
-        className="w-full px-4 py-3 text-center text-sm font-body text-primary hover:bg-background transition-colors rounded-b-card"
+        className="w-full px-4 py-3 text-center text-[13px] font-semibold font-body text-primary hover:bg-background transition-colors rounded-b-card"
       >
         View all notifications
       </button>

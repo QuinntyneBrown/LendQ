@@ -30,7 +30,7 @@ describe("Auth recovery pages", () => {
   it("forgot password keeps the back-to-login link local to the component", () => {
     renderWithRouter(<ForgotPasswordPage />, { route: "/forgot-password", path: "/forgot-password" });
 
-    expect(screen.getByRole("link", { name: "Back to Login" })).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
   });
 
   it("reset password validates password confirmation before submit", async () => {

@@ -40,7 +40,7 @@ describe("Modal", () => {
 
     const dialog = screen.getByRole("dialog");
     expect(dialog).toHaveClass("w-full");
-    expect(dialog).toHaveClass("h-full");
+    expect(dialog).toHaveClass("rounded-t-modal");
   });
 
   it("calls onClose when the backdrop is clicked", async () => {

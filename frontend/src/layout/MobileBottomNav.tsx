@@ -5,7 +5,7 @@ import {
   Banknote,
   HandCoins,
   Bell,
-  MoreHorizontal,
+  Menu,
   Users,
   Settings,
   LogOut,
@@ -24,7 +24,7 @@ function Tab({ icon, label, href, isActive }: TabProps) {
     <Link
       to={href}
       data-active={isActive ? "true" : undefined}
-      className={`flex flex-col items-center gap-1 text-[11px] ${
+      className={`flex flex-col items-center gap-1 text-[10px] ${
         isActive ? "text-primary font-semibold" : "text-text-muted"
       }`}
     >
@@ -124,11 +124,11 @@ export function MobileBottomNav() {
         <button
           onClick={() => setMoreOpen((v) => !v)}
           data-active={moreOpen ? "true" : undefined}
-          className={`flex flex-col items-center gap-1 text-[11px] bg-transparent border-none cursor-pointer ${
+          className={`flex flex-col items-center gap-1 text-[10px] bg-transparent border-none cursor-pointer ${
             moreOpen ? "text-primary font-semibold" : "text-text-muted"
           }`}
         >
-          <MoreHorizontal size={22} />
+          <Menu size={22} />
           <span>More</span>
         </button>
       </nav>

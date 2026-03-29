@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, Navigate } from "react-router-dom";
-import { Landmark, Mail, Lock, User, ShieldCheck } from "lucide-react";
+import { Landmark, Mail, Lock, User } from "lucide-react";
 import { signUpSchema } from "./schemas";
 import type { SignUpFormData } from "./schemas";
 import { useAuth } from "./hooks";
@@ -70,9 +70,9 @@ export default function SignUpPage() {
       <div className="flex flex-1 items-center justify-center px-6">
         <div className="w-full max-w-[400px]">
           <h2 className="font-heading text-[32px] font-bold text-text-primary">Create your account</h2>
-          <p className="mt-1 text-text-secondary">Join your family&apos;s lending circle</p>
+          <p className="mt-1 text-[15px] text-text-secondary">Join your family&apos;s lending circle</p>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-6">
             <Input
               label="Full Name"
               icon={User}
@@ -104,7 +104,7 @@ export default function SignUpPage() {
             <Input
               label="Confirm Password"
               type="password"
-              icon={ShieldCheck}
+              icon={Lock}
               placeholder="Confirm your password"
               disabled={isSubmitting}
               error={errors.confirm_password?.message}
@@ -116,14 +116,14 @@ export default function SignUpPage() {
               type="submit"
               isLoading={isSubmitting}
               disabled={isSubmitting}
-              className="w-full mt-2"
+              className="w-full"
             >
               Create Account
             </Button>
 
-            <p className="text-center text-sm text-text-secondary mt-2">
+            <p className="text-center text-sm text-text-secondary">
               Already have an account?{" "}
-              <Link to="/login" className="text-primary font-medium hover:underline">
+              <Link to="/login" className="text-primary font-semibold hover:underline">
                 Sign In
               </Link>
             </p>

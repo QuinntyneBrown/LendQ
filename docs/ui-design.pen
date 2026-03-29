@@ -9803,7 +9803,7 @@
           },
           "padding": [
             0,
-            20
+            16
           ],
           "justifyContent": "space_between",
           "alignItems": "center",
@@ -9910,8 +9910,8 @@
           "name": "tContent",
           "width": "fill_container",
           "layout": "vertical",
-          "gap": 20,
-          "padding": 24,
+          "gap": 16,
+          "padding": 16,
           "children": [
             {
               "type": "text",
@@ -9922,6 +9922,16 @@
               "fontFamily": "Bricolage Grotesque",
               "fontSize": 24,
               "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "drmQd",
+              "name": "tSubtitle",
+              "fill": "#6B7280",
+              "content": "Welcome back, Quinn",
+              "fontFamily": "DM Sans",
+              "fontSize": 14,
+              "fontWeight": "normal"
             },
             {
               "type": "frame",
@@ -9971,7 +9981,7 @@
                   "width": "fill_container",
                   "name": "tm2",
                   "height": "fit_content",
-                  "x": 183,
+                  "x": 187,
                   "y": 0,
                   "descendants": {
                     "j4XDd": {
@@ -10005,7 +10015,7 @@
                   "width": "fill_container",
                   "name": "tm3",
                   "height": "fit_content",
-                  "x": 366,
+                  "x": 374,
                   "y": 0,
                   "descendants": {
                     "j4XDd": {
@@ -10039,7 +10049,7 @@
                   "width": "fill_container",
                   "name": "tm4",
                   "height": "fit_content",
-                  "x": 549,
+                  "x": 561,
                   "y": 0,
                   "descendants": {
                     "j4XDd": {
@@ -12986,7 +12996,7 @@
           },
           "padding": [
             0,
-            20
+            16
           ],
           "justifyContent": "space_between",
           "alignItems": "center",
@@ -13079,8 +13089,8 @@
           "name": "umtContent",
           "width": "fill_container",
           "layout": "vertical",
-          "gap": 20,
-          "padding": 24,
+          "gap": 16,
+          "padding": 16,
           "children": [
             {
               "type": "frame",
@@ -13124,7 +13134,7 @@
                   "width": "fit_content",
                   "height": "fit_content",
                   "name": "tAddBtn",
-                  "x": 579,
+                  "x": 595,
                   "y": 3.5,
                   "descendants": {
                     "h6Srg": {
@@ -14805,7 +14815,7 @@
           },
           "padding": [
             0,
-            20
+            16
           ],
           "justifyContent": "space_between",
           "alignItems": "center",
@@ -14898,8 +14908,8 @@
           "name": "ldtContent",
           "width": "fill_container",
           "layout": "vertical",
-          "gap": 20,
-          "padding": 24,
+          "gap": 16,
+          "padding": 16,
           "children": [
             {
               "type": "frame",
@@ -15047,7 +15057,7 @@
                   "width": "fill_container",
                   "height": "fit_content",
                   "name": "tm2",
-                  "x": 184,
+                  "x": 188,
                   "y": 0,
                   "descendants": {
                     "j4XDd": {
@@ -15072,7 +15082,7 @@
                   "width": "fill_container",
                   "height": "fit_content",
                   "name": "tm3",
-                  "x": 368,
+                  "x": 376,
                   "y": 0,
                   "descendants": {
                     "j4XDd": {
@@ -15097,7 +15107,7 @@
                   "width": "fill_container",
                   "height": "fit_content",
                   "name": "tm4",
-                  "x": 552,
+                  "x": 564,
                   "y": 0,
                   "descendants": {
                     "j4XDd": {

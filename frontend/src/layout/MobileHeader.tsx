@@ -51,7 +51,7 @@ export function MobileHeader({
           </button>
         )}
         <Landmark size={24} className="text-primary" />
-        <span className="font-heading text-lg font-bold text-text-primary">
+        <span className="font-heading text-xl font-extrabold text-text-primary">
           LendQ
         </span>
       </div>
@@ -60,7 +60,7 @@ export function MobileHeader({
         <button
           data-testid="user-avatar"
           onClick={() => setMenuOpen((v) => !v)}
-          className="w-8 h-8 rounded-full bg-primary-light text-primary flex items-center justify-center font-semibold text-sm border-none cursor-pointer"
+          className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center font-semibold text-sm border-none cursor-pointer"
         >
           {user?.name?.charAt(0) ?? "U"}
         </button>

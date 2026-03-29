@@ -67,11 +67,11 @@ export function UserListPage() {
     <div className="p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="font-heading text-2xl font-bold text-text-primary">
+          <h1 className="font-heading text-[28px] font-bold text-text-primary">
             User Management
           </h1>
-          <p className="text-text-secondary font-body text-sm mt-1">
-            Manage users and roles
+          <p className="text-text-secondary font-body text-[15px] mt-1">
+            Manage users, roles, and permissions
           </p>
         </div>
         <Button variant="primary" icon={UserPlus} onClick={handleAddNew}>

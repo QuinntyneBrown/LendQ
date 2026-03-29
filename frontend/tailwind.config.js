@@ -30,12 +30,12 @@ export default {
         },
         warning: {
           DEFAULT: "#FFFBEB",
-          text: "#CA8A04",
+          text: "#D97706",
           dot: "#FCD34D",
         },
         info: {
           DEFAULT: "#F0F5FF",
-          text: "#2563EB",
+          text: "#6366F1",
         },
         "unread-bg": "#FFF8F7",
       },

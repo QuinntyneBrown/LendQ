@@ -29,7 +29,7 @@ export function DesktopSidebar() {
     >
       <div className="flex items-center gap-3 px-2 pb-6">
         <Landmark size={28} className="text-primary" />
-        <span className="font-heading text-xl font-bold text-text-primary">
+        <span className="font-heading text-xl font-extrabold text-text-primary">
           LendQ
         </span>
       </div>

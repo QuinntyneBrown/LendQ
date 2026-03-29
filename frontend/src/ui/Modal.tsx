@@ -83,7 +83,7 @@ export function Modal({
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ${visible ? "opacity-100" : "opacity-0"}`}
+      className={`fixed inset-0 z-50 flex ${isMobile ? "items-end" : "items-center"} justify-center transition-opacity duration-200 ${visible ? "opacity-100" : "opacity-0"}`}
       onKeyDown={handleKeyDown}
     >
       <div
@@ -100,7 +100,7 @@ export function Modal({
           visible ? "scale-100" : "scale-95"
         } ${
           isMobile
-            ? "w-full h-full"
+            ? "w-full mt-auto rounded-t-modal shadow-modal max-h-[90vh]"
             : `w-full ${maxWidth} rounded-modal shadow-modal max-h-[90vh]`
         }`}
       >
@@ -121,9 +121,9 @@ export function Modal({
             <X size={20} />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-4">{children}</div>
+        <div className="flex-1 overflow-y-auto px-6 py-6">{children}</div>
         {footer && (
-          <div className="px-6 py-4 border-t border-border">{footer}</div>
+          <div className="px-6 py-3 border-t border-border">{footer}</div>
         )}
       </div>
     </div>

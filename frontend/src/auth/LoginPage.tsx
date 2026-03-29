@@ -58,9 +58,9 @@ export default function LoginPage() {
       <div className="flex flex-1 items-center justify-center px-6">
         <div className="w-full max-w-[400px]">
           <h2 className="font-heading text-[32px] font-bold text-text-primary">Welcome back</h2>
-          <p className="mt-1 text-text-secondary">Sign in to manage your loans</p>
+          <p className="mt-1 text-[15px] text-text-secondary">Sign in to manage your loans</p>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-6">
             <Input
               label="Email Address"
               icon={Mail}
@@ -81,7 +81,7 @@ export default function LoginPage() {
             />
 
             <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
+              <label className="flex items-center gap-2 text-[13px] text-text-secondary cursor-pointer">
                 <input
                   type="checkbox"
                   checked={rememberMe}
@@ -90,7 +90,7 @@ export default function LoginPage() {
                 />
                 Remember me
               </label>
-              <Link to="/forgot-password" className="text-sm text-primary font-medium hover:underline">
+              <Link to="/forgot-password" className="text-[13px] text-primary font-semibold hover:underline">
                 Forgot Password?
               </Link>
             </div>
@@ -105,15 +105,15 @@ export default function LoginPage() {
               Sign In
             </Button>
 
-            <div className="flex items-center gap-3 my-2">
-              <hr className="flex-1 border-border-default" />
-              <span className="text-text-muted text-sm">or</span>
-              <hr className="flex-1 border-border-default" />
+            <div className="flex items-center gap-3">
+              <hr className="flex-1 border-border-strong" />
+              <span className="text-text-muted text-[13px]">or</span>
+              <hr className="flex-1 border-border-strong" />
             </div>
 
             <p className="text-center text-sm text-text-secondary">
               Don&apos;t have an account?{" "}
-              <Link to="/signup" className="text-primary font-medium hover:underline">
+              <Link to="/signup" className="text-primary font-semibold hover:underline">
                 Sign Up
               </Link>
             </p>

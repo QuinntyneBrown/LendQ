@@ -68,7 +68,7 @@ export function LoanDetailPage() {
           <div className="flex items-center gap-3 flex-wrap">
             <h1
               data-testid="loan-title"
-              className="font-heading text-2xl font-bold text-text-primary truncate"
+              className="font-heading text-[28px] font-bold text-text-primary truncate"
             >
               {loan.description}
             </h1>
@@ -103,25 +103,25 @@ export function LoanDetailPage() {
             </h2>
             <dl className="grid grid-cols-2 gap-y-4 gap-x-6">
               <div>
-                <dt className="font-body text-xs text-text-muted">Creditor</dt>
+                <dt className="font-body text-[13px] text-text-muted">Creditor</dt>
                 <dd className="font-body text-sm text-text-primary font-medium mt-0.5">
                   {loan.creditor_name}
                 </dd>
               </div>
               <div>
-                <dt className="font-body text-xs text-text-muted">Borrower</dt>
+                <dt className="font-body text-[13px] text-text-muted">Borrower</dt>
                 <dd className="font-body text-sm text-text-primary font-medium mt-0.5">
                   {loan.borrower_name}
                 </dd>
               </div>
               <div>
-                <dt className="font-body text-xs text-text-muted">Principal</dt>
+                <dt className="font-body text-[13px] text-text-muted">Principal</dt>
                 <dd className="font-body text-sm text-text-primary font-medium mt-0.5">
                   {formatCurrency(loan.principal)}
                 </dd>
               </div>
               <div>
-                <dt className="font-body text-xs text-text-muted">
+                <dt className="font-body text-[13px] text-text-muted">
                   Interest Rate
                 </dt>
                 <dd className="font-body text-sm text-text-primary font-medium mt-0.5">
@@ -129,20 +129,20 @@ export function LoanDetailPage() {
                 </dd>
               </div>
               <div>
-                <dt className="font-body text-xs text-text-muted">Frequency</dt>
+                <dt className="font-body text-[13px] text-text-muted">Frequency</dt>
                 <dd className="font-body text-sm text-text-primary font-medium mt-0.5">
                   {loan.repayment_frequency}
                 </dd>
               </div>
               <div>
-                <dt className="font-body text-xs text-text-muted">Start Date</dt>
+                <dt className="font-body text-[13px] text-text-muted">Start Date</dt>
                 <dd className="font-body text-sm text-text-primary font-medium mt-0.5">
                   {formatDate(loan.start_date)}
                 </dd>
               </div>
               {loan.notes && (
                 <div className="col-span-2">
-                  <dt className="font-body text-xs text-text-muted">Notes</dt>
+                  <dt className="font-body text-[13px] text-text-muted">Notes</dt>
                   <dd className="font-body text-sm text-text-secondary mt-0.5">
                     {loan.notes}
                   </dd>

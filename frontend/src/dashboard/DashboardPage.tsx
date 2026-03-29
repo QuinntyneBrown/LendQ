@@ -12,8 +12,8 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-heading text-2xl font-bold text-text-primary">Dashboard</h1>
-        <p className="text-sm text-text-secondary mt-1">
+        <h1 className="font-heading text-[28px] font-bold text-text-primary">Dashboard</h1>
+        <p className="text-[15px] text-text-secondary mt-1">
           Welcome back, {user?.name}
         </p>
       </div>
