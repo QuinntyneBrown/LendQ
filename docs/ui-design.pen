@@ -2151,7 +2151,8 @@
                       "fill": "#9CA3AF",
                       "content": "quinn@lendq.com",
                       "fontFamily": "DM Sans",
-                      "fontSize": 12
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -4049,7 +4050,8 @@
                       "fill": "#9CA3AF",
                       "content": "quinn@lendq.com",
                       "fontFamily": "DM Sans",
-                      "fontSize": 12
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -5867,7 +5869,8 @@
                       "fill": "#9CA3AF",
                       "content": "quinn@lendq.com",
                       "fontFamily": "DM Sans",
-                      "fontSize": 12
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -9066,6 +9069,7 @@
                   "id": "vM0t5",
                   "name": "mMetricRow1",
                   "width": "fill_container",
+                  "layout": "vertical",
                   "gap": 12,
                   "children": [
                     {
@@ -9109,8 +9113,8 @@
                       "width": "fill_container",
                       "name": "mm2",
                       "height": "fit_content",
-                      "x": 177.5,
-                      "y": 0,
+                      "x": 0,
+                      "y": 151,
                       "descendants": {
                         "j4XDd": {
                           "fill": "#F0FDF4",
@@ -9143,6 +9147,7 @@
                   "id": "Q18of",
                   "name": "mMetricRow2",
                   "width": "fill_container",
+                  "layout": "vertical",
                   "gap": 12,
                   "children": [
                     {
@@ -9186,8 +9191,8 @@
                       "width": "fill_container",
                       "name": "mm4",
                       "height": "fit_content",
-                      "x": 177.5,
-                      "y": 0,
+                      "x": 0,
+                      "y": 151,
                       "descendants": {
                         "j4XDd": {
                           "fill": "#FEE2E2",
@@ -10607,7 +10612,8 @@
                   "fill": "#9CA3AF",
                   "content": "quinn@lendq.com",
                   "fontFamily": "DM Sans",
-                  "fontSize": 12
+                  "fontSize": 12,
+                  "fontWeight": "normal"
                 }
               ]
             }
@@ -10734,7 +10740,8 @@
                   "fill": "#9CA3AF",
                   "content": "quinn@lendq.com",
                   "fontFamily": "DM Sans",
-                  "fontSize": 11
+                  "fontSize": 11,
+                  "fontWeight": "normal"
                 }
               ]
             }
