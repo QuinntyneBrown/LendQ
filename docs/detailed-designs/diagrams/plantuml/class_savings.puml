@@ -1,0 +1,25 @@
+@startuml
+skinparam classAttributeIconSize 0
+class SavingsGoal {
+  +id: UUID
+  +user_id: UUID
+  +name: string
+  +target_amount: decimal
+  +current_amount: decimal
+  +currency: string
+  +deadline: date?
+  +description: string?
+  +status: IN_PROGRESS|COMPLETED|CANCELLED
+  +created_at: datetime
+}
+class SavingsContribution {
+  +id: UUID
+  +goal_id: UUID
+  +amount: decimal
+  +source: MANUAL|RECURRING
+  +bank_transaction_id: UUID
+  +running_total: decimal
+  +created_at: datetime
+}
+SavingsGoal "1" -- "*" SavingsContribution
+@enduml

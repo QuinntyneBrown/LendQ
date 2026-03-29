@@ -1,0 +1,15 @@
+@startuml
+actor Admin
+participant BankAccountController
+participant BankAccountService
+participant TransactionService
+queue Outbox
+
+Admin -> BankAccountController : POST /accounts/{id}/withdraw\nIdempotency-Key
+BankAccountController -> BankAccountService : withdraw(accountId, amount, note)
+BankAccountService -> BankAccountService : validate sufficient balance
+BankAccountService -> TransactionService : record WITHDRAWAL transaction
+TransactionService -> TransactionService : update account balance
+BankAccountService -> Outbox : withdrawal_completed
+BankAccountController --> Admin : transaction + new balance
+@enduml

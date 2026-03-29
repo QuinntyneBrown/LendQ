@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "NotificationController" as controller
+rectangle "NotificationService" as service
+rectangle "PreferenceService" as prefs
+rectangle "SSE Gateway" as sse
+rectangle "DeliveryWorker" as worker
+database "notifications" as db
+cloud "Email Provider" as email
+
+controller --> service
+controller --> prefs
+service --> db
+worker --> db
+worker --> sse
+worker --> email
+@enduml

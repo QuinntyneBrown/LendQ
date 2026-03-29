@@ -1,0 +1,18 @@
+@startuml
+actor User
+participant SPA
+participant AuthController
+participant AuthService
+database UserRepo
+database SessionRepo
+
+User -> SPA : submit email + password
+SPA -> AuthController : POST /auth/login
+AuthController -> AuthService : authenticate()
+AuthService -> UserRepo : find by email
+AuthService -> AuthService : verify password + status + email
+AuthService -> SessionRepo : create refresh session
+AuthService --> AuthController : access token + user
+AuthController --> SPA : Set-Cookie refresh + JSON body
+SPA --> User : route to dashboard
+@enduml

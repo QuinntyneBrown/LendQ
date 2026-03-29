@@ -1,0 +1,13 @@
+@startuml
+actor Creditor
+participant RecurringLoanController
+participant RecurringLoanService
+database "recurring_loans" as db
+queue Outbox
+
+Creditor -> RecurringLoanController : POST /loans/recurring/{id}/pause
+RecurringLoanController -> RecurringLoanService : pause(recurringLoanId)
+RecurringLoanService -> db : set status = PAUSED\nnullify next_generation_date
+RecurringLoanService -> Outbox : recurring_loan_paused
+RecurringLoanController --> Creditor : updated recurring loan
+@enduml

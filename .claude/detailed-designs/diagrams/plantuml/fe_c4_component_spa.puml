@@ -1,0 +1,25 @@
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "App Shell" as shell
+rectangle "Auth Feature" as auth
+rectangle "Dashboard Feature" as dash
+rectangle "Loans Feature" as loans
+rectangle "Payments Feature" as payments
+rectangle "Notifications Feature" as notif
+rectangle "Settings Feature" as settings
+rectangle "API Client" as api
+
+shell --> auth
+shell --> dash
+shell --> loans
+shell --> payments
+shell --> notif
+shell --> settings
+auth --> api
+dash --> api
+loans --> api
+payments --> api
+notif --> api
+settings --> api
+@enduml

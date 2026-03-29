@@ -1,0 +1,15 @@
+@startuml
+skinparam classAttributeIconSize 0
+class PaymentScheduleView
+class RecordPaymentDialog
+class ScheduleAdjustmentDialog
+class ReversePaymentDialog
+class PaymentHistoryView
+class PaymentApi
+
+PaymentScheduleView --> PaymentApi
+RecordPaymentDialog --> PaymentApi
+ScheduleAdjustmentDialog --> PaymentApi
+ReversePaymentDialog --> PaymentApi
+PaymentHistoryView --> PaymentApi
+@enduml

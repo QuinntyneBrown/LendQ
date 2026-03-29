@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "PaymentController" as controller
+rectangle "LedgerService" as ledger
+rectangle "AllocationEngine" as alloc
+rectangle "ScheduleAdjustmentService" as adjust
+rectangle "IdempotencyService" as idem
+queue "Outbox Publisher" as outbox
+database "payment ledger" as db
+
+controller --> idem
+controller --> ledger
+controller --> adjust
+ledger --> alloc
+ledger --> db
+adjust --> db
+ledger --> outbox
+adjust --> outbox
+@enduml

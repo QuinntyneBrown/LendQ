@@ -1,0 +1,18 @@
+@startuml
+actor "Celery Worker" as worker
+participant RecurringLoanService
+participant LoanService
+participant ScheduleService
+database "loans / recurring" as db
+queue Outbox
+
+worker -> RecurringLoanService : process due recurring loans
+RecurringLoanService -> db : fetch active recurring loans\nwhere next_generation_date <= today
+loop each due recurring loan
+  RecurringLoanService -> LoanService : create loan from template
+  LoanService -> ScheduleService : generate payment schedule
+  LoanService -> db : persist loan + terms + schedule
+  RecurringLoanService -> db : insert GeneratedLoanRecord\nincrement total_generated\nadvance next_generation_date
+  RecurringLoanService -> Outbox : recurring_loan_generated
+end
+@enduml

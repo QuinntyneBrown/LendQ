@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "SavingsGoalController" as controller
+rectangle "SavingsGoalService" as service
+rectangle "ContributionService" as contrib
+rectangle "BankAccountService" as bank
+queue "Outbox Publisher" as outbox
+database "savings_goals" as db
+
+controller --> service
+controller --> contrib
+contrib --> bank
+service --> db
+contrib --> db
+service --> outbox
+contrib --> outbox
+@enduml

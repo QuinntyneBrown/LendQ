@@ -1,0 +1,14 @@
+@startuml
+left to right direction
+skinparam shadowing false
+actor User
+rectangle "Browser\nReact SPA" as spa
+rectangle "Flask API" as api
+database "PostgreSQL" as db
+queue "Redis + Celery" as infra
+
+User --> spa : interacts
+spa --> api : HTTPS JSON + SSE
+api --> db : persistence
+api --> infra : jobs / stream events
+@enduml

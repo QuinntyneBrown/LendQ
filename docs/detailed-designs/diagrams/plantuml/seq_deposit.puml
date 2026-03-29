@@ -1,0 +1,14 @@
+@startuml
+actor Admin
+participant BankAccountController
+participant BankAccountService
+participant TransactionService
+queue Outbox
+
+Admin -> BankAccountController : POST /accounts/{id}/deposit\nIdempotency-Key
+BankAccountController -> BankAccountService : deposit(accountId, amount, note)
+BankAccountService -> TransactionService : record DEPOSIT transaction
+TransactionService -> TransactionService : update account balance
+BankAccountService -> Outbox : deposit_completed
+BankAccountController --> Admin : transaction + new balance
+@enduml

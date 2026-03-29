@@ -1,0 +1,29 @@
+@startuml
+skinparam classAttributeIconSize 0
+class DashboardSummary {
+  +total_lent_out: decimal
+  +total_owed: decimal
+  +upcoming_payments_7d: int
+  +overdue_payments: int
+  +generated_at: datetime
+}
+class DashboardLoanRow {
+  +loan_id: UUID
+  +counterparty_name: string
+  +outstanding_balance: decimal
+  +next_due_date: date
+}
+class ActivityItem {
+  +id: UUID
+  +type: string
+  +description: string
+  +created_at: datetime
+}
+class ProjectionMetadata {
+  +generated_at: datetime
+  +lag_seconds: int
+}
+DashboardSummary -- ProjectionMetadata
+DashboardLoanRow -- ProjectionMetadata
+ActivityItem -- ProjectionMetadata
+@enduml

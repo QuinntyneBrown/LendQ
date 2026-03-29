@@ -1,0 +1,16 @@
+@startuml
+actor "Celery Worker" as worker
+participant RecurringDepositService
+participant TransactionService
+database "bank_accounts" as db
+queue Outbox
+
+worker -> RecurringDepositService : process due recurring deposits
+RecurringDepositService -> db : fetch deposits where next_date <= today
+loop each due recurring deposit
+  RecurringDepositService -> TransactionService : record RECURRING_DEPOSIT
+  TransactionService -> db : insert transaction + update balance
+  RecurringDepositService -> db : advance next_deposit_date
+  RecurringDepositService -> Outbox : recurring_deposit_posted
+end
+@enduml

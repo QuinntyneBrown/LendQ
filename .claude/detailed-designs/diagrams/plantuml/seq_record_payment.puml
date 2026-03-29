@@ -1,0 +1,15 @@
+@startuml
+actor User
+participant PaymentController
+participant IdempotencyService
+participant LedgerService
+participant AllocationEngine
+queue Outbox
+
+User -> PaymentController : POST /loans/{id}/payments\nIdempotency-Key
+PaymentController -> IdempotencyService : reserve key
+PaymentController -> LedgerService : record payment
+LedgerService -> AllocationEngine : allocate to installments
+LedgerService -> Outbox : payment_posted
+PaymentController --> User : transaction + allocations
+@enduml

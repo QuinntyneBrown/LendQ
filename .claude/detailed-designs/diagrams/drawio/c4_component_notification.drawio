@@ -1,0 +1,39 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="C4 Component - Notification" id="c4notif">
+    <mxGraphModel dx="1024" dy="680" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="C4 Component — Notification Module" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="15" width="320" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="boundary" value="Flask REST API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1e3a5f;dashed=1;dashPattern=5 5;verticalAlign=top;fontStyle=1;fontSize=11;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="60" y="50" width="700" height="400" as="geometry"/>
+        </mxCell>
+        <mxCell id="ctrl" value="&lt;b&gt;NotificationController&lt;/b&gt;&lt;br&gt;[Blueprint]&lt;br&gt;&lt;br&gt;list, count, mark-read,&lt;br&gt;mark-all-read" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="290" y="75" width="200" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc" value="&lt;b&gt;NotificationService&lt;/b&gt;&lt;br&gt;[Service]&lt;br&gt;&lt;br&gt;Create, list, mark-read,&lt;br&gt;dispatch email alerts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="290" y="210" width="200" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo" value="&lt;b&gt;NotificationRepository&lt;/b&gt;&lt;br&gt;[Repository]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#ffffff;strokeColor=#6ca4d9;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="190" y="360" width="170" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="email" value="&lt;b&gt;EmailService&lt;/b&gt;&lt;br&gt;[Component]&lt;br&gt;&lt;br&gt;SMTP dispatch" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#ffffff;strokeColor=#6ca4d9;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="440" y="350" width="140" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="callers" value="&lt;b&gt;Other Services&lt;/b&gt;&lt;br&gt;[LoanService, PaymentService]&lt;br&gt;&lt;br&gt;Trigger notifications" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;fontColor=#ffffff;strokeColor=#666666;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="100" y="195" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="smtp" value="&lt;b&gt;SMTP Server&lt;/b&gt;&lt;br&gt;[External]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;fontColor=#ffffff;strokeColor=#666666;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="640" y="360" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" style="endArrow=classic;html=1;" parent="1" source="ctrl" target="svc" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="endArrow=classic;html=1;" parent="1" source="svc" target="repo" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="endArrow=classic;html=1;" parent="1" source="svc" target="email" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="endArrow=classic;html=1;dashed=1;" parent="1" source="callers" target="svc" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="endArrow=classic;html=1;" parent="1" source="email" target="smtp" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

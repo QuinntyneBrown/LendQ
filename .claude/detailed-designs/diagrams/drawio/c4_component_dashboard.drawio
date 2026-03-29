@@ -1,0 +1,35 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="C4 Component - Dashboard" id="c4dash">
+    <mxGraphModel dx="1024" dy="680" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="C4 Component — Dashboard Module" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="250" y="15" width="300" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="boundary" value="Flask REST API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1e3a5f;dashed=1;dashPattern=5 5;verticalAlign=top;fontStyle=1;fontSize=11;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="80" y="50" width="660" height="380" as="geometry"/>
+        </mxCell>
+        <mxCell id="ctrl" value="&lt;b&gt;DashboardController&lt;/b&gt;&lt;br&gt;[Blueprint]&lt;br&gt;&lt;br&gt;summary, active loans,&lt;br&gt;recent activity" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="300" y="75" width="200" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc" value="&lt;b&gt;DashboardService&lt;/b&gt;&lt;br&gt;[Service]&lt;br&gt;&lt;br&gt;Aggregates data from&lt;br&gt;loans, payments, activity" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="300" y="200" width="200" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="lrepo" value="&lt;b&gt;LoanRepository&lt;/b&gt;&lt;br&gt;[Repository]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#ffffff;strokeColor=#6ca4d9;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="110" y="340" width="140" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="prepo" value="&lt;b&gt;PaymentRepository&lt;/b&gt;&lt;br&gt;[Repository]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#ffffff;strokeColor=#6ca4d9;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="340" y="340" width="140" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arepo" value="&lt;b&gt;ActivityRepository&lt;/b&gt;&lt;br&gt;[Repository]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#ffffff;strokeColor=#6ca4d9;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="560" y="340" width="140" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" style="endArrow=classic;html=1;" parent="1" source="ctrl" target="svc" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="endArrow=classic;html=1;" parent="1" source="svc" target="lrepo" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="endArrow=classic;html=1;" parent="1" source="svc" target="prepo" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="endArrow=classic;html=1;" parent="1" source="svc" target="arepo" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

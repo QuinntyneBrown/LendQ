@@ -1,0 +1,33 @@
+@startuml
+skinparam classAttributeIconSize 0
+class BankAccount {
+  +id: UUID
+  +user_id: UUID
+  +balance: decimal
+  +currency: string
+  +status: ACTIVE|FROZEN|CLOSED
+  +created_at: datetime
+}
+class BankTransaction {
+  +id: UUID
+  +account_id: UUID
+  +amount: decimal
+  +type: DEPOSIT|WITHDRAWAL|RECURRING_DEPOSIT
+  +description: string
+  +balance_after: decimal
+  +created_at: datetime
+}
+class RecurringDeposit {
+  +id: UUID
+  +account_id: UUID
+  +amount: decimal
+  +source_description: string
+  +frequency: WEEKLY|BIWEEKLY|MONTHLY
+  +start_date: date
+  +end_date: date?
+  +status: ACTIVE|PAUSED|COMPLETED|CANCELLED
+  +next_deposit_date: date
+}
+BankAccount "1" -- "*" BankTransaction
+BankAccount "1" -- "*" RecurringDeposit
+@enduml

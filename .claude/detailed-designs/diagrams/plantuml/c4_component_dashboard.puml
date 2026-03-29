@@ -1,0 +1,16 @@
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "DashboardController" as controller
+rectangle "SummaryProjection" as summary
+rectangle "LoansProjection" as loans
+rectangle "ActivityProjection" as activity
+database "dashboard views" as db
+
+controller --> summary
+controller --> loans
+controller --> activity
+summary --> db
+loans --> db
+activity --> db
+@enduml

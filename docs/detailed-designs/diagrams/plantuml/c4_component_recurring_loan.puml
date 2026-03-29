@@ -1,0 +1,17 @@
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "RecurringLoanController" as controller
+rectangle "RecurringLoanService" as service
+rectangle "LoanService" as loan
+rectangle "ScheduleService" as schedule
+queue "Outbox Publisher" as outbox
+database "recurring_loans" as db
+
+controller --> service
+service --> loan
+service --> schedule
+service --> db
+loan --> db
+service --> outbox
+@enduml

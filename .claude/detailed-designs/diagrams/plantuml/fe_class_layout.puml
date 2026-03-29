@@ -1,0 +1,19 @@
+@startuml
+skinparam classAttributeIconSize 0
+class AppLayout
+class DesktopSidebar
+class TabletSidebar
+class MobileTabBar
+class Modal
+class FormField
+class DataTable
+class BreakpointStore
+
+AppLayout --> BreakpointStore
+AppLayout --> DesktopSidebar
+AppLayout --> TabletSidebar
+AppLayout --> MobileTabBar
+AppLayout --> Modal
+AppLayout --> DataTable
+AppLayout --> FormField
+@enduml

@@ -1,0 +1,15 @@
+@startuml
+skinparam classAttributeIconSize 0
+class UserListPage
+class AddEditUserDialog
+class RoleManagementPage
+class AuditEventPanel
+class BorrowerDirectorySelect
+class UserApi
+
+UserListPage --> UserApi
+AddEditUserDialog --> UserApi
+RoleManagementPage --> UserApi
+AuditEventPanel --> UserApi
+BorrowerDirectorySelect --> UserApi
+@enduml

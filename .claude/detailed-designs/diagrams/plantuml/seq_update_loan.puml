@@ -1,0 +1,15 @@
+@startuml
+actor Creditor
+participant LoanController
+participant LoanService
+participant TermsService
+participant ScheduleService
+queue Outbox
+
+Creditor -> LoanController : PATCH /loans/{id}
+LoanController -> LoanService : update terms(expected version)
+LoanService -> TermsService : create new terms version
+LoanService -> ScheduleService : create new schedule version
+LoanService -> Outbox : loan_terms_updated
+LoanController --> Creditor : updated loan detail
+@enduml

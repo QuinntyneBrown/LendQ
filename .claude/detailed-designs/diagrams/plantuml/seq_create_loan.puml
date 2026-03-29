@@ -1,0 +1,15 @@
+@startuml
+actor Creditor
+participant LoanController
+participant BorrowerDirectory
+participant LoanService
+participant ScheduleService
+queue Outbox
+
+Creditor -> LoanController : POST /loans
+LoanController -> BorrowerDirectory : validate borrower
+LoanController -> LoanService : create loan
+LoanService -> ScheduleService : build version 1 schedule
+LoanService -> Outbox : loan_created
+LoanController --> Creditor : loan detail + versions
+@enduml

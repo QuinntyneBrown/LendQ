@@ -1,0 +1,13 @@
+@startuml
+participant AppShell
+participant NotificationStreamHook
+participant NotificationApi
+participant NotificationBell
+participant ToastProvider
+
+AppShell -> NotificationStreamHook : start SSE
+NotificationStreamHook -> NotificationApi : GET /notifications/stream
+NotificationApi --> NotificationStreamHook : notification event
+NotificationStreamHook --> NotificationBell : update unread count
+NotificationStreamHook --> ToastProvider : emit toast if visible
+@enduml

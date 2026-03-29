@@ -1,0 +1,15 @@
+@startuml
+actor User
+participant PaymentController
+participant AdjustmentService
+queue Outbox
+
+User -> PaymentController : POST /schedule-adjustments/pause
+alt borrower requires approval
+  PaymentController -> AdjustmentService : create pending request
+else creditor direct apply
+  PaymentController -> AdjustmentService : create new paused schedule version
+  AdjustmentService -> Outbox : schedule_paused
+end
+PaymentController --> User : accepted
+@enduml
