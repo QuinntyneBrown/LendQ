@@ -16,6 +16,11 @@ const NotificationListPage = lazy(
   () => import("@/notifications/NotificationListPage"),
 );
 const SettingsPage = lazy(() => import("@/settings/SettingsPage"));
+const BankAccountPage = lazy(() => import("@/bank-account/BankAccountPage"));
+const SavingsGoalListPage = lazy(() => import("@/savings/SavingsGoalListPage"));
+const SavingsGoalDetailPage = lazy(() => import("@/savings/SavingsGoalDetailPage"));
+const RecurringLoanListPage = lazy(() => import("@/recurring-loans/RecurringLoanListPage"));
+const RecurringLoanDetailPage = lazy(() => import("@/recurring-loans/RecurringLoanDetailPage"));
 
 function Loading() {
   return (
@@ -45,6 +50,8 @@ export function AppRoutes() {
         >
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/loans" element={<LoanListPage />} />
+          <Route path="/loans/recurring" element={<RecurringLoanListPage />} />
+          <Route path="/loans/recurring/:recurringId" element={<RecurringLoanDetailPage />} />
           <Route path="/loans/:id" element={<LoanDetailPage />} />
           <Route
             path="/users"
@@ -62,6 +69,9 @@ export function AppRoutes() {
               </ProtectedRoute>
             }
           />
+          <Route path="/account" element={<BankAccountPage />} />
+          <Route path="/savings" element={<SavingsGoalListPage />} />
+          <Route path="/savings/:goalId" element={<SavingsGoalDetailPage />} />
           <Route path="/notifications" element={<NotificationListPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>

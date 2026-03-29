@@ -4,6 +4,9 @@ import {
   LayoutDashboard,
   Banknote,
   HandCoins,
+  PiggyBank,
+  Repeat,
+  Wallet,
   Users,
   Bell,
   Settings,
@@ -46,6 +49,9 @@ export function DesktopSidebar() {
           label="Borrowings"
           href="/loans?view=borrower"
         />
+        <NavItem icon={Repeat} label="Recurring Loans" href="/loans/recurring" />
+        <NavItem icon={Wallet} label="Account" href="/account" />
+        <NavItem icon={PiggyBank} label="Savings" href="/savings" />
         {isAdmin && <NavItem icon={Users} label="Users" href="/users" />}
         <NavItem icon={Bell} label="Notifications" href="/notifications" />
         <NavItem icon={Settings} label="Settings" href="/settings" />

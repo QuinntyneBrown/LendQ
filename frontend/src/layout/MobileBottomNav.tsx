@@ -4,6 +4,9 @@ import {
   LayoutDashboard,
   Banknote,
   HandCoins,
+  PiggyBank,
+  Repeat,
+  Wallet,
   Bell,
   Menu,
   Users,
@@ -59,6 +62,30 @@ export function MobileBottomNav() {
           data-testid="more-menu"
           className="fixed bottom-16 right-2 bg-surface border border-border rounded-card shadow-modal p-1 z-50 min-w-[160px]"
         >
+          <Link
+            to="/loans/recurring"
+            onClick={() => setMoreOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-text-primary hover:bg-gray-50 rounded-button"
+          >
+            <Repeat size={16} />
+            Recurring Loans
+          </Link>
+          <Link
+            to="/account"
+            onClick={() => setMoreOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-text-primary hover:bg-gray-50 rounded-button"
+          >
+            <Wallet size={16} />
+            Account
+          </Link>
+          <Link
+            to="/savings"
+            onClick={() => setMoreOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-text-primary hover:bg-gray-50 rounded-button"
+          >
+            <PiggyBank size={16} />
+            Savings
+          </Link>
           {isAdmin && (
             <Link
               to="/users"
