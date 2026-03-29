@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Edit, Plus } from "lucide-react";
+import { ArrowLeft, ChevronLeft, Edit, Plus } from "lucide-react";
 import { useAuth } from "@/auth/hooks";
+import { useBreakpoint } from "@/layout/useBreakpoint";
 import { Button } from "@/ui/Button";
 import { Card } from "@/ui/Card";
 import { LoadingSkeleton } from "@/ui/LoadingSkeleton";
@@ -19,6 +20,7 @@ export function LoanDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { roles } = useAuth();
+  const { isMobile } = useBreakpoint();
   const { data: loan, isLoading } = useLoanDetail(id!);
 
   const [editOpen, setEditOpen] = useState(false);
@@ -55,41 +57,62 @@ export function LoanDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-4">
-        <button
-          type="button"
-          onClick={() => navigate("/loans")}
-          className="p-2 rounded-button text-text-secondary hover:bg-background transition-colors"
-          aria-label="Back"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex flex-col gap-3">
+        {/* Back link */}
+        {isMobile ? (
+          <button
+            type="button"
+            onClick={() => navigate("/loans")}
+            className="flex items-center gap-1 text-text-muted text-[13px] font-medium w-fit"
+            aria-label="Back"
+          >
+            <ChevronLeft size={18} />
+            My Loans
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => navigate("/loans")}
+            className="p-2 rounded-button text-text-secondary hover:bg-background transition-colors w-fit"
+            aria-label="Back"
+          >
+            <ArrowLeft size={20} />
+          </button>
+        )}
+
+        {/* Title + actions row — stacks on mobile */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <h1
               data-testid="loan-title"
-              className="font-heading text-[28px] font-bold text-text-primary truncate"
+              className="font-heading text-[22px] sm:text-[28px] font-bold text-text-primary"
             >
               {loan.description}
             </h1>
-            <span data-testid="loan-status-badge">
+            <span data-testid="loan-status-badge" className="flex-shrink-0">
               <StatusBadge status={loan.status} />
             </span>
           </div>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {!isBorrower && (
+
+          <div className="flex items-center gap-2 sm:ml-auto flex-shrink-0">
+            {!isBorrower && (
+              <Button
+                variant="secondary"
+                icon={Edit}
+                onClick={() => setEditOpen(true)}
+                className={isMobile ? "flex-1" : ""}
+              >
+                {isMobile ? "Edit" : "Edit Loan"}
+              </Button>
+            )}
             <Button
-              variant="secondary"
-              icon={Edit}
-              onClick={() => setEditOpen(true)}
+              icon={Plus}
+              onClick={() => setRecordOpen(true)}
+              className={isMobile ? "flex-1" : ""}
             >
-              Edit Loan
+              {isMobile ? "Record" : "Record Payment"}
             </Button>
-          )}
-          <Button icon={Plus} onClick={() => setRecordOpen(true)}>
-            Record Payment
-          </Button>
+          </div>
         </div>
       </div>
 
