@@ -127,7 +127,7 @@ jobs:
           az containerapp update \
             --name $API_APP_NAME \
             --resource-group $AZURE_RESOURCE_GROUP \
-            --set-env-vars "SEED_ON_STARTUP=cleanup" 2>&1 || true
+            --set-env-vars "SEED_ON_STARTUP=demo" 2>&1 || true
 
   # ──────────────────────────────────────────────────
   # Frontend: build SPA and deploy to Static Web App
