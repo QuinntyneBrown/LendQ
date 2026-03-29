@@ -1,0 +1,13 @@
+@startuml
+actor User
+participant DashboardController
+database SummaryView
+database LoansView
+database ActivityView
+
+User -> DashboardController : GET dashboard sections
+DashboardController -> SummaryView : query summary
+DashboardController -> LoansView : query loans
+DashboardController -> ActivityView : query activity
+DashboardController --> User : section payloads + generated_at
+@enduml

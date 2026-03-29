@@ -1,0 +1,15 @@
+@startuml
+skinparam classAttributeIconSize 0
+class DashboardPage
+class SummaryCards
+class ActiveLoansPanel
+class ActivityFeed
+class DashboardApi
+
+DashboardPage --> SummaryCards
+DashboardPage --> ActiveLoansPanel
+DashboardPage --> ActivityFeed
+SummaryCards --> DashboardApi
+ActiveLoansPanel --> DashboardApi
+ActivityFeed --> DashboardApi
+@enduml

@@ -1,0 +1,53 @@
+@startuml
+skinparam classAttributeIconSize 0
+class RecurringLoan {
+  +id: UUID
+  +creditor_id: UUID
+  +borrower_id: UUID
+  +recurrence_interval: WEEKLY|BIWEEKLY|MONTHLY
+  +start_date: date
+  +end_date: date?
+  +max_occurrences: int?
+  +status: DRAFT|PENDING_APPROVAL|ACTIVE|PAUSED|SUSPENDED|COMPLETED|CANCELLED
+  +active_template_version_id: UUID?
+  +total_generated: int
+  +next_generation_at: datetime?
+  +last_failure_code: string?
+  +version: int
+  +created_at: datetime
+}
+class RecurringLoanTemplateVersion {
+  +id: UUID
+  +recurring_loan_id: UUID
+  +description_template: string
+  +principal_amount: decimal
+  +currency: string
+  +interest_rate_percent: decimal?
+  +repayment_frequency: string
+  +installment_count: int
+  +timezone: string
+  +allow_parallel_active_generated_loans: bool
+  +max_generated_loan_principal_exposure: decimal?
+  +created_at: datetime
+}
+class RecurringLoanConsent {
+  +id: UUID
+  +recurring_loan_id: UUID
+  +template_version_id: UUID
+  +decision: APPROVED|REJECTED|REVOKED
+  +decided_by_user_id: UUID
+  +decided_at: datetime
+}
+class GeneratedLoanRecord {
+  +id: UUID
+  +recurring_loan_id: UUID
+  +loan_id: UUID
+  +template_version_id: UUID
+  +scheduled_for_date: date
+  +sequence: int
+  +generated_at: datetime
+}
+RecurringLoan "1" -- "*" RecurringLoanTemplateVersion
+RecurringLoan "1" -- "*" RecurringLoanConsent
+RecurringLoan "1" -- "*" GeneratedLoanRecord
+@enduml

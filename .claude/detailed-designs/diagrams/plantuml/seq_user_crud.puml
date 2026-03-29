@@ -1,0 +1,15 @@
+@startuml
+actor Admin
+participant UserController
+participant UserService
+participant RoleService
+participant SessionService
+participant AuditService
+
+Admin -> UserController : PATCH /users/{id}
+UserController -> UserService : update user
+UserService -> RoleService : apply roles
+UserService -> SessionService : revoke sessions if needed
+UserService -> AuditService : record before/after
+UserController --> Admin : updated user
+@enduml

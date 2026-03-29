@@ -1,0 +1,15 @@
+@startuml
+skinparam classAttributeIconSize 0
+class LoanListPage
+class LoanDetailPage
+class CreateEditLoanDialog
+class LoanChangeRequestDialog
+class TermsHistoryPanel
+class LoanApi
+
+LoanListPage --> LoanApi
+LoanDetailPage --> LoanApi
+CreateEditLoanDialog --> LoanApi
+LoanChangeRequestDialog --> LoanApi
+TermsHistoryPanel --> LoanApi
+@enduml

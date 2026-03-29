@@ -1,0 +1,29 @@
+@startuml
+skinparam classAttributeIconSize 0
+class ApiClient {
+  +request()
+  +refreshSession()
+}
+class AuthState {
+  +accessToken: string?
+  +user: UserSummary?
+}
+class UserSummary {
+  +id: string
+  +roles: string[]
+}
+class LoanSummary {
+  +id: string
+  +outstanding_balance: string
+}
+class PaymentTransaction {
+  +id: string
+  +amount: string
+}
+class Notification {
+  +id: string
+  +is_read: boolean
+}
+ApiClient --> AuthState
+AuthState --> UserSummary
+@enduml

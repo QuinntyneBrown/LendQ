@@ -1,0 +1,16 @@
+@startuml
+participant DomainService
+database Outbox
+participant Relay
+participant Worker
+database NotificationStore
+participant SSE
+participant Email
+
+DomainService -> Outbox : write event in tx
+Relay -> Outbox : read pending events
+Relay -> Worker : enqueue notification job
+Worker -> NotificationStore : create notification + deliveries
+Worker -> SSE : push in-app event
+Worker -> Email : send email if enabled
+@enduml

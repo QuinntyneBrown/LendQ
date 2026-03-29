@@ -1,0 +1,14 @@
+@startuml
+participant ApiClient
+participant AuthStore
+participant API
+
+ApiClient -> API : request with in-memory token
+API --> ApiClient : 401
+ApiClient -> AuthStore : single-flight refresh
+AuthStore -> API : POST /auth/refresh\ncookie + CSRF
+API --> AuthStore : new access token + user
+AuthStore --> ApiClient : retry original request
+ApiClient -> API : retried request
+API --> ApiClient : success
+@enduml

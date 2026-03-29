@@ -1,6 +1,6 @@
 # LendQ Detailed Design Index
 
-**Requirements**: L1-1 through L1-15
+**Requirements**: L1-1 through L1-12
 
 ## Overview
 
@@ -62,10 +62,6 @@ This document is the entry point for the full detailed design set for LendQ. The
 | [14-fe-settings-preferences.md](14-fe-settings-preferences.md) | Settings screens for notification preferences and session/security controls |
 | [15-security-session-architecture.md](15-security-session-architecture.md) | Cross-cutting security controls, trust boundaries, headers, CSRF, abuse protection |
 | [16-operational-readiness-and-api-governance.md](16-operational-readiness-and-api-governance.md) | Observability, worker reliability, health, backup and restore, CI gates, API governance |
-| [17-bank-accounts.md](17-bank-accounts.md) | Bank accounts, deposits, withdrawals, recurring deposits, transaction history |
-| [18-savings-goals.md](18-savings-goals.md) | Savings goals, contributions, progress tracking, goal completion |
-| [19-recurring-loans.md](19-recurring-loans.md) | Recurring loan templates, automatic loan generation, pause/resume/cancel lifecycle |
-| [17-19-production-audit-summary.md](17-19-production-audit-summary.md) | March 29, 2026 audit summary for production-readiness and security hardening across modules 17-19 |
 
 ## Contract Source Of Truth
 

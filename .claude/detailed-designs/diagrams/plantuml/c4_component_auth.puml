@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "AuthController" as controller
+rectangle "AuthService" as service
+rectangle "PasswordHasher\nArgon2id" as hasher
+rectangle "SessionService" as sessions
+rectangle "AuditPublisher" as audit
+database "users" as users
+database "auth_sessions" as authdb
+queue "Outbox / Email Worker" as outbox
+
+controller --> service
+service --> hasher
+service --> users
+service --> sessions
+service --> authdb
+service --> audit
+service --> outbox
+@enduml

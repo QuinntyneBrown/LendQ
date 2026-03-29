@@ -1,0 +1,13 @@
+@startuml
+actor Admin
+participant UserListPage
+participant UserApi
+participant QueryCache
+participant Toasts
+
+Admin -> UserListPage : save user change
+UserListPage -> UserApi : PATCH /users/{id}
+UserApi --> QueryCache : invalidate users + roles
+QueryCache --> UserListPage : refetch
+UserListPage -> Toasts : show success
+@enduml

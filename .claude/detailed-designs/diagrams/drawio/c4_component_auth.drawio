@@ -1,0 +1,39 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="C4 Component - Auth" id="c4auth">
+    <mxGraphModel dx="1024" dy="680" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="C4 Component — Authentication Module" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="220" y="15" width="360" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="boundary" value="Flask REST API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1e3a5f;dashed=1;dashPattern=5 5;verticalAlign=top;fontStyle=1;fontSize=11;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="60" y="50" width="700" height="420" as="geometry"/>
+        </mxCell>
+        <mxCell id="ctrl" value="&lt;b&gt;AuthController&lt;/b&gt;&lt;br&gt;[Flask Blueprint]&lt;br&gt;&lt;br&gt;login, signup, forgot-password,&lt;br&gt;reset-password, refresh, logout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="280" y="75" width="230" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc" value="&lt;b&gt;AuthService&lt;/b&gt;&lt;br&gt;[Service]&lt;br&gt;&lt;br&gt;Orchestrates authentication,&lt;br&gt;registration, password reset" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="290" y="210" width="210" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="tok" value="&lt;b&gt;TokenService&lt;/b&gt;&lt;br&gt;[Component]&lt;br&gt;&lt;br&gt;JWT creation,&lt;br&gt;decoding, revocation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#ffffff;strokeColor=#6ca4d9;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="80" y="210" width="160" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="pwd" value="&lt;b&gt;PasswordService&lt;/b&gt;&lt;br&gt;[Component]&lt;br&gt;&lt;br&gt;Hashing, verification,&lt;br&gt;reset tokens" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#ffffff;strokeColor=#6ca4d9;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="550" y="210" width="170" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo" value="&lt;b&gt;UserRepository&lt;/b&gt;&lt;br&gt;[Repository]&lt;br&gt;&lt;br&gt;CRUD on users table" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#ffffff;strokeColor=#6ca4d9;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="200" y="360" width="160" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="email" value="&lt;b&gt;EmailService&lt;/b&gt;&lt;br&gt;[Component]&lt;br&gt;&lt;br&gt;Sends password&lt;br&gt;reset emails" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#ffffff;strokeColor=#6ca4d9;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="430" y="360" width="160" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" style="endArrow=classic;html=1;" parent="1" source="ctrl" target="svc" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="endArrow=classic;html=1;" parent="1" source="svc" target="tok" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="endArrow=classic;html=1;" parent="1" source="svc" target="pwd" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="endArrow=classic;html=1;" parent="1" source="svc" target="repo" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="endArrow=classic;html=1;" parent="1" source="svc" target="email" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,22 @@
+@startuml
+actor "Finance Ops" as finance
+participant BankAccountController
+participant AuthorizationService
+participant IdempotencyGuard
+participant BankLedgerService
+database "bank_accounts / bank_transactions" as db
+queue Outbox
+participant AuditService
+
+finance -> BankAccountController : POST /accounts/{id}/withdraw\nIdempotency-Key
+BankAccountController -> AuthorizationService : require finance.adjust_balance
+AuthorizationService --> BankAccountController : allowed
+BankAccountController -> IdempotencyGuard : reserve(request scope)
+IdempotencyGuard --> BankAccountController : key accepted
+BankAccountController -> BankLedgerService : withdraw(accountId, amount, reason)
+BankLedgerService -> db : lock account row\nvalidate sufficient balance
+BankLedgerService -> db : insert DEBIT transaction\nupdate balance/version
+BankLedgerService -> AuditService : record manual withdrawal audit
+BankLedgerService -> Outbox : bank_account.withdrawal_posted
+BankAccountController --> finance : transaction id + new balance
+@enduml

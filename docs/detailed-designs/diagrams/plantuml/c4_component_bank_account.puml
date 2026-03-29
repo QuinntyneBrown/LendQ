@@ -1,0 +1,24 @@
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "BankAccountController" as controller
+rectangle "AuthorizationService" as authz
+rectangle "IdempotencyGuard" as idem
+rectangle "BankLedgerService" as ledger
+rectangle "RecurringDepositService" as recurring
+rectangle "AuditService" as audit
+queue "Outbox Publisher" as outbox
+database "bank_accounts / bank_transactions / recurring_deposits" as db
+
+controller --> authz
+controller --> idem
+controller --> ledger
+controller --> recurring
+ledger --> db
+ledger --> audit
+ledger --> outbox
+recurring --> ledger
+recurring --> db
+recurring --> outbox
+recurring --> audit
+@enduml

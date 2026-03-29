@@ -1,0 +1,42 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Full-Stack C4 Container" id="fec4cont">
+    <mxGraphModel dx="1024" dy="680" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="LendQ — Full-Stack C4 Container Diagram" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="220" y="15" width="370" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="user" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="395" y="55" width="30" height="45" as="geometry"/>
+        </mxCell>
+        <!-- Frontend boundary -->
+        <mxCell id="fe_bound" value="Frontend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#438DD5;dashed=1;dashPattern=5 5;verticalAlign=top;fontStyle=1;fontSize=11;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="200" y="130" width="420" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="spa" value="&lt;b&gt;React SPA&lt;/b&gt;&lt;br&gt;[React 18 + TypeScript]&lt;br&gt;&lt;br&gt;Responsive UI, routing,&lt;br&gt;state management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=#3a7fc2;arcSize=10;" parent="1" vertex="1">
+          <mxGeometry x="300" y="150" width="220" height="75" as="geometry"/>
+        </mxCell>
+        <!-- Backend boundary -->
+        <mxCell id="be_bound" value="Backend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#2D6E4F;dashed=1;dashPattern=5 5;verticalAlign=top;fontStyle=1;fontSize=11;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="100" y="290" width="620" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="api" value="&lt;b&gt;Flask REST API&lt;/b&gt;&lt;br&gt;[Python / Flask]&lt;br&gt;&lt;br&gt;Business logic,&lt;br&gt;REST endpoints" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2D6E4F;fontColor=#ffffff;strokeColor=#1e5a3a;arcSize=10;" parent="1" vertex="1">
+          <mxGeometry x="320" y="320" width="180" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="db" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br&gt;[Database]" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=8;fillColor=#2D6E4F;fontColor=#ffffff;strokeColor=#1e5a3a;" parent="1" vertex="1">
+          <mxGeometry x="140" y="320" width="120" height="70" as="geometry"/>
+        </mxCell>
+        <!-- External -->
+        <mxCell id="smtp" value="&lt;b&gt;SMTP Server&lt;/b&gt;&lt;br&gt;[External]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;fontColor=#ffffff;strokeColor=#666666;arcSize=10;" parent="1" vertex="1">
+          <mxGeometry x="560" y="330" width="130" height="50" as="geometry"/>
+        </mxCell>
+        <!-- Edges -->
+        <mxCell id="e1" value="HTTPS" style="endArrow=classic;html=1;strokeWidth=1;fontSize=9;" parent="1" source="user" target="spa" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" value="REST/JSON&lt;br&gt;Bearer JWT" style="endArrow=classic;html=1;strokeWidth=1;fontSize=9;" parent="1" source="spa" target="api" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" value="SQLAlchemy" style="endArrow=classic;html=1;strokeWidth=1;fontSize=9;" parent="1" source="api" target="db" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" value="Email" style="endArrow=classic;html=1;strokeWidth=1;fontSize=9;" parent="1" source="api" target="smtp" edge="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

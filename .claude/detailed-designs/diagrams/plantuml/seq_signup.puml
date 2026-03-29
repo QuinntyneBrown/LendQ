@@ -1,0 +1,18 @@
+@startuml
+actor User
+participant SPA
+participant AuthController
+participant AuthService
+database UserRepo
+queue Outbox
+participant EmailWorker
+
+User -> SPA : submit registration
+SPA -> AuthController : POST /auth/signup
+AuthController -> AuthService : register()
+AuthService -> UserRepo : create inactive user
+AuthService -> Outbox : enqueue verification event
+Outbox -> EmailWorker : verification email job
+AuthController --> SPA : 201 created
+SPA --> User : show verify-email state
+@enduml

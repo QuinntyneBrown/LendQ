@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "SavingsGoalController" as controller
+rectangle "AuthorizationService" as authz
+rectangle "IdempotencyGuard" as idem
+rectangle "SavingsGoalService" as service
+rectangle "BankLedgerService" as bank
+rectangle "AuditService" as audit
+queue "Outbox Publisher" as outbox
+database "savings_goals / savings_goal_entries" as db
+
+controller --> authz
+controller --> idem
+controller --> service
+service --> bank
+service --> db
+service --> audit
+service --> outbox
+@enduml

@@ -1,0 +1,27 @@
+@startuml
+skinparam classAttributeIconSize 0
+class Notification {
+  +id: UUID
+  +user_id: UUID
+  +type: string
+  +is_read: bool
+}
+class NotificationDelivery {
+  +channel: IN_APP|EMAIL
+  +status: PENDING|SENT|FAILED|SKIPPED
+  +attempt_count: int
+}
+class NotificationPreference {
+  +user_id: UUID
+  +payment_due_email: bool
+  +payment_received_email: bool
+}
+class OutboxEvent {
+  +id: UUID
+  +type: string
+  +dedupe_key: string
+}
+Notification "1" -- "*" NotificationDelivery
+NotificationPreference "1" -- "*" Notification
+OutboxEvent "1" -- "*" Notification
+@enduml

@@ -1,0 +1,31 @@
+@startuml
+skinparam classAttributeIconSize 0
+class User {
+  +id: UUID
+  +name: string
+  +email: string
+  +status: ACTIVE|INACTIVE
+  +session_version: int
+}
+class Role {
+  +key: ADMIN|CREDITOR|BORROWER
+  +label: string
+}
+class Permission {
+  +key: string
+}
+class UserRole {
+  +user_id: UUID
+  +role_key: string
+}
+class AdminAuditEvent {
+  +id: UUID
+  +actor_id: UUID
+  +target_id: UUID
+  +action: string
+  +request_id: string
+}
+User "1" -- "*" UserRole
+Role "1" -- "*" UserRole
+Role "*" -- "*" Permission
+@enduml

@@ -9,8 +9,7 @@ def main():
     out_dir = os.path.join(base, "rendered")
     os.makedirs(out_dir, exist_ok=True)
 
-    server_url = os.getenv("PLANTUML_SERVER_URL", "https://www.plantuml.com/plantuml/png/")
-    server = plantuml.PlantUML(url=server_url)
+    server = plantuml.PlantUML(url="http://www.plantuml.com/plantuml/png/")
 
     puml_files = sorted(glob.glob(os.path.join(puml_dir, "*.puml")))
     for path in puml_files:

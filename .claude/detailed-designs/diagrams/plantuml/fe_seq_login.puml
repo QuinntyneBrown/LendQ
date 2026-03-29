@@ -1,0 +1,14 @@
+@startuml
+actor User
+participant LoginPage
+participant AuthApi
+participant AuthProvider
+participant Router
+
+User -> LoginPage : submit credentials
+LoginPage -> AuthApi : POST /auth/login
+AuthApi --> LoginPage : access token + user
+LoginPage -> AuthProvider : hydrate memory state
+AuthProvider -> Router : navigate /dashboard
+Router --> User : authenticated shell
+@enduml

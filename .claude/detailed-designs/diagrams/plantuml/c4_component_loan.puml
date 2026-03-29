@@ -1,0 +1,21 @@
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "LoanController" as controller
+rectangle "LoanService" as loan
+rectangle "TermsVersionService" as terms
+rectangle "ScheduleService" as schedule
+rectangle "ChangeRequestService" as change
+queue "Outbox Publisher" as outbox
+database "loans" as loans
+database "terms / schedule versions" as versions
+
+controller --> loan
+loan --> terms
+loan --> schedule
+loan --> change
+loan --> loans
+terms --> versions
+schedule --> versions
+loan --> outbox
+@enduml

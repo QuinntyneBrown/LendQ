@@ -1,0 +1,27 @@
+@startuml
+skinparam classAttributeIconSize 0
+class PaymentTransaction {
+  +id: UUID
+  +amount: decimal
+  +payment_method: string
+  +direction: CREDIT|DEBIT
+  +transaction_type: string
+}
+class PaymentAllocation {
+  +installment_id: UUID
+  +amount: decimal
+}
+class ScheduleAdjustmentEvent {
+  +id: UUID
+  +type: RESCHEDULE|PAUSE
+  +reason: string
+}
+class IdempotencyRecord {
+  +key: string
+  +request_hash: string
+  +response_hash: string
+}
+PaymentTransaction "1" -- "*" PaymentAllocation
+ScheduleAdjustmentEvent "*" -- "1" IdempotencyRecord
+PaymentTransaction "*" -- "1" IdempotencyRecord
+@enduml

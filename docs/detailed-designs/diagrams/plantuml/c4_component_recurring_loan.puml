@@ -1,0 +1,24 @@
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "RecurringLoanController" as controller
+rectangle "ConsentService" as consent
+rectangle "RecurringLoanService" as service
+rectangle "PolicyValidator" as policy
+rectangle "LoanService" as loan
+rectangle "ScheduleService" as schedule
+rectangle "AuditService" as audit
+queue "Outbox Publisher" as outbox
+database "recurring_loans / template_versions / consents" as db
+
+controller --> consent
+controller --> service
+service --> consent
+service --> policy
+service --> loan
+service --> schedule
+service --> db
+loan --> db
+service --> audit
+service --> outbox
+@enduml

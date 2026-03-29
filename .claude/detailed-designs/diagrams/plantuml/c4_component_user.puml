@@ -1,0 +1,21 @@
+@startuml
+left to right direction
+skinparam shadowing false
+rectangle "UserController" as controller
+rectangle "UserService" as usersvc
+rectangle "RoleService" as rolesvc
+rectangle "BorrowerDirectoryService" as borrowers
+rectangle "AdminAuditService" as audit
+database "users" as users
+database "roles / permissions" as roles
+database "admin_audit_events" as auditdb
+
+controller --> usersvc
+controller --> rolesvc
+controller --> borrowers
+usersvc --> users
+rolesvc --> roles
+usersvc --> audit
+rolesvc --> audit
+audit --> auditdb
+@enduml
