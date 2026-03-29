@@ -82,9 +82,11 @@ def create_app(config_name=None):
     if seed_profile:
         with app.app_context():
             try:
-                from app.seed import seed_baseline, seed_demo
+                from app.seed import seed_baseline, seed_cleanup, seed_demo
 
-                if seed_profile == "demo":
+                if seed_profile == "cleanup":
+                    seed_cleanup()
+                elif seed_profile == "demo":
                     seed_demo()
                 else:
                     seed_baseline()

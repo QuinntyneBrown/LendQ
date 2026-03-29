@@ -414,9 +414,57 @@ def seed_demo():
     print("Demo seed complete.")
 
 
+def seed_cleanup():
+    """Purge all users except a protected set. Run once to clean staging."""
+    from app.services.user_service import UserService
+
+    KEEP_EMAILS = {
+        "quinntynebrown@gmail.com",
+        "vanessamitchell88@gmail.com",
+        "oliviabrown@lendq.ca",
+    }
+
+    password_service = PasswordService()
+    admin_role = Role.query.filter_by(name="Admin").first()
+    creditor_role = Role.query.filter_by(name="Creditor").first()
+    borrower_role = Role.query.filter_by(name="Borrower").first()
+
+    # Ensure kept users exist and have Admin role
+    for email in KEEP_EMAILS:
+        user = User.query.filter_by(email=email).first()
+        if user:
+            if admin_role and admin_role not in user.roles:
+                user.roles.append(admin_role)
+            if creditor_role and creditor_role not in user.roles:
+                user.roles.append(creditor_role)
+            if borrower_role and borrower_role not in user.roles:
+                user.roles.append(borrower_role)
+            if not user.is_active:
+                user.is_active = True
+            # Reset password to known value
+            user.password_hash = password_service.hash_password("password123")
+            print(f"  Protected user: {email} (all roles assigned, password reset)")
+    db.session.commit()
+
+    # Now purge everyone else
+    user_service = UserService()
+    all_users = User.query.all()
+    purged = 0
+    for user in all_users:
+        if user.email.lower() in {e.lower() for e in KEEP_EMAILS}:
+            continue
+        try:
+            user_service.purge_user(user.id, force=True)
+            purged += 1
+            print(f"  Purged: {user.email}")
+        except Exception as e:
+            print(f"  Failed to purge {user.email}: {e}")
+    print(f"Cleanup complete: {purged} users purged, {len(KEEP_EMAILS)} kept.")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Seed LendQ database")
-    parser.add_argument("--profile", choices=["baseline", "demo"], default="baseline")
+    parser.add_argument("--profile", choices=["baseline", "demo", "cleanup"], default="baseline")
     args = parser.parse_args()
 
     app = create_app()
@@ -426,6 +474,8 @@ def main():
             seed_baseline()
         elif args.profile == "demo":
             seed_demo()
+        elif args.profile == "cleanup":
+            seed_cleanup()
 
 
 if __name__ == "__main__":

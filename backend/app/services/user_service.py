@@ -189,24 +189,24 @@ class UserService:
         db.session.commit()
         logger.info("User deactivated: %s by %s", user.id, actor_id)
 
-    def purge_user(self, user_id: str, actor_id: str | None = None) -> None:
-        """Permanently delete a test user and ALL associated data.
+    def purge_user(self, user_id: str, actor_id: str | None = None, force: bool = False) -> None:
+        """Permanently delete a user and ALL associated data.
 
-        Only works for test users (email contains 'test', 'e2e', or ends with
-        known test domains). Raises AuthorizationError if the user is not a
-        test user.
+        By default only works for test users. Set force=True to bypass
+        the test-user check (used by seed_cleanup).
 
         Args:
             user_id: The ID of the user to permanently delete.
             actor_id: The ID of the admin performing the action.
+            force: If True, skip the test-user email check.
 
         Raises:
             NotFoundError: If no user exists with the given ID.
-            AuthorizationError: If the user is not a test user.
+            AuthorizationError: If the user is not a test user (and force=False).
         """
         user = self.get_user(user_id)
 
-        if not _is_test_user(user.email):
+        if not force and not _is_test_user(user.email):
             raise AuthorizationError("Only test users can be permanently deleted")
 
         uid = user.id
