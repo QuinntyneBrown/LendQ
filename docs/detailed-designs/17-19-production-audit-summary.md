@@ -62,5 +62,5 @@ The PlantUML render script was also updated to use `https://www.plantuml.com/pla
 
 ## Remaining Follow-Up
 
-- As of March 29, 2026, `docs/api/openapi.yaml` does not contain `/api/v1/accounts`, `/api/v1/savings`, or `/api/v1/loans/recurring` paths. Module 16 defines OpenAPI as the contract source of truth, so these audited designs still need contract synchronization before implementation can be considered production-ready.
+- `docs/api/openapi.yaml` has now been updated to include `/api/v1/accounts`, `/api/v1/savings`, and `/api/v1/loans/recurring` contract coverage. Implementation and tests still need to be aligned to the audited contract before the feature set can be considered production-ready.
 - No backend or frontend implementation files were changed in this audit. This work updated the design set and rendered documentation only.
