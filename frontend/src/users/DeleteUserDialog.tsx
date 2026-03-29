@@ -59,6 +59,9 @@ export function DeleteUserDialog({ open, onClose, user, onSuccess }: DeleteUserD
         >
           <Trash2 size={24} className="text-danger-text" aria-hidden="true" />
         </div>
+        <h3 className="font-heading text-[20px] font-bold text-text-primary mb-2">
+          Delete User?
+        </h3>
         <p
           data-testid="confirmation-message"
           className="font-body text-sm text-text-secondary max-w-sm"

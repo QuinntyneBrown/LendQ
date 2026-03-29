@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Edit, CreditCard } from "lucide-react";
+import { ArrowLeft, Edit, Plus } from "lucide-react";
 import { useAuth } from "@/auth/hooks";
 import { Button } from "@/ui/Button";
 import { Card } from "@/ui/Card";
@@ -87,7 +87,7 @@ export function LoanDetailPage() {
               Edit Loan
             </Button>
           )}
-          <Button icon={CreditCard} onClick={() => setRecordOpen(true)}>
+          <Button icon={Plus} onClick={() => setRecordOpen(true)}>
             Record Payment
           </Button>
         </div>
@@ -97,53 +97,53 @@ export function LoanDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div data-testid="loan-info-card">
-          <Card className="p-6">
-            <h2 className="font-heading text-lg font-bold text-text-primary mb-4">
-              Loan Details
-            </h2>
-            <dl className="grid grid-cols-2 gap-y-4 gap-x-6">
-              <div>
-                <dt className="font-body text-[13px] text-text-muted">Creditor</dt>
-                <dd className="font-body text-sm text-text-primary font-medium mt-0.5">
+          <Card>
+            <div className="px-6 py-4 border-b border-border">
+              <h2 className="font-heading text-lg font-bold text-text-primary">
+                Loan Details
+              </h2>
+            </div>
+            <dl className="flex flex-col divide-y divide-border">
+              <div className="flex justify-between px-6 py-3">
+                <dt className="font-body text-[13px] font-medium text-text-muted">Creditor</dt>
+                <dd className="font-body text-sm font-medium text-text-primary">
                   {loan.creditor_name}
                 </dd>
               </div>
-              <div>
-                <dt className="font-body text-[13px] text-text-muted">Borrower</dt>
-                <dd className="font-body text-sm text-text-primary font-medium mt-0.5">
+              <div className="flex justify-between px-6 py-3">
+                <dt className="font-body text-[13px] font-medium text-text-muted">Borrower</dt>
+                <dd className="font-body text-sm font-medium text-text-primary">
                   {loan.borrower_name}
                 </dd>
               </div>
-              <div>
-                <dt className="font-body text-[13px] text-text-muted">Principal</dt>
-                <dd className="font-body text-sm text-text-primary font-medium mt-0.5">
+              <div className="flex justify-between px-6 py-3">
+                <dt className="font-body text-[13px] font-medium text-text-muted">Principal</dt>
+                <dd className="font-body text-sm font-medium text-text-primary">
                   {formatCurrency(loan.principal)}
                 </dd>
               </div>
-              <div>
-                <dt className="font-body text-[13px] text-text-muted">
-                  Interest Rate
-                </dt>
-                <dd className="font-body text-sm text-text-primary font-medium mt-0.5">
+              <div className="flex justify-between px-6 py-3">
+                <dt className="font-body text-[13px] font-medium text-text-muted">Interest Rate</dt>
+                <dd className="font-body text-sm font-medium text-text-primary">
                   {loan.interest_rate}%
                 </dd>
               </div>
-              <div>
-                <dt className="font-body text-[13px] text-text-muted">Frequency</dt>
-                <dd className="font-body text-sm text-text-primary font-medium mt-0.5">
+              <div className="flex justify-between px-6 py-3">
+                <dt className="font-body text-[13px] font-medium text-text-muted">Frequency</dt>
+                <dd className="font-body text-sm font-medium text-text-primary">
                   {loan.repayment_frequency}
                 </dd>
               </div>
-              <div>
-                <dt className="font-body text-[13px] text-text-muted">Start Date</dt>
-                <dd className="font-body text-sm text-text-primary font-medium mt-0.5">
+              <div className="flex justify-between px-6 py-3">
+                <dt className="font-body text-[13px] font-medium text-text-muted">Start Date</dt>
+                <dd className="font-body text-sm font-medium text-text-primary">
                   {formatDate(loan.start_date)}
                 </dd>
               </div>
               {loan.notes && (
-                <div className="col-span-2">
-                  <dt className="font-body text-[13px] text-text-muted">Notes</dt>
-                  <dd className="font-body text-sm text-text-secondary mt-0.5">
+                <div className="flex justify-between px-6 py-3">
+                  <dt className="font-body text-[13px] font-medium text-text-muted">Notes</dt>
+                  <dd className="font-body text-sm font-medium text-text-primary">
                     {loan.notes}
                   </dd>
                 </div>
