@@ -104,6 +104,7 @@ def delete_user(user_id):
 @user_bp.route("/<user_id>/purge", methods=["DELETE"])
 @require_role("Admin")
 def purge_user(user_id):
+    force = request.args.get("force", "").lower() == "true"
     user_service = UserService()
-    user_service.purge_user(user_id, actor_id=g.current_user.id)
+    user_service.purge_user(user_id, actor_id=g.current_user.id, force=force)
     return jsonify({"message": "User permanently deleted"}), HTTPStatus.OK
