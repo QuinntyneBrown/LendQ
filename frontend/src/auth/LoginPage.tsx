@@ -43,7 +43,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-[100dvh] bg-surface">
       {/* Left panel */}
       <div
         data-testid="login-left-panel"
@@ -55,8 +55,14 @@ export default function LoginPage() {
       </div>
 
       {/* Right panel */}
-      <div className="flex flex-1 items-center justify-center px-6">
-        <div className="w-full max-w-[400px]">
+      <div className="flex flex-1 items-center justify-center px-6 overflow-auto">
+        <div className="w-full max-w-[400px] py-10">
+          {/* Mobile logo */}
+          <div className="flex items-center justify-center gap-2 mb-8 lg:hidden">
+            <Landmark size={28} className="text-primary" />
+            <span className="font-heading text-2xl font-extrabold text-text-primary">LendQ</span>
+          </div>
+
           <h2 className="font-heading text-[32px] font-bold text-text-primary">Welcome back</h2>
           <p className="mt-1 text-[15px] text-text-secondary">Sign in to manage your loans</p>
 
