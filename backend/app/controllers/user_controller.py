@@ -99,3 +99,11 @@ def delete_user(user_id):
     user_service = UserService()
     user_service.delete_user(user_id, actor_id=g.current_user.id)
     return jsonify({"message": "User deleted"}), HTTPStatus.OK
+
+
+@user_bp.route("/<user_id>/purge", methods=["DELETE"])
+@require_role("Admin")
+def purge_user(user_id):
+    user_service = UserService()
+    user_service.purge_user(user_id, actor_id=g.current_user.id)
+    return jsonify({"message": "User permanently deleted"}), HTTPStatus.OK

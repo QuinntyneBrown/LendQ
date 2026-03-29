@@ -53,6 +53,16 @@ export function useDeleteUser() {
   });
 }
 
+export function usePurgeUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiDelete(`/users/${id}/purge`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+}
+
 export function useRoles() {
   return useQuery({
     queryKey: ["roles"],

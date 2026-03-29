@@ -8,6 +8,8 @@ export class DeleteUserDialog {
   readonly confirmationMessage: Locator;
   readonly deleteButton: Locator;
   readonly cancelButton: Locator;
+  readonly purgeButton: Locator;
+  readonly deactivateButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -17,6 +19,8 @@ export class DeleteUserDialog {
     this.confirmationMessage = this.dialog.getByTestId("confirmation-message");
     this.deleteButton = this.dialog.getByRole("button", { name: /Delete/i });
     this.cancelButton = this.dialog.getByRole("button", { name: "Cancel" });
+    this.purgeButton = this.dialog.getByTestId("purge-button");
+    this.deactivateButton = this.dialog.getByTestId("deactivate-button");
   }
 
   async clickDelete() {
@@ -41,5 +45,21 @@ export class DeleteUserDialog {
 
   async expectDeleting() {
     await expect(this.deleteButton).toBeDisabled();
+  }
+
+  async clickPurge() {
+    await this.purgeButton.click();
+  }
+
+  async clickDeactivate() {
+    await this.deactivateButton.click();
+  }
+
+  async expectPurgeVisible() {
+    await expect(this.purgeButton).toBeVisible();
+  }
+
+  async expectPurgeNotVisible() {
+    await expect(this.purgeButton).toBeHidden();
   }
 }
