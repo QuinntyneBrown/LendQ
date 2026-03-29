@@ -40,11 +40,14 @@ def create_app(config_name=None):
     # Register blueprints
     from app.controllers.admin_controller import admin_bp
     from app.controllers.auth_controller import auth_bp
+    from app.controllers.bank_account_controller import account_bp
     from app.controllers.dashboard_controller import dashboard_bp
     from app.controllers.loan_controller import loan_bp
     from app.controllers.notification_controller import notification_bp, pref_bp
     from app.controllers.payment_controller import payment_bp
+    from app.controllers.recurring_loan_controller import recurring_loan_bp
     from app.controllers.role_controller import role_bp
+    from app.controllers.savings_goal_controller import savings_bp
     from app.controllers.user_controller import user_bp
     from app.observability.health import health_bp
 
@@ -57,6 +60,9 @@ def create_app(config_name=None):
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(notification_bp)
     app.register_blueprint(pref_bp)
+    app.register_blueprint(account_bp)
+    app.register_blueprint(savings_bp)
+    app.register_blueprint(recurring_loan_bp)
     app.register_blueprint(health_bp)
 
     # Initialize metrics

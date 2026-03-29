@@ -2,6 +2,9 @@ import {
   LayoutDashboard,
   Banknote,
   HandCoins,
+  PiggyBank,
+  Repeat,
+  Wallet,
   Users,
   Bell,
   Settings,
@@ -48,6 +51,24 @@ export function TabletSidebar({ open, onClose }: TabletSidebarProps) {
             icon={HandCoins}
             label="Borrowings"
             href="/loans?view=borrower"
+            onClick={onClose}
+          />
+          <NavItem
+            icon={Repeat}
+            label="Recurring Loans"
+            href="/loans/recurring"
+            onClick={onClose}
+          />
+          <NavItem
+            icon={Wallet}
+            label="Account"
+            href="/account"
+            onClick={onClose}
+          />
+          <NavItem
+            icon={PiggyBank}
+            label="Savings"
+            href="/savings"
             onClick={onClose}
           />
           {isAdmin && (
