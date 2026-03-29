@@ -10,7 +10,7 @@ class Config:
     JWT_ALGORITHM = "HS256"
 
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL", "postgresql+psycopg2://lendq:lendq@localhost:5432/lendq_dev"
+        "DATABASE_URL", "postgresql+pg8000://lendq:lendq@localhost:5432/lendq_dev"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

@@ -6,6 +6,7 @@ import { Modal } from "@/ui/Modal";
 import { Input } from "@/ui/Input";
 import { Textarea } from "@/ui/Textarea";
 import { Button } from "@/ui/Button";
+import { useToast } from "@/notifications/useToast";
 import { createSavingsGoalSchema, updateSavingsGoalSchema } from "./schemas";
 import type { CreateSavingsGoalFormData } from "./schemas";
 import { useCreateSavingsGoal, useUpdateSavingsGoal } from "./hooks";
@@ -27,6 +28,7 @@ export function CreateEditSavingsGoalDialog({
   const createMutation = useCreateSavingsGoal();
   const updateMutation = useUpdateSavingsGoal();
   const isPending = createMutation.isPending || updateMutation.isPending;
+  const toast = useToast();
 
   const {
     register,
@@ -83,6 +85,7 @@ export function CreateEditSavingsGoalDialog({
         { id: goal.id, ...payload } as Record<string, unknown> & { id: string },
         {
           onSuccess: (updatedGoal) => {
+            toast.success("Savings goal updated");
             onSuccess?.(updatedGoal);
             onClose();
           },
@@ -91,6 +94,7 @@ export function CreateEditSavingsGoalDialog({
     } else {
       createMutation.mutate(payload, {
         onSuccess: (createdGoal) => {
+          toast.success("Savings goal created");
           onSuccess?.(createdGoal);
           onClose();
         },

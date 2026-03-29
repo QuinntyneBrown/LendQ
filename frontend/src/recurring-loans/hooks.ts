@@ -43,7 +43,7 @@ export function useRecurringLoans(page: number) {
       const params = new URLSearchParams();
       params.set("page", String(page));
       return apiGet<PaginatedResponse<RecurringLoanResponse>>(
-        `/recurring-loans?${params.toString()}`,
+        `/loans/recurring?${params.toString()}`,
       ).then((data) => ({
         ...data,
         items: data.items.map(normalizeRecurringLoan),
@@ -57,7 +57,7 @@ export function useRecurringLoan(recurringId: string) {
   return useQuery({
     queryKey: ["recurring-loans", recurringId],
     queryFn: () =>
-      apiGet<RecurringLoanResponse>(`/recurring-loans/${recurringId}`).then(
+      apiGet<RecurringLoanResponse>(`/loans/recurring/${recurringId}`).then(
         normalizeRecurringLoan,
       ),
     staleTime: STALE_TIME,
@@ -69,7 +69,7 @@ export function useCreateRecurringLoan() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: Record<string, unknown>) =>
-      apiPost<RecurringLoanResponse>("/recurring-loans", data).then(
+      apiPost<RecurringLoanResponse>("/loans/recurring", data).then(
         normalizeRecurringLoan,
       ),
     onSuccess: () => {
@@ -85,7 +85,7 @@ export function useUpdateRecurringLoan() {
       id,
       ...data
     }: Record<string, unknown> & { id: string }) =>
-      apiPatch<RecurringLoanResponse>(`/recurring-loans/${id}`, data).then(
+      apiPatch<RecurringLoanResponse>(`/loans/recurring/${id}`, data).then(
         normalizeRecurringLoan,
       ),
     onSuccess: (_data, variables) => {
@@ -102,7 +102,7 @@ export function useSubmitForApproval() {
   return useMutation({
     mutationFn: (id: string) =>
       apiPost<RecurringLoanResponse>(
-        `/recurring-loans/${id}/submit`,
+        `/loans/recurring/${id}/submit-for-approval`,
       ).then(normalizeRecurringLoan),
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["recurring-loans"] });
@@ -116,7 +116,7 @@ export function useApproveRecurringLoan() {
   return useMutation({
     mutationFn: (id: string) =>
       apiPost<RecurringLoanResponse>(
-        `/recurring-loans/${id}/approve`,
+        `/loans/recurring/${id}/approve`,
       ).then(normalizeRecurringLoan),
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["recurring-loans"] });
@@ -130,7 +130,7 @@ export function useRejectRecurringLoan() {
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
       apiPost<RecurringLoanResponse>(
-        `/recurring-loans/${id}/reject`,
+        `/loans/recurring/${id}/reject`,
         { reason },
       ).then(normalizeRecurringLoan),
     onSuccess: (_data, { id }) => {
@@ -145,7 +145,7 @@ export function usePauseRecurringLoan() {
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
       apiPost<RecurringLoanResponse>(
-        `/recurring-loans/${id}/pause`,
+        `/loans/recurring/${id}/pause`,
         { reason },
       ).then(normalizeRecurringLoan),
     onSuccess: (_data, { id }) => {
@@ -160,7 +160,7 @@ export function useResumeRecurringLoan() {
   return useMutation({
     mutationFn: (id: string) =>
       apiPost<RecurringLoanResponse>(
-        `/recurring-loans/${id}/resume`,
+        `/loans/recurring/${id}/resume`,
       ).then(normalizeRecurringLoan),
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["recurring-loans"] });
@@ -174,7 +174,7 @@ export function useCancelRecurringLoan() {
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
       apiPost<RecurringLoanResponse>(
-        `/recurring-loans/${id}/cancel`,
+        `/loans/recurring/${id}/cancel`,
         { reason },
       ).then(normalizeRecurringLoan),
     onSuccess: (_data, { id }) => {
@@ -191,7 +191,7 @@ export function useGeneratedLoans(recurringId: string, page: number) {
       const params = new URLSearchParams();
       params.set("page", String(page));
       return apiGet<PaginatedResponse<GeneratedLoanRecord>>(
-        `/recurring-loans/${recurringId}/generated?${params.toString()}`,
+        `/loans/recurring/${recurringId}/generated?${params.toString()}`,
       );
     },
     staleTime: STALE_TIME,

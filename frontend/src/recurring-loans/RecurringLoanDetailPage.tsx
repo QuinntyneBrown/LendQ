@@ -15,6 +15,7 @@ import {
   Eye,
 } from "lucide-react";
 import { useBreakpoint } from "@/layout/useBreakpoint";
+import { useToast } from "@/notifications/useToast";
 import { Button } from "@/ui/Button";
 import { Card } from "@/ui/Card";
 import { MetricCard } from "@/ui/MetricCard";
@@ -62,6 +63,7 @@ export function RecurringLoanDetailPage() {
   }>({ open: false, action: "pause" });
 
   const submitForApproval = useSubmitForApproval();
+  const toast = useToast();
 
   const openAction = (action: ActionType) => {
     setActionState({ open: true, action });
@@ -163,7 +165,10 @@ export function RecurringLoanDetailPage() {
             {canSubmit && (
               <Button
                 icon={Send}
-                onClick={() => submitForApproval.mutate(recurringLoan.id)}
+                onClick={() => submitForApproval.mutate(recurringLoan.id, {
+                  onSuccess: () => toast.success("Recurring loan submitted for approval"),
+                  onError: () => toast.error("Failed to submit for approval"),
+                })}
                 isLoading={submitForApproval.isPending}
               >
                 Submit for Approval

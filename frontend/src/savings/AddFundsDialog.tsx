@@ -1,14 +1,21 @@
 import { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import type { SavingsGoal } from "@/api/types";
 import { Modal } from "@/ui/Modal";
 import { Input } from "@/ui/Input";
 import { Button } from "@/ui/Button";
 import { formatCurrency } from "@/utils/format";
-import { contributeSchema } from "./schemas";
-import type { ContributeFormData } from "./schemas";
+import { useToast } from "@/notifications/useToast";
+import { useMyAccount } from "@/bank-account/hooks";
 import { useContribute } from "./hooks";
+
+const addFundsSchema = z.object({
+  amount: z.number({ required_error: "Amount is required" }).positive("Amount must be positive").max(999999999.99, "Amount is too large"),
+});
+
+type AddFundsFormData = z.infer<typeof addFundsSchema>;
 
 interface AddFundsDialogProps {
   open: boolean;
@@ -28,18 +35,20 @@ export function AddFundsDialog({
   onSuccess,
 }: AddFundsDialogProps) {
   const contributeMutation = useContribute();
+  const toast = useToast();
   const [idempotencyKey] = useState(() => generateIdempotencyKey());
+  const { data: accountsData } = useMyAccount();
+  const accountId = accountsData?.items?.[0]?.id ?? "";
 
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<ContributeFormData>({
-    resolver: zodResolver(contributeSchema),
+  } = useForm<AddFundsFormData>({
+    resolver: zodResolver(addFundsSchema),
     defaultValues: {
       amount: undefined as unknown as number,
-      account_id: "",
     },
   });
 
@@ -54,18 +63,22 @@ export function AddFundsDialog({
 
   const remaining = Math.max(0, goal.target_amount - goal.current_amount);
 
-  const onSubmit = (data: ContributeFormData) => {
+  const onSubmit = (data: AddFundsFormData) => {
     contributeMutation.mutate(
       {
         goalId: goal.id,
         amount: data.amount,
-        account_id: data.account_id,
+        account_id: accountId,
         idempotency_key: idempotencyKey,
       },
       {
         onSuccess: () => {
+          toast.success("Funds added successfully");
           onSuccess?.();
           onClose();
+        },
+        onError: () => {
+          toast.error("Failed to add funds. Please try again.");
         },
       },
     );
@@ -86,7 +99,7 @@ export function AddFundsDialog({
             type="submit"
             onClick={handleSubmit(onSubmit)}
             isLoading={contributeMutation.isPending}
-            disabled={contributeMutation.isPending}
+            disabled={contributeMutation.isPending || !accountId}
           >
             Add Funds
           </Button>
@@ -118,14 +131,6 @@ export function AddFundsDialog({
           placeholder="0.00"
           {...register("amount", { valueAsNumber: true })}
           error={errors.amount?.message}
-        />
-
-        {/* Account ID input */}
-        <Input
-          label="Source Account ID"
-          placeholder="Enter account ID"
-          {...register("account_id")}
-          error={errors.account_id?.message}
         />
 
         {/* Progress preview */}

@@ -17,6 +17,22 @@ export function BorrowerSelect({ value, onChange, error }: BorrowerSelectProps) 
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // If value is set externally but displayName is empty, look up the user
+  useEffect(() => {
+    if (value && !displayName) {
+      apiGet<{ items: User[] }>(`/users/borrowers?search=`)
+        .then((data) => {
+          const found = data.items?.find((u) => u.id === value);
+          if (found) {
+            setDisplayName(found.name);
+          }
+        })
+        .catch(() => {
+          // Silently ignore
+        });
+    }
+  }, [value, displayName]);
+
   useEffect(() => {
     if (!search.trim()) {
       return;

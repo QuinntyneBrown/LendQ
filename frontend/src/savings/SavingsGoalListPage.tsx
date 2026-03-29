@@ -135,11 +135,6 @@ export function SavingsGoalListPage() {
       <CreateEditSavingsGoalDialog
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        onSuccess={(goal) => {
-          if (goal?.id) {
-            navigate(`/savings/${goal.id}`);
-          }
-        }}
       />
     </div>
   );

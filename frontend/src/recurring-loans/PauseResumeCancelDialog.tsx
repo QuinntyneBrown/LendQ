@@ -5,6 +5,7 @@ import { Modal } from "@/ui/Modal";
 import { Button } from "@/ui/Button";
 import { Textarea } from "@/ui/Textarea";
 import { formatDate } from "@/utils/format";
+import { useToast } from "@/notifications/useToast";
 import {
   usePauseRecurringLoan,
   useResumeRecurringLoan,
@@ -61,6 +62,7 @@ export function PauseResumeCancelDialog({
   const pauseMutation = usePauseRecurringLoan();
   const resumeMutation = useResumeRecurringLoan();
   const cancelMutation = useCancelRecurringLoan();
+  const toast = useToast();
 
   const config = actionConfig[action];
   const isPending =
@@ -76,16 +78,29 @@ export function PauseResumeCancelDialog({
     if (action === "pause") {
       pauseMutation.mutate(
         { id, reason: reason || undefined },
-        { onSuccess: () => onSuccess?.() },
+        {
+          onSuccess: () => {
+            toast.success("Recurring loan paused");
+            onSuccess?.();
+          },
+        },
       );
     } else if (action === "resume") {
       resumeMutation.mutate(id, {
-        onSuccess: () => onSuccess?.(),
+        onSuccess: () => {
+          toast.success("Recurring loan resumed");
+          onSuccess?.();
+        },
       });
     } else {
       cancelMutation.mutate(
         { id, reason: reason || undefined },
-        { onSuccess: () => onSuccess?.() },
+        {
+          onSuccess: () => {
+            toast.success("Recurring loan cancelled");
+            onSuccess?.();
+          },
+        },
       );
     }
   };

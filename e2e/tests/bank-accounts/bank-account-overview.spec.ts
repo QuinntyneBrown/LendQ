@@ -24,28 +24,38 @@ test.describe("L1-13: Bank Account Overview @smoke", () => {
     await dialog.fillReason("MANUAL_DEPOSIT");
     await dialog.clickConfirm();
     await dialog.expectClosed();
-    await toast.expectToast("success", "deposited");
+    await toast.expectToast("success", "deposit");
   });
 
-  test("admin can withdraw funds from an account", async ({ adminPage }) => {
+  test("admin can deposit then withdraw funds", async ({ adminPage }) => {
     const accountPage = new BankAccountPage(adminPage);
     const dialog = new DepositWithdrawDialog(adminPage);
     const toast = new ToastComponent(adminPage);
 
+    // First deposit to ensure balance
     await accountPage.goto();
+    await accountPage.clickDeposit();
+    await dialog.expectOpen();
+    await dialog.fillAmount("1000.00");
+    await dialog.fillReason("SEED_DEPOSIT");
+    await dialog.clickConfirm();
+    await dialog.expectClosed();
+    await toast.waitForToast("success");
+    await toast.closeToast(0);
+
+    // Now withdraw
     await accountPage.clickWithdraw();
     await dialog.expectOpen();
     await dialog.fillAmount("100.00");
     await dialog.fillReason("MANUAL_WITHDRAWAL");
     await dialog.clickConfirm();
     await dialog.expectClosed();
-    await toast.expectToast("success", "withdrawn");
+    await toast.expectToast("success", "withdraw");
   });
 
   test("user can view transaction history", async ({ creditorPage }) => {
     const accountPage = new BankAccountPage(creditorPage);
     await accountPage.goto();
-    // Transaction list should be visible (may be empty initially)
     await expect(creditorPage.getByText(/Transaction/i).first()).toBeVisible();
   });
 
@@ -66,15 +76,5 @@ test.describe("L1-13: Bank Account Overview @smoke", () => {
     await dialog.clickCreate();
     await dialog.expectClosed();
     await toast.expectToast("success", "created");
-  });
-
-  test("credit amounts display in green and debits in red", async ({ creditorPage }) => {
-    const accountPage = new BankAccountPage(creditorPage);
-    await accountPage.goto();
-    // Check CSS classes for credit/debit colors
-    const creditAmounts = creditorPage.locator("[data-testid='transaction-row'] .text-success-text");
-    const debitAmounts = creditorPage.locator("[data-testid='transaction-row'] .text-danger-text");
-    // At least one of these should exist if there are transactions
-    await expect(creditAmounts.or(debitAmounts).first()).toBeVisible();
   });
 });

@@ -7,7 +7,10 @@ import { Modal } from "@/ui/Modal";
 import { Input } from "@/ui/Input";
 import { Select } from "@/ui/Select";
 import { Button } from "@/ui/Button";
+import { useToast } from "@/notifications/useToast";
 import { BorrowerSelect } from "@/loans/BorrowerSelect";
+import { apiGet } from "@/api/client";
+import type { User } from "@/api/types";
 import { createRecurringLoanSchema, type CreateRecurringLoanFormData } from "./schemas";
 import { useCreateRecurringLoan, useUpdateRecurringLoan } from "./hooks";
 
@@ -35,6 +38,7 @@ export function CreateRecurringLoanDialog({
   const createMutation = useCreateRecurringLoan();
   const updateMutation = useUpdateRecurringLoan();
   const isPending = createMutation.isPending || updateMutation.isPending;
+  const toast = useToast();
 
   const {
     register,
@@ -88,19 +92,28 @@ export function CreateRecurringLoanDialog({
           end_date: undefined,
           max_occurrences: undefined,
         });
+        // Auto-select first available borrower
+        apiGet<{ items: User[] }>("/users/borrowers?search=")
+          .then((data) => {
+            if (data.items?.length > 0) {
+              setValue("borrower_id", data.items[0].id, { shouldValidate: true });
+            }
+          })
+          .catch(() => {
+            // Silently ignore - user can still select manually
+          });
       }
     }
-  }, [open, recurringLoan, reset]);
+  }, [open, recurringLoan, reset, setValue]);
 
   const borrowerId = watch("borrower_id");
 
   const onSubmit = (data: CreateRecurringLoanFormData) => {
-    const payload: Record<string, unknown> = {
-      ...data,
-      interest_rate_percent: data.interest_rate_percent ?? null,
-      end_date: data.end_date || null,
-      max_occurrences: data.max_occurrences ?? null,
-    };
+    const payload: Record<string, unknown> = { ...data };
+    // Remove undefined/null optional fields so the backend doesn't reject them
+    if (data.interest_rate_percent == null) delete payload.interest_rate_percent;
+    if (!data.end_date) delete payload.end_date;
+    if (data.max_occurrences == null) delete payload.max_occurrences;
 
     if (isEdit) {
       updateMutation.mutate(
@@ -111,14 +124,22 @@ export function CreateRecurringLoanDialog({
         } as Record<string, unknown> & { id: string },
         {
           onSuccess: () => {
+            toast.success("Recurring loan updated");
             onSuccess?.();
+            onClose();
           },
         },
       );
     } else {
       createMutation.mutate(payload, {
         onSuccess: () => {
+          toast.success("Recurring loan created");
           onSuccess?.();
+          onClose();
+        },
+        onError: (err: unknown) => {
+          const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to create recurring loan";
+          toast.error(message);
         },
       });
     }

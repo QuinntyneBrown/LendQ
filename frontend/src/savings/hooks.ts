@@ -37,7 +37,7 @@ export function useSavingsGoals(page: number) {
     queryFn: () => {
       const params = new URLSearchParams();
       params.set("page", String(page));
-      return apiGet<PaginatedResponse<SavingsGoalResponse>>(`/savings-goals?${params.toString()}`).then((data) => ({
+      return apiGet<PaginatedResponse<SavingsGoalResponse>>(`/savings?${params.toString()}`).then((data) => ({
         ...data,
         items: data.items.map(normalizeGoal),
       }));
@@ -49,7 +49,7 @@ export function useSavingsGoals(page: number) {
 export function useSavingsGoal(goalId: string) {
   return useQuery({
     queryKey: ["savings-goals", goalId],
-    queryFn: () => apiGet<SavingsGoalResponse>(`/savings-goals/${goalId}`).then(normalizeGoal),
+    queryFn: () => apiGet<SavingsGoalResponse>(`/savings/${goalId}`).then(normalizeGoal),
     staleTime: STALE_TIME,
     enabled: !!goalId,
   });
@@ -59,7 +59,7 @@ export function useCreateSavingsGoal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: Record<string, unknown>) =>
-      apiPost<SavingsGoalResponse>("/savings-goals", data).then(normalizeGoal),
+      apiPost<SavingsGoalResponse>("/savings", data).then(normalizeGoal),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["savings-goals"] });
     },
@@ -70,7 +70,7 @@ export function useUpdateSavingsGoal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...data }: Record<string, unknown> & { id: string }) =>
-      apiPatch<SavingsGoalResponse>(`/savings-goals/${id}`, data).then(normalizeGoal),
+      apiPatch<SavingsGoalResponse>(`/savings/${id}`, data).then(normalizeGoal),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["savings-goals"] });
       queryClient.invalidateQueries({ queryKey: ["savings-goals", variables.id] });
@@ -82,7 +82,7 @@ export function useCancelSavingsGoal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, expected_version }: { id: string; expected_version: number }) =>
-      apiPost<SavingsGoalResponse>(`/savings-goals/${id}/cancel`, { expected_version }).then(normalizeGoal),
+      apiPost<SavingsGoalResponse>(`/savings/${id}/cancel`, { expected_version }).then(normalizeGoal),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["savings-goals"] });
       queryClient.invalidateQueries({ queryKey: ["savings-goals", variables.id] });
@@ -104,7 +104,7 @@ export function useContribute() {
       account_id: string;
       idempotency_key: string;
     }) =>
-      apiPost<SavingsGoalEntry>(`/savings-goals/${goalId}/contribute`, {
+      apiPost<SavingsGoalEntry>(`/savings/${goalId}/contributions`, {
         amount,
         account_id,
       }, {
@@ -131,7 +131,7 @@ export function useReleaseFunds() {
       account_id: string;
       idempotency_key: string;
     }) =>
-      apiPost<SavingsGoalEntry>(`/savings-goals/${goalId}/release`, {
+      apiPost<SavingsGoalEntry>(`/savings/${goalId}/release`, {
         amount,
         account_id,
       }, {
@@ -150,7 +150,7 @@ export function useSavingsGoalEntries(goalId: string, page: number) {
     queryFn: () => {
       const params = new URLSearchParams();
       params.set("page", String(page));
-      return apiGet<PaginatedResponse<EntryResponse>>(`/savings-goals/${goalId}/entries?${params.toString()}`).then((data) => ({
+      return apiGet<PaginatedResponse<EntryResponse>>(`/savings/${goalId}/entries?${params.toString()}`).then((data) => ({
         ...data,
         items: data.items.map(normalizeEntry),
       }));
