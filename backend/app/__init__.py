@@ -77,6 +77,21 @@ def create_app(config_name=None):
 
     configure_logging(app)
 
+    # Auto-seed on startup if SEED_ON_STARTUP is set (for staging/dev)
+    seed_profile = os.environ.get("SEED_ON_STARTUP")
+    if seed_profile:
+        with app.app_context():
+            try:
+                from app.seed import seed_baseline, seed_demo
+
+                if seed_profile == "demo":
+                    seed_demo()
+                else:
+                    seed_baseline()
+                app.logger.info("Auto-seed complete (profile=%s)", seed_profile)
+            except Exception as e:
+                app.logger.warning("Auto-seed failed: %s", e)
+
     # Register CLI commands
     import click
 

@@ -121,18 +121,13 @@ jobs:
           echo "API health check timed out"
           exit 1
 
-      - name: Seed database
+      - name: Ensure seed env var on staging API
         continue-on-error: true
         run: |
-          az containerapp exec \
+          az containerapp update \
             --name $API_APP_NAME \
             --resource-group $AZURE_RESOURCE_GROUP \
-            --command "flask seed --profile demo" 2>&1 || \
-          echo "Seed via exec failed — trying via job"
-          az containerapp job start \
-            --name $MIGRATION_JOB_NAME \
-            --resource-group $AZURE_RESOURCE_GROUP \
-            --env-vars "SEED_PROFILE=demo" 2>&1 || true
+            --set-env-vars "SEED_ON_STARTUP=demo" 2>&1 || true
 
   # ──────────────────────────────────────────────────
   # Frontend: build SPA and deploy to Static Web App
