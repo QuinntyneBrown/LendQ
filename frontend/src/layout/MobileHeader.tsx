@@ -37,7 +37,7 @@ export function MobileHeader({
   return (
     <header
       data-testid="mobile-header"
-      className="h-14 bg-surface border-b border-border flex items-center justify-between px-4"
+      className="sticky top-0 z-30 h-14 bg-surface border-b border-border flex items-center justify-between px-4"
     >
       <div className="flex items-center gap-2">
         {showHamburger && (

@@ -16,7 +16,7 @@ export function AppLayout() {
       <div className="flex min-h-screen">
         <DesktopSidebar />
         <div className="flex-1 flex flex-col">
-          <header className="flex items-center justify-end px-8 py-4 border-b border-border bg-surface">
+          <header className="sticky top-0 z-30 flex items-center justify-end px-8 py-4 border-b border-border bg-surface">
             <NotificationBell />
           </header>
           <main className="flex-1 p-8 overflow-auto">
