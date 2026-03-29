@@ -65,6 +65,7 @@ This document is the entry point for the full detailed design set for LendQ. The
 | [17-bank-accounts.md](17-bank-accounts.md) | Bank accounts, deposits, withdrawals, recurring deposits, transaction history |
 | [18-savings-goals.md](18-savings-goals.md) | Savings goals, contributions, progress tracking, goal completion |
 | [19-recurring-loans.md](19-recurring-loans.md) | Recurring loan templates, automatic loan generation, pause/resume/cancel lifecycle |
+| [17-19-production-audit-summary.md](17-19-production-audit-summary.md) | March 29, 2026 audit summary for production-readiness and security hardening across modules 17-19 |
 
 ## Contract Source Of Truth
 
