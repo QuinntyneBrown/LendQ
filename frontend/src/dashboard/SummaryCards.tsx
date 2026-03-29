@@ -14,7 +14,7 @@ interface SummaryCardsProps {
 export function SummaryCards({ data, isLoading, isError, onRetry }: SummaryCardsProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <LoadingSkeleton className="h-24" />
         <LoadingSkeleton className="h-24" />
         <LoadingSkeleton className="h-24" />
@@ -30,7 +30,7 @@ export function SummaryCards({ data, isLoading, isError, onRetry }: SummaryCards
   if (!data) return null;
 
   return (
-    <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       <SummaryCard
         testId="metric-total-lent-out"
         icon={Banknote}
