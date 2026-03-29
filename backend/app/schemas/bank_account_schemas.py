@@ -1,6 +1,55 @@
 from marshmallow import Schema, fields, validate
 
 
+# ---------------------------------------------------------------------------
+# Admin schemas
+# ---------------------------------------------------------------------------
+
+
+class AdminAccountListItemSchema(Schema):
+    user_id = fields.String()
+    user_name = fields.String()
+    user_email = fields.String()
+    account_id = fields.String(allow_none=True)
+    status = fields.String()
+    current_balance = fields.Decimal(allow_none=True, as_string=True)
+    last_transaction_date = fields.DateTime(allow_none=True)
+
+
+class AdminAccountStatsSchema(Schema):
+    total_accounts = fields.Integer()
+    active_accounts = fields.Integer()
+    frozen_accounts = fields.Integer()
+    no_account_users = fields.Integer()
+
+
+class CreateAdminAccountSchema(Schema):
+    user_id = fields.String(required=True)
+    currency = fields.String(load_default="USD")
+    initial_deposit = fields.Decimal(load_default=0, as_string=False)
+    note = fields.String(load_default="")
+
+
+class ChangeStatusSchema(Schema):
+    status = fields.String(
+        required=True, validate=validate.OneOf(["ACTIVE", "FROZEN", "CLOSED"])
+    )
+    reason = fields.String(
+        required=True, validate=validate.Length(min=1, max=500)
+    )
+
+
+class AdminAccountDetailSchema(Schema):
+    account = fields.Dict()
+    user = fields.Dict()
+    stats = fields.Dict()
+
+
+# ---------------------------------------------------------------------------
+# Existing schemas
+# ---------------------------------------------------------------------------
+
+
 class BankAccountSchema(Schema):
     id = fields.String(dump_only=True)
     user_id = fields.String(dump_only=True)

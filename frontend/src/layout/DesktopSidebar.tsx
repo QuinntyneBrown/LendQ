@@ -53,6 +53,7 @@ export function DesktopSidebar() {
         <NavItem icon={Wallet} label="Account" href="/account" />
         <NavItem icon={PiggyBank} label="Savings" href="/savings" />
         {isAdmin && <NavItem icon={Users} label="Users" href="/users" />}
+        {isAdmin && <NavItem icon={Wallet} label="Bank Accounts" href="/admin/accounts" />}
         <NavItem icon={Bell} label="Notifications" href="/notifications" />
         <NavItem icon={Settings} label="Settings" href="/settings" />
       </nav>

@@ -251,3 +251,48 @@ export interface GeneratedLoanRecord {
   sequence: number;
   generated_at: string;
 }
+
+// Admin Bank Account types
+export interface AdminAccountListItem {
+  user_id: string;
+  user_name: string;
+  user_email: string;
+  account_id: string | null;
+  status: BankAccountStatus | "NO_ACCOUNT";
+  current_balance: number | null;
+  last_transaction_date: string | null;
+}
+
+export interface AdminAccountStats {
+  total_accounts: number;
+  active_accounts: number;
+  frozen_accounts: number;
+  no_account_users: number;
+}
+
+export interface AdminAccountListResponse {
+  items: AdminAccountListItem[];
+  total: number;
+  page: number;
+  per_page: number;
+  pages: number;
+  stats: AdminAccountStats;
+}
+
+export interface AdminAccountDetail {
+  account: BankAccount;
+  user: { id: string; name: string; email: string };
+  stats: { total_deposits: number; total_withdrawals: number };
+}
+
+export interface CreateAdminAccountData {
+  user_id: string;
+  currency?: string;
+  initial_deposit?: number;
+  note?: string;
+}
+
+export interface ChangeStatusData {
+  status: BankAccountStatus;
+  reason: string;
+}

@@ -38,6 +38,7 @@ def create_app(config_name=None):
     register_error_handlers(app)
 
     # Register blueprints
+    from app.controllers.admin_bank_account_controller import admin_accounts_bp
     from app.controllers.admin_controller import admin_bp
     from app.controllers.auth_controller import auth_bp
     from app.controllers.bank_account_controller import account_bp
@@ -51,6 +52,7 @@ def create_app(config_name=None):
     from app.controllers.user_controller import user_bp
     from app.observability.health import health_bp
 
+    app.register_blueprint(admin_accounts_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)

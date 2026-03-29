@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from flask import g
+from sqlalchemy import func
 
 from app.errors.exceptions import (
     AuthorizationError,
@@ -20,6 +21,7 @@ from app.models.bank_transaction import (
 )
 from app.models.outbox_event import OutboxEvent
 from app.models.recurring_deposit import RecurringDeposit, RecurringDepositStatus
+from app.models.user import User
 from app.repositories.bank_account_repository import (
     BankAccountRepository,
     BankTransactionRepository,
@@ -385,6 +387,264 @@ class BankAccountService:
     def list_recurring_deposits(self, account_id, user, page=1, per_page=20):
         account = self.get_account(account_id, user)
         return self.recurring_repo.get_by_account_paginated(account.id, page=page, per_page=per_page)
+
+    # --- Admin Account Management ---
+
+    @staticmethod
+    def admin_list_accounts(page, per_page, search=None, status=None):
+        """Return a paginated list of users with their bank-account info.
+
+        Users without a bank account appear with status ``NO_ACCOUNT``.
+        """
+        # Subquery: latest transaction date per account
+        latest_txn_sq = (
+            db.session.query(
+                BankTransaction.account_id,
+                func.max(BankTransaction.created_at).label("last_txn_date"),
+            )
+            .group_by(BankTransaction.account_id)
+            .subquery()
+        )
+
+        # Base query: all users LEFT JOIN bank_accounts LEFT JOIN latest txn
+        query = (
+            db.session.query(
+                User.id.label("user_id"),
+                User.name.label("user_name"),
+                User.email.label("user_email"),
+                BankAccount.id.label("account_id"),
+                BankAccount.status.label("account_status"),
+                BankAccount.current_balance,
+                latest_txn_sq.c.last_txn_date.label("last_transaction_date"),
+            )
+            .outerjoin(BankAccount, BankAccount.user_id == User.id)
+            .outerjoin(latest_txn_sq, latest_txn_sq.c.account_id == BankAccount.id)
+        )
+
+        # Search filter
+        if search:
+            like_term = f"%{search}%"
+            query = query.filter(
+                db.or_(
+                    User.name.ilike(like_term),
+                    User.email.ilike(like_term),
+                )
+            )
+
+        # Status filter
+        if status:
+            if status == "NO_ACCOUNT":
+                query = query.filter(BankAccount.id.is_(None))
+            else:
+                query = query.filter(BankAccount.status == status)
+
+        query = query.order_by(User.name.asc())
+
+        # Paginate manually
+        total = query.count()
+        pages = max((total + per_page - 1) // per_page, 1)
+        rows = query.offset((page - 1) * per_page).limit(per_page).all()
+
+        items = []
+        for row in rows:
+            items.append(
+                {
+                    "user_id": row.user_id,
+                    "user_name": row.user_name,
+                    "user_email": row.user_email,
+                    "account_id": row.account_id,
+                    "status": row.account_status if row.account_id else "NO_ACCOUNT",
+                    "current_balance": row.current_balance,
+                    "last_transaction_date": row.last_transaction_date,
+                }
+            )
+
+        # Aggregate stats (unfiltered)
+        total_accounts = db.session.query(func.count(BankAccount.id)).scalar() or 0
+        active_accounts = (
+            db.session.query(func.count(BankAccount.id))
+            .filter(BankAccount.status == BankAccountStatus.ACTIVE)
+            .scalar()
+            or 0
+        )
+        frozen_accounts = (
+            db.session.query(func.count(BankAccount.id))
+            .filter(BankAccount.status == BankAccountStatus.FROZEN)
+            .scalar()
+            or 0
+        )
+        total_users = db.session.query(func.count(User.id)).scalar() or 0
+        no_account_users = total_users - total_accounts
+
+        stats = {
+            "total_accounts": total_accounts,
+            "active_accounts": active_accounts,
+            "frozen_accounts": frozen_accounts,
+            "no_account_users": no_account_users,
+        }
+
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "pages": pages,
+            "stats": stats,
+        }
+
+    def admin_create_account(self, user_id, currency="USD", initial_deposit=0, note=None, admin_user=None):
+        """Create a new bank account for the given user (admin action)."""
+        user = db.session.get(User, user_id)
+        if not user:
+            raise NotFoundError("User not found")
+
+        existing = self.account_repo.get_by_user_id(user_id)
+        if existing:
+            raise ConflictError("User already has a bank account")
+
+        account = BankAccount(user_id=user_id, currency=currency)
+        self.account_repo.create(account)
+
+        initial_deposit = Decimal(str(initial_deposit))
+        if initial_deposit > 0:
+            account.current_balance = initial_deposit
+            txn = BankTransaction(
+                account_id=account.id,
+                direction=BankTransactionDirection.CREDIT,
+                entry_type=BankTransactionEntryType.MANUAL_DEPOSIT,
+                amount=initial_deposit,
+                balance_before=Decimal("0"),
+                balance_after=initial_deposit,
+                reason_code="ADMIN_INITIAL_DEPOSIT",
+                initiated_by_user_id=admin_user.id if admin_user else user_id,
+                description=note or "Initial deposit by admin",
+                correlation_id=getattr(g, "request_id", None),
+            )
+            db.session.add(txn)
+
+        actor_id = admin_user.id if admin_user else None
+        self.audit_service.log(
+            "CREATE",
+            "BankAccount",
+            account.id,
+            actor_id=actor_id,
+            after_value={"currency": currency, "initial_deposit": str(initial_deposit)},
+        )
+
+        db.session.commit()
+        logger.info("Admin created account %s for user %s", account.id, user_id)
+        return account
+
+    @staticmethod
+    def admin_get_account_detail(account_id):
+        """Return enriched account data including user info and transaction stats."""
+        account = db.session.get(BankAccount, account_id)
+        if not account:
+            raise NotFoundError("Bank account not found")
+
+        user = account.user
+
+        total_deposits = (
+            db.session.query(func.coalesce(func.sum(BankTransaction.amount), 0))
+            .filter(
+                BankTransaction.account_id == account_id,
+                BankTransaction.direction == BankTransactionDirection.CREDIT,
+            )
+            .scalar()
+        )
+        total_withdrawals = (
+            db.session.query(func.coalesce(func.sum(BankTransaction.amount), 0))
+            .filter(
+                BankTransaction.account_id == account_id,
+                BankTransaction.direction == BankTransactionDirection.DEBIT,
+            )
+            .scalar()
+        )
+
+        return {
+            "account": {
+                "id": account.id,
+                "user_id": account.user_id,
+                "currency": account.currency,
+                "current_balance": str(account.current_balance),
+                "status": account.status,
+                "timezone": account.timezone,
+                "version": account.version,
+                "created_at": account.created_at.isoformat() if account.created_at else None,
+                "updated_at": account.updated_at.isoformat() if account.updated_at else None,
+            },
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+            },
+            "stats": {
+                "total_deposits": str(total_deposits),
+                "total_withdrawals": str(total_withdrawals),
+            },
+        }
+
+    def admin_change_status(self, account_id, new_status, reason, admin_user):
+        """Change a bank account's status (admin action).
+
+        Valid transitions:
+        - ACTIVE -> FROZEN, CLOSED
+        - FROZEN -> ACTIVE, CLOSED
+        - CLOSED -> ACTIVE
+        """
+        VALID_TRANSITIONS = {
+            BankAccountStatus.ACTIVE: {BankAccountStatus.FROZEN, BankAccountStatus.CLOSED},
+            BankAccountStatus.FROZEN: {BankAccountStatus.ACTIVE, BankAccountStatus.CLOSED},
+            BankAccountStatus.CLOSED: {BankAccountStatus.ACTIVE},
+        }
+
+        account = self.account_repo.lock_for_update(account_id)
+        if not account:
+            raise NotFoundError("Bank account not found")
+
+        allowed = VALID_TRANSITIONS.get(account.status, set())
+        if new_status not in allowed:
+            raise ValidationError(
+                f"Cannot transition from {account.status} to {new_status}"
+            )
+
+        old_status = account.status
+        account.status = new_status
+        account.version += 1
+
+        # If freezing, pause all active recurring deposits for this account
+        if new_status == BankAccountStatus.FROZEN:
+            active_recurring = (
+                RecurringDeposit.query.filter_by(
+                    account_id=account_id,
+                    status=RecurringDepositStatus.ACTIVE,
+                )
+                .all()
+            )
+            for rd in active_recurring:
+                rd.status = RecurringDepositStatus.PAUSED
+                rd.next_execution_at = None
+                rd.version += 1
+
+        self.audit_service.log(
+            "STATUS_CHANGE",
+            "BankAccount",
+            account.id,
+            actor_id=admin_user.id,
+            before_value={"status": old_status},
+            after_value={"status": new_status, "reason": reason},
+        )
+
+        db.session.commit()
+        logger.info(
+            "Admin %s changed account %s status from %s to %s: %s",
+            admin_user.id,
+            account.id,
+            old_status,
+            new_status,
+            reason,
+        )
+        return account
 
     def process_due_recurring_deposits(self):
         """Called by Celery beat task to process all due recurring deposits."""

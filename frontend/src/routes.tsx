@@ -21,6 +21,8 @@ const SavingsGoalListPage = lazy(() => import("@/savings/SavingsGoalListPage"));
 const SavingsGoalDetailPage = lazy(() => import("@/savings/SavingsGoalDetailPage"));
 const RecurringLoanListPage = lazy(() => import("@/recurring-loans/RecurringLoanListPage"));
 const RecurringLoanDetailPage = lazy(() => import("@/recurring-loans/RecurringLoanDetailPage"));
+const AdminBankAccountListPage = lazy(() => import("@/admin/bank-accounts/AdminBankAccountListPage"));
+const AdminBankAccountDetailPage = lazy(() => import("@/admin/bank-accounts/AdminBankAccountDetailPage"));
 
 function Loading() {
   return (
@@ -66,6 +68,22 @@ export function AppRoutes() {
             element={
               <ProtectedRoute requiredRoles={["Admin"]}>
                 <RoleManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/accounts"
+            element={
+              <ProtectedRoute requiredRoles={["Admin"]}>
+                <AdminBankAccountListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/accounts/:accountId"
+            element={
+              <ProtectedRoute requiredRoles={["Admin"]}>
+                <AdminBankAccountDetailPage />
               </ProtectedRoute>
             }
           />

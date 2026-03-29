@@ -96,6 +96,16 @@ export function MobileBottomNav() {
               Users
             </Link>
           )}
+          {isAdmin && (
+            <Link
+              to="/admin/accounts"
+              onClick={() => setMoreOpen(false)}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-text-primary hover:bg-gray-50 rounded-button"
+            >
+              <Wallet size={16} />
+              Bank Accounts
+            </Link>
+          )}
           <Link
             to="/settings"
             onClick={() => setMoreOpen(false)}
