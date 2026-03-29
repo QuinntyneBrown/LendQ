@@ -195,7 +195,7 @@ export function SavingsGoalDetailPage() {
       <Card>
         <div className="px-6 py-4 border-b border-border">
           <h2 className="font-heading text-lg font-bold text-text-primary">
-            Contribution History
+            Contributions
           </h2>
         </div>
         <div className="overflow-x-auto">

@@ -106,7 +106,7 @@ export function CreateEditSavingsGoalDialog({
     <Modal
       open={open}
       onClose={onClose}
-      title={isEdit ? "Edit Savings Goal" : "Create New Savings Goal"}
+      title={isEdit ? "Edit Savings Goal" : "Create Savings Goal"}
       maxWidth="max-w-[520px]"
       footer={
         <div className="flex items-center justify-end gap-3">
