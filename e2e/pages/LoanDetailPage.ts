@@ -6,6 +6,7 @@ export class LoanDetailPage {
   readonly statusBadge: Locator;
   readonly editLoanButton: Locator;
   readonly recordPaymentButton: Locator;
+  readonly recordButton: Locator;
   readonly principalCard: Locator;
   readonly totalPaidCard: Locator;
   readonly outstandingCard: Locator;
@@ -21,6 +22,7 @@ export class LoanDetailPage {
     this.statusBadge = page.getByTestId("loan-status-badge");
     this.editLoanButton = page.getByRole("button", { name: /Edit Loan/i });
     this.recordPaymentButton = page.getByRole("button", { name: /Record Payment/i }).first();
+    this.recordButton = page.getByRole("button", { name: /^Record$/i });
     this.principalCard = page.getByTestId("metric-principal");
     this.totalPaidCard = page.getByTestId("metric-total-paid");
     this.outstandingCard = page.getByTestId("metric-outstanding");
