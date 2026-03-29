@@ -1,14 +1,21 @@
 @startuml
-actor Admin
+actor "Finance Ops" as finance
 participant BankAccountController
-participant BankAccountService
-participant TransactionService
+participant AuthorizationService
+participant IdempotencyGuard
+participant BankLedgerService
+database "bank_accounts / bank_transactions" as db
 queue Outbox
+participant AuditService
 
-Admin -> BankAccountController : POST /accounts/{id}/deposit\nIdempotency-Key
-BankAccountController -> BankAccountService : deposit(accountId, amount, note)
-BankAccountService -> TransactionService : record DEPOSIT transaction
-TransactionService -> TransactionService : update account balance
-BankAccountService -> Outbox : deposit_completed
-BankAccountController --> Admin : transaction + new balance
+finance -> BankAccountController : POST /accounts/{id}/deposit\nIdempotency-Key
+BankAccountController -> AuthorizationService : require finance.adjust_balance
+AuthorizationService --> BankAccountController : allowed
+BankAccountController -> IdempotencyGuard : reserve(request scope)
+IdempotencyGuard --> BankAccountController : key accepted
+BankAccountController -> BankLedgerService : deposit(accountId, amount, reason)
+BankLedgerService -> db : lock account row\ninsert CREDIT transaction\nupdate balance/version
+BankLedgerService -> AuditService : record manual deposit audit
+BankLedgerService -> Outbox : bank_account.deposit_posted
+BankAccountController --> finance : transaction id + new balance
 @enduml

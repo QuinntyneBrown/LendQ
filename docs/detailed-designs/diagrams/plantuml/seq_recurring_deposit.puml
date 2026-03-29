@@ -1,16 +1,25 @@
 @startuml
 actor "Celery Worker" as worker
 participant RecurringDepositService
-participant TransactionService
-database "bank_accounts" as db
+participant BankLedgerService
+database "bank_accounts / recurring_deposits" as db
 queue Outbox
+participant AuditService
 
 worker -> RecurringDepositService : process due recurring deposits
-RecurringDepositService -> db : fetch deposits where next_date <= today
+RecurringDepositService -> db : fetch ACTIVE schedules\nwhere next_execution_at <= now()\nFOR UPDATE SKIP LOCKED
 loop each due recurring deposit
-  RecurringDepositService -> TransactionService : record RECURRING_DEPOSIT
-  TransactionService -> db : insert transaction + update balance
-  RecurringDepositService -> db : advance next_deposit_date
-  RecurringDepositService -> Outbox : recurring_deposit_posted
+  RecurringDepositService -> db : validate account state + ownership
+  alt valid schedule
+    RecurringDepositService -> BankLedgerService : record RECURRING_DEPOSIT
+    BankLedgerService -> db : insert CREDIT transaction\nupdate account balance
+    RecurringDepositService -> db : advance next_execution_at
+    RecurringDepositService -> AuditService : record schedule execution
+    RecurringDepositService -> Outbox : bank_account.recurring_deposit_posted
+  else business rule failure
+    RecurringDepositService -> db : set status = FAILED\nstore last_failure_code
+    RecurringDepositService -> AuditService : record schedule failure
+    RecurringDepositService -> Outbox : bank_account.recurring_deposit_failed
+  end
 end
 @enduml

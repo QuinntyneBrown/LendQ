@@ -2,17 +2,19 @@
 left to right direction
 skinparam shadowing false
 rectangle "SavingsGoalController" as controller
+rectangle "AuthorizationService" as authz
+rectangle "IdempotencyGuard" as idem
 rectangle "SavingsGoalService" as service
-rectangle "ContributionService" as contrib
-rectangle "BankAccountService" as bank
+rectangle "BankLedgerService" as bank
+rectangle "AuditService" as audit
 queue "Outbox Publisher" as outbox
-database "savings_goals" as db
+database "savings_goals / savings_goal_entries" as db
 
+controller --> authz
+controller --> idem
 controller --> service
-controller --> contrib
-contrib --> bank
+service --> bank
 service --> db
-contrib --> db
+service --> audit
 service --> outbox
-contrib --> outbox
 @enduml

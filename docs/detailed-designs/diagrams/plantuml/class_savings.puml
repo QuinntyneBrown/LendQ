@@ -10,16 +10,19 @@ class SavingsGoal {
   +deadline: date?
   +description: string?
   +status: IN_PROGRESS|COMPLETED|CANCELLED
+  +version: int
   +created_at: datetime
 }
-class SavingsContribution {
+class SavingsGoalEntry {
   +id: UUID
   +goal_id: UUID
+  +direction: CREDIT|DEBIT
+  +entry_type: CONTRIBUTION|RELEASE|ADJUSTMENT
   +amount: decimal
-  +source: MANUAL|RECURRING
   +bank_transaction_id: UUID
   +running_total: decimal
+  +idempotency_key_hash: string?
   +created_at: datetime
 }
-SavingsGoal "1" -- "*" SavingsContribution
+SavingsGoal "1" -- "*" SavingsGoalEntry
 @enduml

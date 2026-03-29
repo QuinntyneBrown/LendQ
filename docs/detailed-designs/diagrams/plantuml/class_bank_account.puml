@@ -3,30 +3,43 @@ skinparam classAttributeIconSize 0
 class BankAccount {
   +id: UUID
   +user_id: UUID
-  +balance: decimal
+  +current_balance: decimal
   +currency: string
   +status: ACTIVE|FROZEN|CLOSED
+  +timezone: string
+  +version: int
   +created_at: datetime
 }
 class BankTransaction {
   +id: UUID
   +account_id: UUID
+  +direction: CREDIT|DEBIT
+  +entry_type: MANUAL_DEPOSIT|MANUAL_WITHDRAWAL|RECURRING_DEPOSIT|REVERSAL
   +amount: decimal
-  +type: DEPOSIT|WITHDRAWAL|RECURRING_DEPOSIT
-  +description: string
+  +balance_before: decimal
   +balance_after: decimal
+  +reason_code: string
+  +initiated_by_user_id: UUID
+  +idempotency_key_hash: string
+  +reversed_transaction_id: UUID?
+  +correlation_id: string
+  +description: string
   +created_at: datetime
 }
 class RecurringDeposit {
   +id: UUID
   +account_id: UUID
+  +owner_user_id: UUID
   +amount: decimal
   +source_description: string
   +frequency: WEEKLY|BIWEEKLY|MONTHLY
   +start_date: date
   +end_date: date?
-  +status: ACTIVE|PAUSED|COMPLETED|CANCELLED
-  +next_deposit_date: date
+  +execution_time_local: time
+  +timezone: string
+  +status: ACTIVE|PAUSED|FAILED|COMPLETED|CANCELLED
+  +next_execution_at: datetime
+  +last_failure_code: string?
 }
 BankAccount "1" -- "*" BankTransaction
 BankAccount "1" -- "*" RecurringDeposit

@@ -1,18 +1,28 @@
 @startuml
 actor "Celery Worker" as worker
 participant RecurringLoanService
+participant PolicyValidator
 participant LoanService
 participant ScheduleService
 database "loans / recurring" as db
 queue Outbox
+participant AuditService
 
 worker -> RecurringLoanService : process due recurring loans
-RecurringLoanService -> db : fetch active recurring loans\nwhere next_generation_date <= today
+RecurringLoanService -> db : fetch ACTIVE recurring loans\nwhere next_generation_at <= now()\nFOR UPDATE SKIP LOCKED
 loop each due recurring loan
-  RecurringLoanService -> LoanService : create loan from template
-  LoanService -> ScheduleService : generate payment schedule
-  LoanService -> db : persist loan + terms + schedule
-  RecurringLoanService -> db : insert GeneratedLoanRecord\nincrement total_generated\nadvance next_generation_date
-  RecurringLoanService -> Outbox : recurring_loan_generated
+  RecurringLoanService -> PolicyValidator : validate consent, policy caps,\nparallel-loan rules, active parties
+  alt generation allowed
+    RecurringLoanService -> LoanService : create loan from approved template version
+    LoanService -> ScheduleService : generate payment schedule
+    LoanService -> db : persist loan + terms + schedule
+    RecurringLoanService -> db : insert GeneratedLoanRecord\nincrement total_generated\nadvance next_generation_at
+    RecurringLoanService -> AuditService : record generation audit
+    RecurringLoanService -> Outbox : recurring_loan.generated
+  else business rule failure
+    RecurringLoanService -> db : set status = SUSPENDED\nstore last_failure_code
+    RecurringLoanService -> AuditService : record suspension audit
+    RecurringLoanService -> Outbox : recurring_loan.suspended
+  end
 end
 @enduml

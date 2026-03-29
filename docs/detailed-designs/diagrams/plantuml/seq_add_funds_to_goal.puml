@@ -1,17 +1,25 @@
 @startuml
 actor User
 participant SavingsGoalController
-participant ContributionService
-participant BankAccountService
-database "savings / bank" as db
+participant AuthorizationService
+participant IdempotencyGuard
+participant SavingsGoalService
+participant BankLedgerService
+database "savings_goals / bank_accounts" as db
 queue Outbox
+participant AuditService
 
 User -> SavingsGoalController : POST /savings/{goalId}/contributions\nIdempotency-Key
-SavingsGoalController -> ContributionService : addFunds(goalId, amount)
-ContributionService -> BankAccountService : validate & debit account
-BankAccountService -> db : record WITHDRAWAL transaction
-ContributionService -> db : insert contribution + update goal current_amount
-ContributionService -> ContributionService : check if target reached
-ContributionService -> Outbox : contribution_posted\n(+ goal_completed if target met)
-SavingsGoalController --> User : contribution + updated goal
+SavingsGoalController -> AuthorizationService : require goal ownership
+AuthorizationService --> SavingsGoalController : allowed
+SavingsGoalController -> IdempotencyGuard : reserve(request scope)
+IdempotencyGuard --> SavingsGoalController : key accepted
+SavingsGoalController -> SavingsGoalService : addFunds(goalId, accountId, amount)
+SavingsGoalService -> db : lock goal + funding account
+SavingsGoalService -> BankLedgerService : debit funding account
+BankLedgerService -> db : insert bank transaction
+SavingsGoalService -> db : insert CREDIT goal entry\nupdate goal current_amount/status
+SavingsGoalService -> AuditService : record contribution audit
+SavingsGoalService -> Outbox : savings.goal_contributed\n(+ savings.goal_target_met if needed)
+SavingsGoalController --> User : goal entry + updated goal
 @enduml
