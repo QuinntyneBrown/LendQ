@@ -77,4 +77,18 @@ def create_app(config_name=None):
 
     configure_logging(app)
 
+    # Register CLI commands
+    import click
+
+    @app.cli.command("seed")
+    @click.option("--profile", default="demo", help="Seed profile: baseline or demo")
+    def seed_command(profile):
+        """Seed the database with initial data."""
+        from app.seed import seed_baseline, seed_demo
+
+        if profile == "demo":
+            seed_demo()
+        else:
+            seed_baseline()
+
     return app

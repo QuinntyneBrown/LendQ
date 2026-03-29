@@ -85,6 +85,14 @@ def seed_baseline():
             user.roles.append(role)
             db.session.add(user)
             print(f"  Created e2e user: {email} / {password}")
+        else:
+            # Ensure existing user has the required role
+            if role not in user.roles:
+                user.roles.append(role)
+                print(f"  Assigned {role.name} role to existing user: {email}")
+            if not user.is_active:
+                user.is_active = True
+                print(f"  Reactivated user: {email}")
 
     db.session.commit()
     print("Baseline seed complete.")
