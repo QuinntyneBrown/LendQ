@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export const createAccountSchema = z.object({
   user_id: z.string().min(1),
-  currency: z.string().default("USD"),
-  initial_deposit: z.number().min(0).default(0),
+  currency: z.string().min(1),
+  initial_deposit: z.number().min(0),
   note: z.string().max(500).optional(),
 });
 
