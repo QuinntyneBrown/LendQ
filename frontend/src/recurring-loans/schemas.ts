@@ -1,10 +1,5 @@
 import { z } from "zod";
 
-const nanToUndefined = (val: unknown) =>
-  val === "" || val === null || val === undefined || (typeof val === "number" && Number.isNaN(val))
-    ? undefined
-    : Number(val);
-
 export const createRecurringLoanSchema = z.object({
   borrower_id: z.string().min(1, "Borrower is required"),
   description_template: z
@@ -12,35 +7,29 @@ export const createRecurringLoanSchema = z.object({
     .min(1, "Description is required")
     .max(500, "Description must be at most 500 characters"),
   principal_amount: z
-    .number({ required_error: "Principal is required", invalid_type_error: "Principal is required" })
+    .number({ error: "Principal is required" })
     .positive("Principal must be positive")
     .max(999999.99, "Principal must be at most $999,999.99"),
-  interest_rate_percent: z.preprocess(
-    nanToUndefined,
-    z
-      .number()
-      .min(0, "Interest rate must be 0 or greater")
-      .max(100, "Interest rate must be at most 100%")
-      .optional()
-      .nullable(),
-  ),
+  interest_rate_percent: z
+    .number()
+    .min(0, "Interest rate must be 0 or greater")
+    .max(100, "Interest rate must be at most 100%")
+    .optional()
+    .nullable(),
   repayment_frequency: z.enum(["WEEKLY", "BIWEEKLY", "MONTHLY", "CUSTOM"]),
   installment_count: z
-    .number({ required_error: "Installment count is required", invalid_type_error: "Installment count is required" })
+    .number({ error: "Installment count is required" })
     .int("Must be a whole number")
     .positive("Must be at least 1"),
   recurrence_interval: z.enum(["WEEKLY", "BIWEEKLY", "MONTHLY", "CUSTOM"]),
   start_date: z.string().min(1, "Start date is required"),
   end_date: z.string().optional().nullable(),
-  max_occurrences: z.preprocess(
-    nanToUndefined,
-    z
-      .number()
-      .int("Must be a whole number")
-      .positive("Must be at least 1")
-      .optional()
-      .nullable(),
-  ),
+  max_occurrences: z
+    .number()
+    .int("Must be a whole number")
+    .positive("Must be at least 1")
+    .optional()
+    .nullable(),
 });
 
 export type CreateRecurringLoanFormData = z.infer<typeof createRecurringLoanSchema>;
@@ -77,7 +66,7 @@ export const updateRecurringLoanSchema = z.object({
     .positive("Must be at least 1")
     .optional()
     .nullable(),
-  expected_version: z.number({ required_error: "Version is required" }),
+  expected_version: z.number({ error: "Version is required" }),
 });
 
 export type UpdateRecurringLoanFormData = z.infer<typeof updateRecurringLoanSchema>;

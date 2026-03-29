@@ -180,7 +180,6 @@ export function CreateRecurringLoanDialog({
 
         <Input
           label="Description Template"
-          name="description_template"
           icon={FileText}
           {...register("description_template")}
           error={errors.description_template?.message}
@@ -190,7 +189,6 @@ export function CreateRecurringLoanDialog({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Principal Amount"
-            name="principal_amount"
             icon={DollarSign}
             type="number"
             step="0.01"
@@ -199,7 +197,6 @@ export function CreateRecurringLoanDialog({
           />
           <Input
             label="Interest Rate % (optional)"
-            name="interest_rate_percent"
             icon={Percent}
             type="number"
             step="0.01"
@@ -225,7 +222,6 @@ export function CreateRecurringLoanDialog({
           />
           <Input
             label="Installment Count"
-            name="installment_count"
             icon={Hash}
             type="number"
             step="1"
@@ -252,7 +248,6 @@ export function CreateRecurringLoanDialog({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Start Date"
-            name="start_date"
             icon={Calendar}
             type="date"
             {...register("start_date")}
@@ -260,7 +255,6 @@ export function CreateRecurringLoanDialog({
           />
           <Input
             label="End Date (optional)"
-            name="end_date"
             icon={Calendar}
             type="date"
             {...register("end_date")}
@@ -270,7 +264,6 @@ export function CreateRecurringLoanDialog({
 
         <Input
           label="Max Occurrences (optional)"
-          name="max_occurrences"
           icon={Hash}
           type="number"
           step="1"

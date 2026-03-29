@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { SavingsGoal } from "@/api/types";
 import { Modal } from "@/ui/Modal";
@@ -38,7 +38,7 @@ export function CreateEditSavingsGoalDialog({
     reset,
     formState: { errors },
   } = useForm<CreateSavingsGoalFormData>({
-    resolver: zodResolver(isEdit ? updateSavingsGoalSchema : createSavingsGoalSchema),
+    resolver: zodResolver(isEdit ? updateSavingsGoalSchema : createSavingsGoalSchema) as Resolver<CreateSavingsGoalFormData>,
     defaultValues: {
       name: "",
       target_amount: undefined as unknown as number,

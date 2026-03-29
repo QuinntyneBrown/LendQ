@@ -115,7 +115,7 @@ export function RecurringLoanListPage() {
                       <RecurringLoanStatusBadge status={rl.status} />
                     </div>
                     <p className="font-body text-sm text-text-secondary truncate">
-                      {(rl as Record<string, unknown>).description_template as string ?? "Recurring loan"}
+                      {(rl as unknown as Record<string, unknown>).description_template as string ?? "Recurring loan"}
                     </p>
                     <div className="flex items-center justify-between text-[13px] font-body text-text-muted">
                       <span>{frequencyLabels[rl.recurrence_interval] ?? rl.recurrence_interval}</span>
@@ -195,11 +195,11 @@ export function RecurringLoanListPage() {
                         {rl.borrower_name}
                       </div>
                       <div className="font-body text-sm text-text-muted">
-                        {(rl as Record<string, unknown>).description_template as string ?? "Recurring loan"}
+                        {(rl as unknown as Record<string, unknown>).description_template as string ?? "Recurring loan"}
                       </div>
                     </td>
                     <td className="px-4 py-3 font-body text-sm font-medium text-text-primary">
-                      {formatCurrency((rl as Record<string, unknown>).principal_amount as number ?? 0)}
+                      {formatCurrency((rl as unknown as Record<string, unknown>).principal_amount as number ?? 0)}
                     </td>
                     <td className="px-4 py-3 font-body text-sm text-text-secondary">
                       {frequencyLabels[rl.recurrence_interval] ?? rl.recurrence_interval}

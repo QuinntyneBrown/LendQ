@@ -12,7 +12,7 @@ import { useMyAccount } from "@/bank-account/hooks";
 import { useContribute } from "./hooks";
 
 const addFundsSchema = z.object({
-  amount: z.number({ required_error: "Amount is required" }).positive("Amount must be positive").max(999999999.99, "Amount is too large"),
+  amount: z.number({ error: "Amount is required" }).positive("Amount must be positive").max(999999999.99, "Amount is too large"),
 });
 
 type AddFundsFormData = z.infer<typeof addFundsSchema>;

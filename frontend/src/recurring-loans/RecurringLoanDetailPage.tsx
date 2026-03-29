@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import type { RecurringLoan } from "@/api/types";
 import {
   ArrowLeft,
   ChevronLeft,
@@ -97,7 +98,7 @@ export function RecurringLoanDetailPage() {
   const canResume = recurringLoan.status === "PAUSED";
   const canCancel = NON_TERMINAL_STATUSES.includes(recurringLoan.status);
 
-  const template = (recurringLoan as Record<string, unknown>).template as Record<string, unknown> | undefined;
+  const template = (recurringLoan as unknown as Record<string, unknown>).template as Record<string, unknown> | undefined;
   const principalAmount = template ? Number(template.principal_amount) : 0;
 
   // Compute metrics
@@ -405,7 +406,7 @@ export function RecurringLoanDetailPage() {
         open={editOpen}
         onClose={() => setEditOpen(false)}
         onSuccess={() => setEditOpen(false)}
-        recurringLoan={recurringLoan}
+        recurringLoan={recurringLoan as RecurringLoan & { template?: Record<string, unknown> }}
       />
 
       {/* Action Dialogs */}
