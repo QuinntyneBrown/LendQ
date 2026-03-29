@@ -44,9 +44,12 @@ export function SavingsGoalListPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-heading text-[28px] font-bold text-text-primary">
-          Savings Goals
-        </h1>
+        <div>
+          <h1 className="font-heading text-[28px] font-bold text-text-primary">
+            Savings Goals
+          </h1>
+          <p className="text-[15px] text-text-secondary mt-1">Track your savings progress</p>
+        </div>
         <Button icon={Plus} onClick={() => setCreateOpen(true)}>
           Create New Goal
         </Button>

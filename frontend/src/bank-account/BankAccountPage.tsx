@@ -53,6 +53,46 @@ function statusBadgeVariant(status: string): "active" | "paused" | "overdue" | "
   }
 }
 
+function entryTypeLabel(entryType: string): string {
+  switch (entryType) {
+    case "MANUAL_DEPOSIT": return "Deposit";
+    case "MANUAL_WITHDRAWAL": return "Withdrawal";
+    case "RECURRING_DEPOSIT": return "Recurring";
+    case "REVERSAL": return "Reversal";
+    case "SAVINGS_CONTRIBUTION": return "Savings";
+    case "SAVINGS_RELEASE": return "Release";
+    default: return entryType.replace(/_/g, " ");
+  }
+}
+
+const ENTRY_TYPE_DESCRIPTIONS: Record<string, string> = {
+  MANUAL_DEPOSIT: "Manual Deposit",
+  MANUAL_WITHDRAWAL: "Manual Withdrawal",
+  RECURRING_DEPOSIT: "Recurring Deposit",
+  REVERSAL: "Transaction Reversal",
+  SAVINGS_CONTRIBUTION: "Savings Contribution",
+  SAVINGS_RELEASE: "Savings Release",
+};
+
+function getTransactionDescription(txn: BankTransaction): string {
+  if (txn.description && txn.description.trim()) {
+    return txn.description;
+  }
+  return ENTRY_TYPE_DESCRIPTIONS[txn.entry_type] ?? txn.entry_type.replace(/_/g, " ");
+}
+
+function entryTypeBadgeVariant(entryType: string): "active" | "default" | "overdue" | "paused" | "paid_off" {
+  switch (entryType) {
+    case "MANUAL_DEPOSIT": return "active";
+    case "RECURRING_DEPOSIT": return "active";
+    case "MANUAL_WITHDRAWAL": return "default";
+    case "REVERSAL": return "overdue";
+    case "SAVINGS_CONTRIBUTION": return "paid_off";
+    case "SAVINGS_RELEASE": return "paused";
+    default: return "default";
+  }
+}
+
 export function BankAccountPage() {
   const { roles } = useAuth();
   const { isMobile } = useBreakpoint();
@@ -167,6 +207,7 @@ export function BankAccountPage() {
             </>
           )}
           <Button
+            variant="ghost"
             icon={RefreshCw}
             onClick={() => setRecurringOpen(true)}
             className={isMobile ? "flex-1" : ""}
@@ -184,7 +225,7 @@ export function BankAccountPage() {
               <Wallet size={24} />
             </div>
             <div>
-              <p className="text-sm font-medium text-text-muted font-body">Current Balance</p>
+              <p className="text-sm font-medium text-text-muted font-body">Available Balance</p>
               <p data-testid="account-balance" className="text-3xl font-bold text-text-primary font-heading">
                 {formatCurrency(account.current_balance)}
               </p>
@@ -316,8 +357,8 @@ function TransactionTable({ transactions }: { transactions: BankTransaction[] })
         <thead>
           <tr className="border-b border-border">
             <th className="text-left px-6 py-3 text-xs font-semibold text-text-muted font-body uppercase tracking-wider">Date</th>
-            <th className="text-left px-6 py-3 text-xs font-semibold text-text-muted font-body uppercase tracking-wider">Type</th>
             <th className="text-left px-6 py-3 text-xs font-semibold text-text-muted font-body uppercase tracking-wider">Description</th>
+            <th className="text-left px-6 py-3 text-xs font-semibold text-text-muted font-body uppercase tracking-wider">Type</th>
             <th className="text-right px-6 py-3 text-xs font-semibold text-text-muted font-body uppercase tracking-wider">Amount</th>
             <th className="text-right px-6 py-3 text-xs font-semibold text-text-muted font-body uppercase tracking-wider">Balance After</th>
           </tr>
@@ -332,13 +373,14 @@ function TransactionTable({ transactions }: { transactions: BankTransaction[] })
               <td className="px-6 py-3 text-sm text-text-primary font-body whitespace-nowrap">
                 {formatDate(txn.created_at)}
               </td>
-              <td className="px-6 py-3">
-                <span className="text-xs font-medium text-text-secondary font-body">
-                  {txn.entry_type.replace(/_/g, " ")}
-                </span>
-              </td>
               <td className="px-6 py-3 text-sm text-text-secondary font-body max-w-[200px] truncate">
-                {txn.description || txn.reason_code}
+                {getTransactionDescription(txn)}
+              </td>
+              <td className="px-6 py-3">
+                <Badge
+                  label={entryTypeLabel(txn.entry_type)}
+                  variant={entryTypeBadgeVariant(txn.entry_type)}
+                />
               </td>
               <td className="px-6 py-3 text-sm font-semibold text-right font-body whitespace-nowrap">
                 <span className={txn.direction === "CREDIT" ? "text-success-text" : "text-danger-text"}>
@@ -376,10 +418,10 @@ function TransactionCardList({ transactions }: { transactions: BankTransaction[]
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-text-primary font-body truncate">
-              {txn.entry_type.replace(/_/g, " ")}
+              {getTransactionDescription(txn)}
             </p>
             <p className="text-xs text-text-muted font-body">
-              {formatDate(txn.created_at)}
+              {entryTypeLabel(txn.entry_type)} &middot; {formatDate(txn.created_at)}
             </p>
           </div>
           <div className="text-right flex-shrink-0">

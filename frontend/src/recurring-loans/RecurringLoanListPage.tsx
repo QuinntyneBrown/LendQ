@@ -17,7 +17,6 @@ import type { RecurringLoan } from "@/api/types";
 
 const columns = [
   { key: "borrower", label: "Borrower" },
-  { key: "description", label: "Description" },
   { key: "amount", label: "Amount" },
   { key: "frequency", label: "Frequency" },
   { key: "status", label: "Status" },
@@ -73,9 +72,12 @@ export function RecurringLoanListPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-heading text-[28px] font-bold text-text-primary">
-          Recurring Loans
-        </h1>
+        <div>
+          <h1 className="font-heading text-[28px] font-bold text-text-primary">
+            Recurring Loans
+          </h1>
+          <p className="text-[15px] text-text-secondary mt-1">Manage your recurring loan schedules</p>
+        </div>
         <Button icon={Plus} onClick={() => setCreateOpen(true)}>
           Set Up Recurring Loan
         </Button>
@@ -188,11 +190,13 @@ export function RecurringLoanListPage() {
                     onClick={() => handleRowClick(rl)}
                     className="border-b border-border hover:bg-background transition-colors cursor-pointer"
                   >
-                    <td className="px-4 py-3 font-body text-sm text-text-primary">
-                      {rl.borrower_name}
-                    </td>
-                    <td className="px-4 py-3 font-body text-sm text-text-secondary max-w-[200px] truncate">
-                      {(rl as Record<string, unknown>).description_template as string ?? "Recurring loan"}
+                    <td className="px-4 py-3">
+                      <div className="font-body text-sm font-medium text-text-primary">
+                        {rl.borrower_name}
+                      </div>
+                      <div className="font-body text-sm text-text-muted">
+                        {(rl as Record<string, unknown>).description_template as string ?? "Recurring loan"}
+                      </div>
                     </td>
                     <td className="px-4 py-3 font-body text-sm font-medium text-text-primary">
                       {formatCurrency((rl as Record<string, unknown>).principal_amount as number ?? 0)}
