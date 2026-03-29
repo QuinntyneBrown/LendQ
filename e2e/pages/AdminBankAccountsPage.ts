@@ -48,8 +48,15 @@ export class AdminBankAccountsPage {
     await expect(this.pageTitle).toBeVisible();
   }
 
+  async waitForData() {
+    // Wait for either data rows, empty state, or error state to appear
+    await expect(
+      this.accountRows.first().or(this.accountCards.first()).or(this.emptyState).or(this.errorState),
+    ).toBeVisible({ timeout: 15000 });
+  }
+
   async expectAccessDenied() {
-    await expect(this.page.getByText(/Access Denied|Unauthorized|403/i)).toBeVisible();
+    await expect(this.page.getByText(/Access forbidden|not authorized|Access Denied|403/i)).toBeVisible();
   }
 
   // Search and filter
@@ -64,8 +71,14 @@ export class AdminBankAccountsPage {
   }
 
   async filterByStatus(status: "All" | "Active" | "Frozen" | "Closed" | "No Account") {
-    await this.statusFilter.click();
-    await this.page.getByRole("option", { name: status }).click();
+    const valueMap: Record<string, string> = {
+      "All": "",
+      "Active": "ACTIVE",
+      "Frozen": "FROZEN",
+      "Closed": "CLOSED",
+      "No Account": "NO_ACCOUNT",
+    };
+    await this.statusFilter.selectOption(valueMap[status]);
   }
 
   async selectStatusFilterPill(status: string) {

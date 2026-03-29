@@ -3,15 +3,62 @@ import { AdminBankAccountsPage } from "../../pages/AdminBankAccountsPage";
 import { AdminAccountDetailPage } from "../../pages/AdminAccountDetailPage";
 import { AccountStatusDialog } from "../../pages/AccountStatusDialog";
 import { ToastComponent } from "../../pages/ToastComponent";
+import { ApiClient } from "../../helpers/api-client";
+import { USERS } from "../../helpers/test-users";
 
 test.describe("L2-13.8: Account Status Management @smoke", () => {
+  let createdAccountId: string;
+
+  test.beforeAll(async ({ browser }) => {
+    const context = await browser.newContext();
+    const request = context.request;
+    const api = new ApiClient(request);
+
+    // Login as admin
+    const loginResp = await api.login(USERS.admin.email, USERS.admin.password);
+    const token = loginResp.access_token;
+
+    // Get admin user id
+    const me = await api.getMe(token);
+
+    // Create bank account for admin user via the admin endpoint
+    const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
+    const resp = await request.post(`${BASE_URL}/api/v1/admin/accounts`, {
+      headers: { Authorization: `Bearer ${token}` },
+      data: {
+        user_id: me.id,
+        currency: "USD",
+        initial_deposit: 1000,
+        note: "E2E test setup",
+      },
+    });
+
+    if (resp.ok()) {
+      const account = await resp.json();
+      createdAccountId = account.id;
+    } else if (resp.status() === 409) {
+      // Account already exists — find it via search
+      const accountsResp = await request.get(
+        `${BASE_URL}/api/v1/admin/accounts?search=${encodeURIComponent(USERS.admin.email)}&status=ACTIVE`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (accountsResp.ok()) {
+        const data = await accountsResp.json();
+        if (data.items && data.items.length > 0 && data.items[0].account_id) {
+          createdAccountId = data.items[0].account_id;
+        }
+      }
+    }
+
+    await context.close();
+  });
+
   test.describe("Dialog display", () => {
     test("Manage Status button opens the status dialog", async ({ adminPage }) => {
-      const listPage = new AdminBankAccountsPage(adminPage);
-      await listPage.goto();
-      await listPage.clickViewAccount(0);
-
       const detailPage = new AdminAccountDetailPage(adminPage);
+      await detailPage.goto(createdAccountId);
+      await detailPage.expectVisible();
+
       const dialog = new AccountStatusDialog(adminPage);
 
       await detailPage.clickManageStatus();
@@ -19,11 +66,10 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
     });
 
     test("dialog shows warning icon", async ({ adminPage }) => {
-      const listPage = new AdminBankAccountsPage(adminPage);
-      await listPage.goto();
-      await listPage.clickViewAccount(0);
-
       const detailPage = new AdminAccountDetailPage(adminPage);
+      await detailPage.goto(createdAccountId);
+      await detailPage.expectVisible();
+
       const dialog = new AccountStatusDialog(adminPage);
 
       await detailPage.clickManageStatus();
@@ -32,11 +78,10 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
     });
 
     test("dialog shows the user name and balance", async ({ adminPage }) => {
-      const listPage = new AdminBankAccountsPage(adminPage);
-      await listPage.goto();
-      await listPage.clickViewAccount(0);
-
       const detailPage = new AdminAccountDetailPage(adminPage);
+      await detailPage.goto(createdAccountId);
+      await detailPage.expectVisible();
+
       const dialog = new AccountStatusDialog(adminPage);
 
       await detailPage.clickManageStatus();
@@ -46,11 +91,10 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
     });
 
     test("dialog shows impact warning box with consequences", async ({ adminPage }) => {
-      const listPage = new AdminBankAccountsPage(adminPage);
-      await listPage.goto();
-      await listPage.clickViewAccount(0);
-
       const detailPage = new AdminAccountDetailPage(adminPage);
+      await detailPage.goto(createdAccountId);
+      await detailPage.expectVisible();
+
       const dialog = new AccountStatusDialog(adminPage);
 
       await detailPage.clickManageStatus();
@@ -63,11 +107,10 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
     });
 
     test("dialog shows required reason field", async ({ adminPage }) => {
-      const listPage = new AdminBankAccountsPage(adminPage);
-      await listPage.goto();
-      await listPage.clickViewAccount(0);
-
       const detailPage = new AdminAccountDetailPage(adminPage);
+      await detailPage.goto(createdAccountId);
+      await detailPage.expectVisible();
+
       const dialog = new AccountStatusDialog(adminPage);
 
       await detailPage.clickManageStatus();
@@ -78,11 +121,10 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
 
   test.describe("Freeze account", () => {
     test("can freeze an active account with a reason", async ({ adminPage }) => {
-      const listPage = new AdminBankAccountsPage(adminPage);
-      await listPage.goto();
-      await listPage.clickViewAccount(0);
-
       const detailPage = new AdminAccountDetailPage(adminPage);
+      await detailPage.goto(createdAccountId);
+      await detailPage.expectVisible();
+
       const dialog = new AccountStatusDialog(adminPage);
       const toast = new ToastComponent(adminPage);
 
@@ -100,11 +142,10 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
     });
 
     test("freeze impact lists correct consequences", async ({ adminPage }) => {
-      const listPage = new AdminBankAccountsPage(adminPage);
-      await listPage.goto();
-      await listPage.clickViewAccount(0);
-
       const detailPage = new AdminAccountDetailPage(adminPage);
+      await detailPage.goto(createdAccountId);
+      await detailPage.expectVisible();
+
       const dialog = new AccountStatusDialog(adminPage);
 
       await detailPage.clickManageStatus();
@@ -121,6 +162,7 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
       // Navigate to a frozen account
       const listPage = new AdminBankAccountsPage(adminPage);
       await listPage.goto();
+      await listPage.waitForData();
 
       const frozenRow = listPage.accountRows
         .filter({ has: adminPage.getByTestId("account-status").getByText("Frozen") })
@@ -149,11 +191,10 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
 
   test.describe("Close account", () => {
     test("close action is visually distinct (destructive)", async ({ adminPage }) => {
-      const listPage = new AdminBankAccountsPage(adminPage);
-      await listPage.goto();
-      await listPage.clickViewAccount(0);
-
       const detailPage = new AdminAccountDetailPage(adminPage);
+      await detailPage.goto(createdAccountId);
+      await detailPage.expectVisible();
+
       const dialog = new AccountStatusDialog(adminPage);
 
       await detailPage.clickManageStatus();
@@ -165,11 +206,10 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
     });
 
     test("can close an account with required reason", async ({ adminPage }) => {
-      const listPage = new AdminBankAccountsPage(adminPage);
-      await listPage.goto();
-      await listPage.clickViewAccount(0);
-
       const detailPage = new AdminAccountDetailPage(adminPage);
+      await detailPage.goto(createdAccountId);
+      await detailPage.expectVisible();
+
       const dialog = new AccountStatusDialog(adminPage);
       const toast = new ToastComponent(adminPage);
 
@@ -188,11 +228,10 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
 
   test.describe("Dialog dismissal", () => {
     test("Cancel button closes without making changes", async ({ adminPage }) => {
-      const listPage = new AdminBankAccountsPage(adminPage);
-      await listPage.goto();
-      await listPage.clickViewAccount(0);
-
       const detailPage = new AdminAccountDetailPage(adminPage);
+      await detailPage.goto(createdAccountId);
+      await detailPage.expectVisible();
+
       const dialog = new AccountStatusDialog(adminPage);
 
       const statusBefore = await detailPage.accountStatusBadge.textContent();
@@ -213,6 +252,7 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
     test("Active account shows Freeze option", async ({ adminPage }) => {
       const listPage = new AdminBankAccountsPage(adminPage);
       await listPage.goto();
+      await listPage.waitForData();
 
       const activeRow = listPage.accountRows
         .filter({ has: adminPage.getByTestId("account-status").getByText("Active") })
@@ -232,6 +272,7 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
     test("Frozen account shows Reactivate option", async ({ adminPage }) => {
       const listPage = new AdminBankAccountsPage(adminPage);
       await listPage.goto();
+      await listPage.waitForData();
 
       const frozenRow = listPage.accountRows
         .filter({ has: adminPage.getByTestId("account-status").getByText("Frozen") })

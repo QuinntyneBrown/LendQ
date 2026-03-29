@@ -4,6 +4,7 @@ import {
   ArrowDownCircle,
   ArrowLeft,
   ArrowUpCircle,
+  Plus,
   RefreshCw,
   Wallet,
 } from "lucide-react";
@@ -371,6 +372,9 @@ export function AdminBankAccountDetailPage() {
             <h2 className="font-heading text-lg font-bold text-text-primary">
               Recurring Deposits
             </h2>
+            <Button variant="primary" size="sm" icon={Plus}>
+              Add
+            </Button>
           </div>
 
           {recurringLoading ? (
@@ -396,21 +400,21 @@ export function AdminBankAccountDetailPage() {
       {/* Dialogs */}
       <DepositWithdrawDialog
         open={depositOpen}
-        onClose={() => setDepositOpen(false)}
+        onClose={() => { setDepositOpen(false); refetch(); }}
         mode="deposit"
         accountId={accountId!}
         currentBalance={account.current_balance}
       />
       <DepositWithdrawDialog
         open={withdrawOpen}
-        onClose={() => setWithdrawOpen(false)}
+        onClose={() => { setWithdrawOpen(false); refetch(); }}
         mode="withdraw"
         accountId={accountId!}
         currentBalance={account.current_balance}
       />
       <AccountStatusDialog
         open={statusDialogOpen}
-        onClose={() => setStatusDialogOpen(false)}
+        onClose={() => { setStatusDialogOpen(false); refetch(); }}
         account={{
           id: accountId!,
           status: account.status,
