@@ -34,7 +34,7 @@ export function TabletSidebar({ open, onClose }: TabletSidebarProps) {
         data-testid="sidebar-overlay"
         className="fixed left-0 top-0 bottom-0 w-[280px] bg-surface z-50 shadow-modal flex flex-col py-6 px-4 animate-slide-in"
       >
-        <nav className="flex flex-col gap-1">
+        <nav className="flex flex-col gap-1 flex-1 overflow-y-auto">
           <NavItem
             icon={LayoutDashboard}
             label="Dashboard"

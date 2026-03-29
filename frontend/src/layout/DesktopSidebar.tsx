@@ -28,16 +28,16 @@ export function DesktopSidebar() {
   return (
     <aside
       data-testid="desktop-sidebar"
-      className="w-[280px] min-h-screen bg-surface border-r border-border flex flex-col py-6 px-4"
+      className="w-[280px] h-screen sticky top-0 bg-surface border-r border-border flex flex-col py-6 px-4"
     >
-      <div className="flex items-center gap-3 px-2 pb-6">
+      <div className="flex items-center gap-3 px-2 pb-6 flex-shrink-0">
         <Landmark size={28} className="text-primary" />
         <span className="font-heading text-xl font-extrabold text-text-primary">
           LendQ
         </span>
       </div>
 
-      <nav className="flex flex-col gap-1 flex-1">
+      <nav className="flex flex-col gap-1 flex-1 overflow-y-auto">
         <NavItem icon={LayoutDashboard} label="Dashboard" href="/dashboard" />
         <NavItem
           icon={Banknote}
@@ -58,7 +58,7 @@ export function DesktopSidebar() {
         <NavItem icon={Settings} label="Settings" href="/settings" />
       </nav>
 
-      <div className="mt-auto pt-4 border-t border-border">
+      <div className="flex-shrink-0 pt-4 border-t border-border">
         <div
           data-testid="user-avatar"
           className="flex items-center gap-3 px-2 py-2 w-full"
