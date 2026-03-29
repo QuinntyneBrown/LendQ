@@ -139,10 +139,26 @@ def seed_demo():
 
     db.session.flush()
 
+    # ── E2E bank accounts for @family.com users (always ensure these exist) ──
+    e2e_admin = User.query.filter_by(email="admin@family.com").first()
+    e2e_creditor = User.query.filter_by(email="creditor@family.com").first()
+    e2e_borrower = User.query.filter_by(email="borrower@family.com").first()
+    for user in [e2e_admin, e2e_creditor, e2e_borrower]:
+        if user:
+            acct = BankAccount.query.filter_by(user_id=user.id).first()
+            if not acct:
+                acct = BankAccount(
+                    user_id=user.id,
+                    currency="CAD",
+                    current_balance=Decimal("10000.00"),
+                )
+                db.session.add(acct)
+                print(f"  Created bank account for {user.email} with balance $10,000")
+    db.session.commit()
+
     # Only seed loans if none exist
     if Loan.query.count() > 0:
         print("  Demo loans already exist, skipping")
-        db.session.commit()
         print("Demo seed complete.")
         return
 
@@ -340,7 +356,7 @@ def seed_demo():
             Notification(
                 user_id=e2e_borrower.id,
                 type=NotificationType.PAYMENT_DUE,
-                message="Payment of $440.00 is due in 3 days",
+                message="Payment of CA$440.00 is due in 3 days",
                 loan_id=e2e_loan1.id,
             )
         )
@@ -355,7 +371,7 @@ def seed_demo():
             Notification(
                 user_id=e2e_creditor.id,
                 type=NotificationType.PAYMENT_RECEIVED,
-                message="Payment of $440.00 received from Sarah Williams",
+                message="Payment of CA$440.00 received from Sarah Williams",
                 loan_id=e2e_loan1.id,
             )
         )
@@ -379,11 +395,11 @@ def seed_demo():
             if not acct:
                 acct = BankAccount(
                     user_id=user.id,
-                    currency="USD",
+                    currency="CAD",
                     current_balance=Decimal("999999.00"),
                 )
                 db.session.add(acct)
-                print(f"  Created bank account for {user.email} with balance $10,000")
+                print(f"  Created bank account for {user.email} with balance CA$10,000")
 
     db.session.commit()
     print("  Created demo loans, payments, and notifications")

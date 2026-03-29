@@ -1,8 +1,8 @@
 import { format, formatDistanceToNow } from "date-fns";
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
+const currencyFormatter = new Intl.NumberFormat("en-CA", {
   style: "currency",
-  currency: "USD",
+  currency: "CAD",
 });
 
 export function formatCurrency(n: number | string): string {

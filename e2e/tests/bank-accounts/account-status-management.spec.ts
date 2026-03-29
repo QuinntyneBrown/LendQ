@@ -28,7 +28,7 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
       headers: { Authorization: `Bearer ${token}` },
       data: {
         user_id: me.id,
-        currency: "USD",
+        currency: "CAD",
         initial_deposit: 1000,
         note: "E2E test setup",
       },

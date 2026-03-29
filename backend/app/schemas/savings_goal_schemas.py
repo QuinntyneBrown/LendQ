@@ -30,7 +30,7 @@ class SavingsGoalSchema(Schema):
 class CreateSavingsGoalSchema(Schema):
     name = fields.String(required=True, validate=validate.Length(min=1, max=255))
     target_amount = fields.Decimal(required=True, as_string=True, validate=validate.Range(min=Decimal("0.01")))
-    currency = fields.String(load_default="USD")
+    currency = fields.String(load_default="CAD")
     deadline = fields.Date(load_default=None)
     description = fields.String(load_default=None, validate=validate.Length(max=500))
 

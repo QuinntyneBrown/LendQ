@@ -59,7 +59,7 @@ def create_admin_account():
     service = BankAccountService()
     account = service.admin_create_account(
         user_id=data["user_id"],
-        currency=data.get("currency", "USD"),
+        currency=data.get("currency", "CAD"),
         initial_deposit=data.get("initial_deposit", 0),
         note=data.get("note"),
         admin_user=g.current_user,

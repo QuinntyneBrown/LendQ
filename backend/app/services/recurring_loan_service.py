@@ -146,7 +146,7 @@ class RecurringLoanService:
             version_number=1,
             description_template=data["description_template"],
             principal_amount=principal,
-            currency=data.get("currency", "USD"),
+            currency=data.get("currency", "CAD"),
             interest_rate_percent=(
                 Decimal(str(data["interest_rate_percent"]))
                 if data.get("interest_rate_percent") is not None
@@ -215,7 +215,7 @@ class RecurringLoanService:
             principal_amount=Decimal(str(data["principal_amount"]))
             if "principal_amount" in data
             else current.principal_amount,
-            currency=data.get("currency", current.currency if current else "USD"),
+            currency=data.get("currency", current.currency if current else "CAD"),
             interest_rate_percent=(
                 Decimal(str(data["interest_rate_percent"]))
                 if "interest_rate_percent" in data

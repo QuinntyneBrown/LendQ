@@ -29,7 +29,7 @@ export function CreateBankAccountDialog({ open, onClose, user }: Props) {
     resolver: zodResolver(createAccountSchema),
     defaultValues: {
       user_id: "",
-      currency: "USD",
+      currency: "CAD",
       initial_deposit: 0,
       note: "",
     },
@@ -39,7 +39,7 @@ export function CreateBankAccountDialog({ open, onClose, user }: Props) {
     if (open) {
       reset({
         user_id: user?.user_id ?? "",
-        currency: "USD",
+        currency: "CAD",
         initial_deposit: 0,
         note: "",
       });
@@ -110,9 +110,9 @@ export function CreateBankAccountDialog({ open, onClose, user }: Props) {
         <Select
           label="Currency"
           name="currency"
-          value="USD"
+          value="CAD"
           disabled
-          options={[{ value: "USD", label: "USD — US Dollar" }]}
+          options={[{ value: "CAD", label: "CAD — Canadian Dollar" }]}
         />
 
         <div>

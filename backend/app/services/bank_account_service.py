@@ -59,7 +59,7 @@ class BankAccountService:
     def get_or_create_account(self, user):
         account = self.account_repo.get_by_user_id(user.id)
         if not account:
-            account = BankAccount(user_id=user.id, currency="USD")
+            account = BankAccount(user_id=user.id, currency="CAD")
             self.account_repo.create(account)
             db.session.commit()
         return account
@@ -492,7 +492,7 @@ class BankAccountService:
             "stats": stats,
         }
 
-    def admin_create_account(self, user_id, currency="USD", initial_deposit=0, note=None, admin_user=None):
+    def admin_create_account(self, user_id, currency="CAD", initial_deposit=0, note=None, admin_user=None):
         """Create a new bank account for the given user (admin action)."""
         user = db.session.get(User, user_id)
         if not user:

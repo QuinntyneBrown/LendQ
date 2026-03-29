@@ -49,7 +49,7 @@ class SavingsGoalService:
             user_id=user.id,
             name=data["name"],
             target_amount=Decimal(str(data["target_amount"])),
-            currency=data.get("currency", "USD"),
+            currency=data.get("currency", "CAD"),
             deadline=data.get("deadline"),
             description=data.get("description"),
             status=SavingsGoalStatus.IN_PROGRESS,

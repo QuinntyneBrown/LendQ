@@ -149,7 +149,7 @@ class LoanGovernanceService:
                 current_version.principal_amount if current_version else loan.principal,
             ),
             currency=proposed.get(
-                "currency", current_version.currency if current_version else "USD"
+                "currency", current_version.currency if current_version else "CAD"
             ),
             interest_rate_percent=proposed.get(
                 "interest_rate_percent",

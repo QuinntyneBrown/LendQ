@@ -40,7 +40,7 @@ test.describe("L2-13.6: Create Bank Account for User @smoke", () => {
       }
     });
 
-    test("dialog shows default currency as USD", async ({ adminPage }) => {
+    test("dialog shows default currency as CAD", async ({ adminPage }) => {
       const accountsPage = new AdminBankAccountsPage(adminPage);
       const dialog = new CreateBankAccountDialog(adminPage);
       await accountsPage.goto();
@@ -52,7 +52,7 @@ test.describe("L2-13.6: Create Bank Account for User @smoke", () => {
       if ((await noAccountRow.count()) > 0) {
         await noAccountRow.getByRole("button", { name: /Create Account/i }).click();
         await dialog.expectOpen();
-        await dialog.expectDefaultCurrency("USD");
+        await dialog.expectDefaultCurrency("CAD");
       }
     });
 

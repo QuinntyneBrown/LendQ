@@ -14,7 +14,7 @@ class BankAccount(UUIDMixin, TimestampMixin, db.Model):
     __tablename__ = "bank_accounts"
 
     user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False, index=True)
-    currency = db.Column(db.String(3), nullable=False, default="USD")
+    currency = db.Column(db.String(3), nullable=False, default="CAD")
     current_balance = db.Column(db.Numeric(14, 2), nullable=False, default=0)
     status = db.Column(db.String(20), nullable=False, default=BankAccountStatus.ACTIVE)
     timezone = db.Column(db.String(50), nullable=False, default="UTC")

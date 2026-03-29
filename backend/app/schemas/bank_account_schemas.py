@@ -25,7 +25,7 @@ class AdminAccountStatsSchema(Schema):
 
 class CreateAdminAccountSchema(Schema):
     user_id = fields.String(required=True)
-    currency = fields.String(load_default="USD")
+    currency = fields.String(load_default="CAD")
     initial_deposit = fields.Decimal(load_default=0, as_string=False)
     note = fields.String(load_default="")
 

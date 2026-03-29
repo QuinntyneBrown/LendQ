@@ -28,7 +28,7 @@ test.describe("L2-13.7: Admin User Account Detail View @smoke", () => {
       headers: { Authorization: `Bearer ${token}` },
       data: {
         user_id: me.id,
-        currency: "USD",
+        currency: "CAD",
         initial_deposit: 1000,
         note: "E2E test setup",
       },

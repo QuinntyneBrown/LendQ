@@ -14,7 +14,7 @@ class RecurringLoanTemplateVersion(UUIDMixin, db.Model):
     version_number = db.Column(db.Integer, nullable=False)
     description_template = db.Column(db.String(500), nullable=False)
     principal_amount = db.Column(db.Numeric(14, 2), nullable=False)
-    currency = db.Column(db.String(3), nullable=False, default="USD")
+    currency = db.Column(db.String(3), nullable=False, default="CAD")
     interest_rate_percent = db.Column(db.Numeric(5, 2), nullable=True)
     repayment_frequency = db.Column(db.String(20), nullable=False)
     installment_count = db.Column(db.Integer, nullable=False)

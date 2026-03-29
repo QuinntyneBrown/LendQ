@@ -17,7 +17,7 @@ class SavingsGoal(UUIDMixin, TimestampMixin, db.Model):
     name = db.Column(db.String(255), nullable=False)
     target_amount = db.Column(db.Numeric(14, 2), nullable=False)
     current_amount = db.Column(db.Numeric(14, 2), nullable=False, default=0)
-    currency = db.Column(db.String(3), nullable=False, default="USD")
+    currency = db.Column(db.String(3), nullable=False, default="CAD")
     deadline = db.Column(db.Date, nullable=True)
     description = db.Column(db.String(500), nullable=True)
     status = db.Column(db.String(20), nullable=False, default=SavingsGoalStatus.IN_PROGRESS)
