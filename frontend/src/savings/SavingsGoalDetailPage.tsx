@@ -169,7 +169,7 @@ export function SavingsGoalDetailPage() {
         </div>
         <div data-testid="progress-bar" className="w-full bg-gray-200 rounded-full h-3">
           <div
-            className="bg-primary h-3 rounded-full transition-all"
+            className={`${goal.status === "COMPLETED" ? "bg-[#22C55E]" : "bg-primary"} h-3 rounded-full transition-all`}
             style={{ width: `${Math.min(goal.progress_percent, 100)}%` }}
           />
         </div>

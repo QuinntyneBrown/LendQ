@@ -210,7 +210,7 @@ export function RecurringLoanListPage() {
                     <td className="px-4 py-3 font-body text-sm text-text-secondary">
                       {rl.next_generation_at ? formatDate(rl.next_generation_at) : "\u2014"}
                     </td>
-                    <td className="px-4 py-3 font-body text-sm text-text-primary">
+                    <td className="px-4 py-3 font-body text-sm text-text-primary text-right">
                       {rl.total_generated}
                     </td>
                     <td className="px-4 py-3">

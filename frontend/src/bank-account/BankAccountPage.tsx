@@ -189,7 +189,7 @@ export function BankAccountPage() {
           {isAdmin && (
             <>
               <Button
-                variant="secondary"
+                variant="primary"
                 icon={ArrowDownCircle}
                 onClick={() => setDepositOpen(true)}
                 className={isMobile ? "flex-1" : ""}

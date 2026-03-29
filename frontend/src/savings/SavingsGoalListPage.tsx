@@ -101,7 +101,7 @@ export function SavingsGoalListPage() {
                   {/* Progress bar */}
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
-                      className="bg-primary h-2 rounded-full transition-all"
+                      className={`${goal.status === "COMPLETED" ? "bg-[#22C55E]" : "bg-primary"} h-2 rounded-full transition-all`}
                       style={{ width: `${Math.min(goal.progress_percent, 100)}%` }}
                     />
                   </div>
