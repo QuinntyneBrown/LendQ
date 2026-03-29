@@ -147,8 +147,13 @@ export class AdminAccountDetailPage {
   }
 
   async filterTransactionsByType(type: string) {
-    await this.transactionFilterDropdown.click();
-    await this.page.getByRole("option", { name: type }).click();
+    const valueMap: Record<string, string> = {
+      "Deposit": "MANUAL_DEPOSIT",
+      "Withdrawal": "MANUAL_WITHDRAWAL",
+      "Recurring": "RECURRING_DEPOSIT",
+      "All": "",
+    };
+    await this.transactionFilterDropdown.selectOption(valueMap[type] ?? type);
   }
 
   // Recurring deposit assertions

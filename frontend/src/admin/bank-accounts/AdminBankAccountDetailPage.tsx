@@ -225,7 +225,7 @@ export function AdminBankAccountDetailPage() {
           <div className="flex items-center gap-3 sm:ml-auto">
             <div data-testid="detail-account-status">
               <Badge
-                label={account.status}
+                label={account.status.charAt(0) + account.status.slice(1).toLowerCase()}
                 variant={accountStatusBadgeVariant(account.status)}
               />
             </div>

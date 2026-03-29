@@ -40,7 +40,7 @@ test.describe("L2-13.7: Admin User Account Detail View @smoke", () => {
     } else if (resp.status() === 409) {
       // Account already exists — find it via search
       const accountsResp = await request.get(
-        `${BASE_URL}/api/v1/admin/accounts?search=${encodeURIComponent(USERS.admin.email)}&status=ACTIVE`,
+        `${BASE_URL}/api/v1/admin/accounts?search=${encodeURIComponent(USERS.admin.email)}`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (accountsResp.ok()) {
@@ -49,6 +49,14 @@ test.describe("L2-13.7: Admin User Account Detail View @smoke", () => {
           createdAccountId = data.items[0].account_id;
         }
       }
+    }
+
+    // Ensure account is ACTIVE for detail page tests
+    if (createdAccountId) {
+      await request.patch(`${BASE_URL}/api/v1/admin/accounts/${createdAccountId}/status`, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        data: { status: "ACTIVE", reason: "E2E test setup — ensure active state" },
+      });
     }
 
     await context.close();

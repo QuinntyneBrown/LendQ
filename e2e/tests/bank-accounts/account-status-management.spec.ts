@@ -7,6 +7,7 @@ import { ApiClient } from "../../helpers/api-client";
 import { USERS } from "../../helpers/test-users";
 
 test.describe("L2-13.8: Account Status Management @smoke", () => {
+  test.describe.configure({ mode: "serial" });
   let createdAccountId: string;
 
   test.beforeAll(async ({ browser }) => {
@@ -39,7 +40,7 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
     } else if (resp.status() === 409) {
       // Account already exists — find it via search
       const accountsResp = await request.get(
-        `${BASE_URL}/api/v1/admin/accounts?search=${encodeURIComponent(USERS.admin.email)}&status=ACTIVE`,
+        `${BASE_URL}/api/v1/admin/accounts?search=${encodeURIComponent(USERS.admin.email)}`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (accountsResp.ok()) {
@@ -48,6 +49,14 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
           createdAccountId = data.items[0].account_id;
         }
       }
+    }
+
+    // Ensure account is ACTIVE for status management tests
+    if (createdAccountId) {
+      await request.patch(`${BASE_URL}/api/v1/admin/accounts/${createdAccountId}/status`, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        data: { status: "ACTIVE", reason: "E2E test setup — ensure active state" },
+      });
     }
 
     await context.close();
@@ -120,6 +129,21 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
   });
 
   test.describe("Freeze account", () => {
+    test("freeze impact lists correct consequences", async ({ adminPage }) => {
+      const detailPage = new AdminAccountDetailPage(adminPage);
+      await detailPage.goto(createdAccountId);
+      await detailPage.expectVisible();
+
+      const dialog = new AccountStatusDialog(adminPage);
+
+      await detailPage.clickManageStatus();
+      await dialog.expectOpen();
+
+      await dialog.expectImpactItemText(0, "deposits and withdrawals");
+      await dialog.expectImpactItemText(1, "recurring deposits");
+      await dialog.expectImpactItemText(2, "accessing their balance");
+    });
+
     test("can freeze an active account with a reason", async ({ adminPage }) => {
       const detailPage = new AdminAccountDetailPage(adminPage);
       await detailPage.goto(createdAccountId);
@@ -139,21 +163,6 @@ test.describe("L2-13.8: Account Status Management @smoke", () => {
 
       // Status badge should update
       await detailPage.expectAccountStatus("Frozen");
-    });
-
-    test("freeze impact lists correct consequences", async ({ adminPage }) => {
-      const detailPage = new AdminAccountDetailPage(adminPage);
-      await detailPage.goto(createdAccountId);
-      await detailPage.expectVisible();
-
-      const dialog = new AccountStatusDialog(adminPage);
-
-      await detailPage.clickManageStatus();
-      await dialog.expectOpen();
-
-      await dialog.expectImpactItemText(0, "deposits and withdrawals");
-      await dialog.expectImpactItemText(1, "recurring deposits");
-      await dialog.expectImpactItemText(2, "accessing their balance");
     });
   });
 
