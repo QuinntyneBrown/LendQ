@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Eye, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, Eye, Plus, Trash2 } from "lucide-react";
 import type { AdminAccountListItem } from "@/api/types";
 import { Badge } from "@/ui/Badge";
 import { Button } from "@/ui/Button";
@@ -8,6 +8,7 @@ interface AdminAccountTableProps {
   items: AdminAccountListItem[];
   onView: (accountId: string) => void;
   onCreateAccount: (item: AdminAccountListItem) => void;
+  onDeleteOrphan: (item: AdminAccountListItem) => void;
   sortColumn: string;
   sortDirection: "asc" | "desc";
   onSort: (column: string) => void;
@@ -20,6 +21,7 @@ function statusBadgeVariant(status: string): "active" | "paused" | "overdue" | "
     case "FROZEN":
       return "paused";
     case "CLOSED":
+    case "ORPHAN":
       return "overdue";
     default:
       return "default";
@@ -36,6 +38,8 @@ function statusLabel(status: string): string {
       return "Closed";
     case "NO_ACCOUNT":
       return "No Account";
+    case "ORPHAN":
+      return "Orphan";
     default:
       return status;
   }
@@ -62,6 +66,7 @@ export function AdminAccountTable({
   items,
   onView,
   onCreateAccount,
+  onDeleteOrphan,
   sortColumn,
   sortDirection,
   onSort,
@@ -112,12 +117,13 @@ export function AdminAccountTable({
         <tbody>
           {items.map((item) => {
             const isNoAccount = item.status === "NO_ACCOUNT";
+            const isOrphan = item.status === "ORPHAN";
             return (
               <tr
-                key={item.user_id}
+                key={isOrphan ? item.account_id : item.user_id}
                 data-testid="account-row"
                 className={`border-b border-border last:border-b-0 hover:bg-background/50 transition-colors ${
-                  isNoAccount ? "bg-amber-50" : ""
+                  isNoAccount ? "bg-amber-50" : isOrphan ? "bg-red-50" : ""
                 }`}
               >
                 <td className="px-4 py-3">
@@ -145,7 +151,17 @@ export function AdminAccountTable({
                     : formatDate(item.last_transaction_date)}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  {isNoAccount ? (
+                  {isOrphan ? (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      icon={Trash2}
+                      data-testid="delete-orphan-button"
+                      onClick={() => onDeleteOrphan(item)}
+                    >
+                      Delete
+                    </Button>
+                  ) : isNoAccount ? (
                     <Button
                       variant="primary"
                       size="sm"

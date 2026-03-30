@@ -21,6 +21,7 @@ class AdminAccountStatsSchema(Schema):
     active_accounts = fields.Integer()
     frozen_accounts = fields.Integer()
     no_account_users = fields.Integer()
+    orphan_accounts = fields.Integer()
 
 
 class CreateAdminAccountSchema(Schema):

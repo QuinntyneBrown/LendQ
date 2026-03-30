@@ -1,4 +1,4 @@
-import { Eye, Plus } from "lucide-react";
+import { Eye, Plus, Trash2 } from "lucide-react";
 import type { AdminAccountListItem } from "@/api/types";
 import { Badge } from "@/ui/Badge";
 import { Button } from "@/ui/Button";
@@ -8,6 +8,7 @@ interface AdminAccountCardListProps {
   items: AdminAccountListItem[];
   onView: (accountId: string) => void;
   onCreateAccount: (item: AdminAccountListItem) => void;
+  onDeleteOrphan: (item: AdminAccountListItem) => void;
 }
 
 function statusBadgeVariant(status: string): "active" | "paused" | "overdue" | "default" {
@@ -17,6 +18,7 @@ function statusBadgeVariant(status: string): "active" | "paused" | "overdue" | "
     case "FROZEN":
       return "paused";
     case "CLOSED":
+    case "ORPHAN":
       return "overdue";
     default:
       return "default";
@@ -33,6 +35,8 @@ function statusLabel(status: string): string {
       return "Closed";
     case "NO_ACCOUNT":
       return "No Account";
+    case "ORPHAN":
+      return "Orphan";
     default:
       return status;
   }
@@ -52,17 +56,19 @@ export function AdminAccountCardList({
   items,
   onView,
   onCreateAccount,
+  onDeleteOrphan,
 }: AdminAccountCardListProps) {
   return (
     <div className="flex flex-col gap-3">
       {items.map((item) => {
         const isNoAccount = item.status === "NO_ACCOUNT";
+        const isOrphan = item.status === "ORPHAN";
         return (
           <div
-            key={item.user_id}
+            key={isOrphan ? item.account_id : item.user_id}
             data-testid="account-card"
             className={`bg-surface rounded-card border border-border p-4 ${
-              isNoAccount ? "bg-amber-50" : ""
+              isNoAccount ? "bg-amber-50" : isOrphan ? "bg-red-50" : ""
             }`}
           >
             <div className="flex items-start gap-3 mb-3">
@@ -94,7 +100,17 @@ export function AdminAccountCardList({
               </div>
             </div>
             <div className="flex items-center justify-end pt-2 border-t border-border">
-              {isNoAccount ? (
+              {isOrphan ? (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  icon={Trash2}
+                  data-testid="delete-orphan-button"
+                  onClick={() => onDeleteOrphan(item)}
+                >
+                  Delete
+                </Button>
+              ) : isNoAccount ? (
                 <Button
                   variant="primary"
                   size="sm"

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiGet, apiPost, apiPatch } from "@/api/client";
+import { apiGet, apiPost, apiPatch, apiDelete } from "@/api/client";
 import type {
   AdminAccountListResponse,
   AdminAccountDetail,
@@ -76,6 +76,16 @@ export function useChangeAccountStatus() {
       ...data
     }: ChangeStatusData & { accountId: string }) =>
       apiPatch<BankAccount>(`/admin/accounts/${accountId}/status`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "accounts"] });
+    },
+  });
+}
+
+export function useDeleteOrphanAccount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (accountId: string) => apiDelete(`/admin/accounts/orphans/${accountId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "accounts"] });
     },

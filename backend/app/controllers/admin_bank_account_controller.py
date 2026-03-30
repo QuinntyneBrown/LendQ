@@ -74,6 +74,13 @@ def get_admin_account_detail(account_id):
     return jsonify(detail_schema.dump(result)), HTTPStatus.OK
 
 
+@admin_accounts_bp.route("/orphans/<account_id>", methods=["DELETE"])
+@require_role("Admin")
+def delete_orphan_account(account_id):
+    BankAccountService.delete_orphan_account(account_id)
+    return jsonify({"message": "Orphan account permanently deleted"}), HTTPStatus.OK
+
+
 @admin_accounts_bp.route("/<account_id>/status", methods=["PATCH"])
 @require_role("Admin")
 def change_account_status(account_id):

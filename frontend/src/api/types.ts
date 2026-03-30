@@ -258,7 +258,7 @@ export interface AdminAccountListItem {
   user_name: string;
   user_email: string;
   account_id: string | null;
-  status: BankAccountStatus | "NO_ACCOUNT";
+  status: BankAccountStatus | "NO_ACCOUNT" | "ORPHAN";
   current_balance: number | null;
   last_transaction_date: string | null;
 }
@@ -268,6 +268,7 @@ export interface AdminAccountStats {
   active_accounts: number;
   frozen_accounts: number;
   no_account_users: number;
+  orphan_accounts: number;
 }
 
 export interface AdminAccountListResponse {

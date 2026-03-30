@@ -19,6 +19,7 @@ export class AdminBankAccountsPage {
   readonly activeAccountsStat: Locator;
   readonly frozenAccountsStat: Locator;
   readonly noAccountStat: Locator;
+  readonly orphanAccountsStat: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -38,6 +39,7 @@ export class AdminBankAccountsPage {
     this.activeAccountsStat = page.getByTestId("stat-active-accounts");
     this.frozenAccountsStat = page.getByTestId("stat-frozen-accounts");
     this.noAccountStat = page.getByTestId("stat-no-account");
+    this.orphanAccountsStat = page.getByTestId("stat-orphan-accounts");
   }
 
   async goto() {
@@ -70,13 +72,14 @@ export class AdminBankAccountsPage {
     await this.page.waitForTimeout(400);
   }
 
-  async filterByStatus(status: "All" | "Active" | "Frozen" | "Closed" | "No Account") {
+  async filterByStatus(status: "All" | "Active" | "Frozen" | "Closed" | "No Account" | "Orphan") {
     const valueMap: Record<string, string> = {
       "All": "",
       "Active": "ACTIVE",
       "Frozen": "FROZEN",
       "Closed": "CLOSED",
       "No Account": "NO_ACCOUNT",
+      "Orphan": "ORPHAN",
     };
     await this.statusFilter.selectOption(valueMap[status]);
   }

@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from flask import g
-from sqlalchemy import func
+from sqlalchemy import func, literal, text
 
 from app.errors.exceptions import (
     AuthorizationError,
@@ -395,6 +395,7 @@ class BankAccountService:
         """Return a paginated list of users with their bank-account info.
 
         Users without a bank account appear with status ``NO_ACCOUNT``.
+        Orphan bank accounts (user deleted) appear with status ``ORPHAN``.
         """
         # Subquery: latest transaction date per account
         latest_txn_sq = (
@@ -406,60 +407,105 @@ class BankAccountService:
             .subquery()
         )
 
-        # Base query: all users LEFT JOIN bank_accounts LEFT JOIN latest txn
-        query = (
+        # ---- Orphan query: bank accounts whose user_id has no matching user ----
+        orphan_query = (
             db.session.query(
-                User.id.label("user_id"),
-                User.name.label("user_name"),
-                User.email.label("user_email"),
+                BankAccount.user_id.label("user_id"),
+                literal("Deleted User").label("user_name"),
+                literal("\u2014").label("user_email"),
                 BankAccount.id.label("account_id"),
-                BankAccount.status.label("account_status"),
+                literal("ORPHAN").label("account_status"),
                 BankAccount.current_balance,
                 latest_txn_sq.c.last_txn_date.label("last_transaction_date"),
             )
-            .outerjoin(BankAccount, BankAccount.user_id == User.id)
+            .outerjoin(User, BankAccount.user_id == User.id)
             .outerjoin(latest_txn_sq, latest_txn_sq.c.account_id == BankAccount.id)
+            .filter(User.id.is_(None))
         )
 
-        # Search filter
-        if search:
-            like_term = f"%{search}%"
-            query = query.filter(
-                db.or_(
-                    User.name.ilike(like_term),
-                    User.email.ilike(like_term),
+        if status == "ORPHAN":
+            # Only show orphan accounts
+            query = orphan_query
+            query = query.order_by(BankAccount.id.asc())
+
+            total = query.count()
+            pages = max((total + per_page - 1) // per_page, 1)
+            rows = query.offset((page - 1) * per_page).limit(per_page).all()
+
+            items = []
+            for row in rows:
+                items.append(
+                    {
+                        "user_id": row.user_id,
+                        "user_name": row.user_name,
+                        "user_email": row.user_email,
+                        "account_id": row.account_id,
+                        "status": "ORPHAN",
+                        "current_balance": row.current_balance,
+                        "last_transaction_date": row.last_transaction_date,
+                    }
                 )
+        else:
+            # Base query: all users LEFT JOIN bank_accounts LEFT JOIN latest txn
+            user_query = (
+                db.session.query(
+                    User.id.label("user_id"),
+                    User.name.label("user_name"),
+                    User.email.label("user_email"),
+                    BankAccount.id.label("account_id"),
+                    BankAccount.status.label("account_status"),
+                    BankAccount.current_balance,
+                    latest_txn_sq.c.last_txn_date.label("last_transaction_date"),
+                )
+                .outerjoin(BankAccount, BankAccount.user_id == User.id)
+                .outerjoin(latest_txn_sq, latest_txn_sq.c.account_id == BankAccount.id)
             )
 
-        # Status filter
-        if status:
-            if status == "NO_ACCOUNT":
-                query = query.filter(BankAccount.id.is_(None))
+            # Search filter
+            if search:
+                like_term = f"%{search}%"
+                user_query = user_query.filter(
+                    db.or_(
+                        User.name.ilike(like_term),
+                        User.email.ilike(like_term),
+                    )
+                )
+
+            # Status filter
+            if status:
+                if status == "NO_ACCOUNT":
+                    user_query = user_query.filter(BankAccount.id.is_(None))
+                else:
+                    user_query = user_query.filter(BankAccount.status == status)
+
+            # When no status filter (All) and no search, include orphans via UNION
+            if not status and not search:
+                query = user_query.union_all(orphan_query)
             else:
-                query = query.filter(BankAccount.status == status)
+                query = user_query
 
-        query = query.order_by(User.name.asc())
+            query = query.order_by("user_name")
 
-        # Paginate manually
-        total = query.count()
-        pages = max((total + per_page - 1) // per_page, 1)
-        rows = query.offset((page - 1) * per_page).limit(per_page).all()
+            # Paginate manually
+            total = query.count()
+            pages = max((total + per_page - 1) // per_page, 1)
+            rows = query.offset((page - 1) * per_page).limit(per_page).all()
 
-        items = []
-        for row in rows:
-            items.append(
-                {
-                    "user_id": row.user_id,
-                    "user_name": row.user_name,
-                    "user_email": row.user_email,
-                    "account_id": row.account_id,
-                    "status": row.account_status if row.account_id else "NO_ACCOUNT",
-                    "current_balance": row.current_balance,
-                    "last_transaction_date": row.last_transaction_date,
-                }
-            )
+            items = []
+            for row in rows:
+                items.append(
+                    {
+                        "user_id": row.user_id,
+                        "user_name": row.user_name,
+                        "user_email": row.user_email,
+                        "account_id": row.account_id,
+                        "status": row.account_status if row.account_id else "NO_ACCOUNT",
+                        "current_balance": row.current_balance,
+                        "last_transaction_date": row.last_transaction_date,
+                    }
+                )
 
-        # Aggregate stats (unfiltered)
+        # Aggregate stats (unfiltered, always computed)
         total_accounts = db.session.query(func.count(BankAccount.id)).scalar() or 0
         active_accounts = (
             db.session.query(func.count(BankAccount.id))
@@ -476,11 +522,21 @@ class BankAccountService:
         total_users = db.session.query(func.count(User.id)).scalar() or 0
         no_account_users = total_users - total_accounts
 
+        # Orphan count: bank accounts referencing non-existent users
+        orphan_accounts = (
+            db.session.query(func.count(BankAccount.id))
+            .outerjoin(User, BankAccount.user_id == User.id)
+            .filter(User.id.is_(None))
+            .scalar()
+            or 0
+        )
+
         stats = {
             "total_accounts": total_accounts,
             "active_accounts": active_accounts,
             "frozen_accounts": frozen_accounts,
             "no_account_users": no_account_users,
+            "orphan_accounts": orphan_accounts,
         }
 
         return {
@@ -491,6 +547,50 @@ class BankAccountService:
             "pages": pages,
             "stats": stats,
         }
+
+    @staticmethod
+    def delete_orphan_account(account_id):
+        """Permanently delete an orphan bank account and all related data."""
+        account = BankAccount.query.get(account_id)
+        if not account:
+            raise NotFoundError("Bank account not found")
+
+        # Verify it's actually an orphan (user doesn't exist)
+        user = User.query.get(account.user_id)
+        if user:
+            raise AuthorizationError(
+                "Cannot delete a bank account that belongs to an existing user"
+            )
+
+        # Delete related data in FK-safe order
+        aid = account.id
+
+        # 1. Delete savings_goal_entries linked to this account's transactions
+        db.session.execute(
+            text(
+                "DELETE FROM savings_goal_entries WHERE bank_transaction_id IN "
+                "(SELECT id FROM bank_transactions WHERE account_id = :aid)"
+            ),
+            {"aid": aid},
+        )
+
+        # 2. Delete bank transactions
+        db.session.execute(
+            text("DELETE FROM bank_transactions WHERE account_id = :aid"),
+            {"aid": aid},
+        )
+
+        # 3. Delete recurring deposits
+        db.session.execute(
+            text("DELETE FROM recurring_deposits WHERE account_id = :aid"),
+            {"aid": aid},
+        )
+
+        # 4. Delete the account itself
+        db.session.delete(account)
+        db.session.commit()
+
+        logger.info("Deleted orphan bank account %s (user_id=%s)", aid, account.user_id)
 
     def admin_create_account(self, user_id, currency="CAD", initial_deposit=0, note=None, admin_user=None):
         """Create a new bank account for the given user (admin action)."""

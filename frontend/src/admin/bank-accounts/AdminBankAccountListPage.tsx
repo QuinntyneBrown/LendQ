@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users } from "lucide-react";
+import { Trash2, Users } from "lucide-react";
 import type { AdminAccountListItem } from "@/api/types";
 import { SearchInput } from "@/ui/SearchInput";
 import { Select } from "@/ui/Select";
@@ -9,8 +9,12 @@ import { EmptyState } from "@/ui/EmptyState";
 import { LoadingSkeleton } from "@/ui/LoadingSkeleton";
 import { ErrorState } from "@/ui/ErrorState";
 import { Card } from "@/ui/Card";
+import { Modal } from "@/ui/Modal";
+import { Button } from "@/ui/Button";
 import { useBreakpoint } from "@/layout/useBreakpoint";
-import { useAdminAccounts } from "@/admin/bank-accounts/hooks";
+import { useAdminAccounts, useDeleteOrphanAccount } from "@/admin/bank-accounts/hooks";
+import { useToast } from "@/notifications/useToast";
+import { formatCurrency } from "@/utils/format";
 import { AdminAccountTable } from "./AdminAccountTable";
 import { AdminAccountCardList } from "./AdminAccountCardList";
 import { CreateBankAccountDialog } from "./CreateBankAccountDialog";
@@ -21,6 +25,7 @@ const statusFilterOptions = [
   { value: "FROZEN", label: "Frozen" },
   { value: "CLOSED", label: "Closed" },
   { value: "NO_ACCOUNT", label: "No Account" },
+  { value: "ORPHAN", label: "Orphan" },
 ];
 
 export function AdminBankAccountListPage() {
@@ -34,8 +39,11 @@ export function AdminBankAccountListPage() {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [createOpen, setCreateOpen] = useState(false);
   const [createUser, setCreateUser] = useState<{ user_id: string; user_name: string; user_email: string } | null>(null);
+  const [orphanToDelete, setOrphanToDelete] = useState<AdminAccountListItem | null>(null);
 
   const { data, isLoading, isError, refetch } = useAdminAccounts(page, search, statusFilter);
+  const deleteOrphan = useDeleteOrphanAccount();
+  const toast = useToast();
 
   function handleSort(column: string) {
     if (column === sortColumn) {
@@ -64,6 +72,23 @@ export function AdminBankAccountListPage() {
     setCreateUser(null);
   }
 
+  function handleDeleteOrphan(item: AdminAccountListItem) {
+    setOrphanToDelete(item);
+  }
+
+  function handleConfirmDeleteOrphan() {
+    if (!orphanToDelete?.account_id) return;
+    deleteOrphan.mutate(orphanToDelete.account_id, {
+      onSuccess: () => {
+        toast.success("Orphan account deleted");
+        setOrphanToDelete(null);
+      },
+      onError: () => {
+        toast.error("Failed to delete orphan account");
+      },
+    });
+  }
+
   const stats = data?.stats;
 
   return (
@@ -80,7 +105,7 @@ export function AdminBankAccountListPage() {
       </div>
 
       {stats && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <Card>
             <div data-testid="stat-total-accounts" className="px-4 py-4">
               <p className="text-sm font-medium text-text-secondary font-body">Total Accounts</p>
@@ -110,6 +135,14 @@ export function AdminBankAccountListPage() {
               <p className="text-sm font-medium text-text-secondary font-body">No Account</p>
               <p className="text-2xl font-bold text-text-secondary font-heading mt-1">
                 {stats.no_account_users}
+              </p>
+            </div>
+          </Card>
+          <Card>
+            <div data-testid="stat-orphan-accounts" className="px-4 py-4">
+              <p className="text-sm font-medium text-text-secondary font-body">Orphan</p>
+              <p className="text-2xl font-bold text-danger-text font-heading mt-1">
+                {stats.orphan_accounts}
               </p>
             </div>
           </Card>
@@ -157,6 +190,7 @@ export function AdminBankAccountListPage() {
                   items={data.items}
                   onView={handleView}
                   onCreateAccount={handleCreateAccount}
+                  onDeleteOrphan={handleDeleteOrphan}
                 />
               </div>
             ) : (
@@ -164,6 +198,7 @@ export function AdminBankAccountListPage() {
                 items={data.items}
                 onView={handleView}
                 onCreateAccount={handleCreateAccount}
+                onDeleteOrphan={handleDeleteOrphan}
                 sortColumn={sortColumn}
                 sortDirection={sortDirection}
                 onSort={handleSort}
@@ -187,6 +222,56 @@ export function AdminBankAccountListPage() {
         onClose={handleCreateClose}
         user={createUser}
       />
+
+      <Modal
+        open={!!orphanToDelete}
+        onClose={() => setOrphanToDelete(null)}
+        title="Delete Orphan Account?"
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button variant="ghost" onClick={() => setOrphanToDelete(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              icon={Trash2}
+              onClick={handleConfirmDeleteOrphan}
+              disabled={deleteOrphan.isPending}
+              isLoading={deleteOrphan.isPending}
+              data-testid="confirm-delete-orphan-button"
+            >
+              Delete
+            </Button>
+          </div>
+        }
+      >
+        <div className="flex flex-col items-center text-center py-4">
+          <div
+            className="flex items-center justify-center rounded-full mb-4"
+            style={{ width: 56, height: 56, backgroundColor: "#FEE2E2" }}
+          >
+            <Trash2 size={24} className="text-danger-text" aria-hidden="true" />
+          </div>
+          <p className="font-body text-sm text-text-secondary max-w-sm">
+            This will permanently delete the orphan bank account and all related
+            transactions. This cannot be undone.
+          </p>
+          {orphanToDelete && (
+            <div className="mt-4 bg-background rounded-card px-4 py-3 text-left w-full max-w-sm">
+              <div className="font-body text-xs text-text-secondary">Account ID</div>
+              <div className="font-body text-sm font-medium text-text-primary mt-0.5">
+                {orphanToDelete.account_id}
+              </div>
+              <div className="font-body text-xs text-text-secondary mt-2">Balance</div>
+              <div className="font-body text-sm font-medium text-text-primary mt-0.5">
+                {orphanToDelete.current_balance !== null
+                  ? formatCurrency(orphanToDelete.current_balance)
+                  : "\u2014"}
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }
