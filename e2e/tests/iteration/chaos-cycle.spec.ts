@@ -777,8 +777,7 @@ test.describe(`Chaos Cycle — Iteration ${ITERATION}`, () => {
     console.log(`  Created creditor: ${creditorEmail}`);
     console.log(`  Created borrower: ${borrowerEmail}`);
 
-    // Login as creditor — stagger after admin login to respect rate limit
-    await page.waitForTimeout(13000);
+    // Login as creditor (rate limits now 30/min on staging, no need for long waits)
     const creditorLogin = await api.login(creditorEmail, "TestPass123!");
 
     // Create bank accounts for both users
@@ -910,10 +909,10 @@ test.describe(`Chaos Cycle — Iteration ${ITERATION}`, () => {
         console.error(`  ERROR in ${op.name}: ${errMsg}`);
         errors.push({ op: op.name, error: errMsg });
 
-        // Take screenshot on error
+        // Take screenshot on error (ignore if page is closed)
         await page.screenshot({
-          path: `e2e/test-results/chaos-${ITERATION}-${op.name}-${i}.png`,
-        });
+          path: `test-results/chaos-${ITERATION}-${op.name}-${i}.png`,
+        }).catch(() => {});
       }
     }
 

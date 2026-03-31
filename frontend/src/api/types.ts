@@ -33,6 +33,7 @@ export interface Loan {
   start_date: string;
   status: LoanStatus;
   outstanding_balance: number;
+  total_paid: number;
   notes: string;
 }
 
