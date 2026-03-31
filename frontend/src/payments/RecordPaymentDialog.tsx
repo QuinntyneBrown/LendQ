@@ -8,6 +8,7 @@ import { Input } from "@/ui/Input";
 import { Select } from "@/ui/Select";
 import { Button } from "@/ui/Button";
 import { formatCurrency, formatDate } from "@/utils/format";
+import { useToast } from "@/notifications/useToast";
 import { recordPaymentSchema } from "./schemas";
 import type { RecordPaymentFormData } from "./schemas";
 import { useRecordPayment } from "./hooks";
@@ -36,6 +37,7 @@ export function RecordPaymentDialog({
 }: RecordPaymentDialogProps) {
   const recordPayment = useRecordPayment();
   const [submitting, setSubmitting] = useState(false);
+  const { addToast } = useToast();
 
   const {
     register,
@@ -64,6 +66,10 @@ export function RecordPaymentDialog({
         data,
       });
       onClose();
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to record payment";
+      addToast("error", message);
     } finally {
       setSubmitting(false);
     }
