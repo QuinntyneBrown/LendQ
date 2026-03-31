@@ -108,3 +108,23 @@ def purge_user(user_id):
     user_service = UserService()
     user_service.purge_user(user_id, actor_id=g.current_user.id, force=force)
     return jsonify({"message": "User permanently deleted"}), HTTPStatus.OK
+
+
+@user_bp.route("/<user_id>/reset-password", methods=["POST"])
+@require_role("Admin")
+def admin_reset_password(user_id):
+    data = request.get_json()
+    password = data.get("password")
+    if not password or len(password) < 8:
+        return jsonify({"message": "Password must be at least 8 characters"}), HTTPStatus.BAD_REQUEST
+
+    from app.services.password_service import PasswordService
+
+    user_service = UserService()
+    user = user_service.get_user(user_id)
+    user.password_hash = PasswordService().hash_password(password)
+
+    from app.extensions import db
+    db.session.commit()
+
+    return jsonify({"message": "Password reset successfully"}), HTTPStatus.OK
