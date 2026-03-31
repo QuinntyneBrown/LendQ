@@ -425,6 +425,7 @@ tarballs/
 test-results/
 playwright-report/
 e2e/.auth/
+e2e/chaos-results/
 
 # content below from: https://github.com/github/gitignore/blob/main/Global/macOS.gitignore
 # General

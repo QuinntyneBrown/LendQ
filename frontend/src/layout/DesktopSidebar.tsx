@@ -89,6 +89,9 @@ export function DesktopSidebar() {
           <LogOut size={18} />
           Sign Out
         </button>
+        <span data-testid="app-version" className="block text-[10px] text-text-muted px-2 pt-1">
+          v{__APP_VERSION__}
+        </span>
       </div>
     </aside>
   );
