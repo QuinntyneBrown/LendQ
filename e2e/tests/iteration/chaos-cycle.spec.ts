@@ -304,30 +304,45 @@ async function opRecordPayment(page: Page, state: TestState) {
   const dialog = page.getByRole("dialog", { name: /Record Payment/i });
   await expect(dialog).toBeVisible({ timeout: 5000 });
 
-  // Fill amount
+  // Fill amount — clear and type to trigger React's onChange properly
   const amountInput = dialog.getByLabel(/Payment Amount/i);
-  await amountInput.clear();
-  await amountInput.fill(String(amount));
+  await amountInput.click();
+  await amountInput.fill("");
+  await amountInput.type(String(Math.round(amount * 100) / 100));
 
   // Fill date
   const dateInput = dialog.getByLabel(/Payment Date/i);
-  await dateInput.fill(isoDate(1));
+  await dateInput.fill(isoDate(0)); // use today, not tomorrow
+
+  // Listen for the payment API response
+  const paymentRespPromise = page.waitForResponse(
+    (r) => r.url().includes("/payments") && r.request().method() === "POST",
+    { timeout: 15000 },
+  ).catch(() => null);
 
   // Click record
   await dialog.getByRole("button", { name: /Record Payment/i }).click();
+
+  const paymentResp = await paymentRespPromise;
+  if (paymentResp && !paymentResp.ok()) {
+    const body = await paymentResp.text().catch(() => "");
+    state.operationLog.push(`RECORD_PAYMENT_API_ERROR: ${loan.description} status=${paymentResp.status()} body=${body.substring(0, 300)}`);
+  }
 
   // Wait for dialog to close (success) or detect error
   try {
     await expect(dialog).toBeHidden({ timeout: 10000 });
     state.operationLog.push(`RECORD_PAYMENT: ${loan.description} amount=${amount}`);
   } catch {
-    // Dialog didn't close — likely validation/API error, dismiss it
+    // Check for toast errors
+    const toastText = await page.locator("[data-testid='toast-error']").first().textContent().catch(() => "no toast");
+    // Dialog didn't close — dismiss it
     const closeBtn = dialog.locator("[data-testid='modal-close']");
     const cancelBtn = dialog.getByRole("button", { name: "Cancel" });
     if (await closeBtn.isVisible()) await closeBtn.click();
     else if (await cancelBtn.isVisible()) await cancelBtn.click();
     await page.waitForTimeout(500);
-    state.operationLog.push(`RECORD_PAYMENT_FAILED: ${loan.description} amount=${amount} — dialog stayed open`);
+    state.operationLog.push(`RECORD_PAYMENT_FAILED: ${loan.description} amount=${amount} toast="${toastText}"`);
   }
 }
 
