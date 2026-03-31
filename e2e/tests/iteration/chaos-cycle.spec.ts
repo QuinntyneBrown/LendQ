@@ -418,8 +418,8 @@ async function opAdminDeposit(page: Page, state: TestState) {
   const depositAmount = randomInt(50, 500);
 
   // Do the deposit via API since admin UI requires navigating to account detail
-  await state.api.deposit(state.adminToken, account.id, depositAmount, `Chaos deposit ${RUN_ID}`);
-  account.balance += depositAmount;
+  const txn = await state.api.deposit(state.adminToken, account.id, depositAmount, `Chaos deposit ${RUN_ID}`);
+  account.balance = Number(txn.balance_after);
 
   state.operationLog.push(`API_DEPOSIT: account=${account.id} amount=${depositAmount} new_balance=${account.balance}`);
 }
@@ -428,20 +428,21 @@ async function opAdminWithdraw(page: Page, state: TestState) {
   if (state.bankAccounts.length === 0) return;
   const account = pick(state.bankAccounts);
 
-  if (account.balance <= 0) {
-    state.operationLog.push(`SKIP_WITHDRAW: account=${account.id} balance=${account.balance}`);
+  // Refresh balance from API before withdrawing
+  const apiAccount = await state.api.getBankAccount(state.adminToken, account.id);
+  const currentBalance = Number(apiAccount.current_balance ?? apiAccount.balance ?? 0);
+  account.balance = currentBalance;
+
+  if (currentBalance <= 0) {
+    state.operationLog.push(`SKIP_WITHDRAW: account=${account.id} balance=${currentBalance}`);
     return;
   }
 
-  const maxWithdraw = Math.min(account.balance, 200);
-  const withdrawAmount = randomInt(1, maxWithdraw);
+  const maxWithdraw = Math.min(currentBalance, 200);
+  const withdrawAmount = randomInt(1, Math.floor(maxWithdraw));
 
-  const result = await state.api.withdraw(state.adminToken, account.id, withdrawAmount, `Chaos withdraw ${RUN_ID}`);
-  if (result.balance_after !== undefined) {
-    account.balance = result.balance_after;
-  } else {
-    account.balance -= withdrawAmount;
-  }
+  const txn = await state.api.withdraw(state.adminToken, account.id, withdrawAmount, `Chaos withdraw ${RUN_ID}`);
+  account.balance = Number(txn.balance_after);
 
   state.operationLog.push(`API_WITHDRAW: account=${account.id} amount=${withdrawAmount} balance=${account.balance}`);
 }
@@ -762,8 +763,10 @@ test.describe(`Chaos Cycle — Iteration ${ITERATION}`, () => {
     console.log(`  Created borrower: ${borrowerEmail}`);
 
     // Login as test users (stagger to respect 5/min rate limit — 5 req/min per IP)
-    await page.waitForTimeout(15000);
+    // Wait for rate limit window to clear from prior iterations
+    await page.waitForTimeout(20000);
     const creditorLogin = await api.login(creditorEmail, "TestPass123!");
+    await page.waitForTimeout(13000);
     const borrowerLogin = await api.login(borrowerEmail, "TestPass123!");
 
     // Create bank accounts for both users
@@ -834,19 +837,27 @@ test.describe(`Chaos Cycle — Iteration ${ITERATION}`, () => {
     // ──────────────────────────────────────────────────────────────────────
     console.log("\nStep 2: Logging in via UI...");
 
-    // Set auth token directly via localStorage to avoid rate limiting on login endpoint
+    // Login via UI form — use the actual login flow
     await page.goto("/login");
-    await page.evaluate(
-      ([token]) => {
-        localStorage.setItem("lendq_access_token", token);
-      },
-      [creditorLogin.access_token],
-    );
-    await page.goto("/dashboard");
+    await page.getByLabel("Email Address").fill(creditorEmail);
+    await page.getByLabel("Password").fill("TestPass123!");
+    await page.getByRole("button", { name: "Sign In" }).click();
 
-    // Wait for dashboard to load with generous timeout for staging
+    // Wait for navigation to dashboard (generous timeout for staging)
+    try {
+      await page.waitForURL("**/dashboard", { timeout: 30000 });
+    } catch {
+      // If rate limited, inject token directly as fallback
+      console.log("  UI login timed out, falling back to token injection...");
+      await page.evaluate(
+        ([token]) => localStorage.setItem("lendq_access_token", token),
+        [creditorLogin.access_token],
+      );
+      await page.goto("/dashboard");
+    }
+
     await page.waitForSelector("[data-testid='metric-total-lent-out']", { timeout: 30000 });
-    console.log("  Logged in successfully (via token injection)");
+    console.log("  Logged in successfully");
 
     // ──────────────────────────────────────────────────────────────────────
     // STEP 3: Perform 30 random operations
@@ -927,12 +938,9 @@ test.describe(`Chaos Cycle — Iteration ${ITERATION}`, () => {
     // ──────────────────────────────────────────────────────────────────────
     console.log("\nStep 6: Cleaning up test data...");
 
-    // Refresh admin token
-    const freshAdminLogin = await api.login("admin@family.com", "password123");
-    const freshAdminToken = freshAdminLogin.access_token;
-
-    await api.purgeUser(freshAdminToken, creditorUser.id);
-    await api.purgeUser(freshAdminToken, borrowerUser.id);
+    // Use existing admin token (avoid extra login for rate limit)
+    await api.purgeUser(adminToken, creditorUser.id);
+    await api.purgeUser(adminToken, borrowerUser.id);
     console.log("  Test users purged");
 
     console.log(`\n=== ITERATION ${ITERATION} COMPLETE ===`);
