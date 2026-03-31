@@ -46,6 +46,25 @@ class TestingConfig(Config):
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=60)
 
 
+class StagingConfig(Config):
+    DEBUG = False
+    RATELIMIT_DEFAULT = "2000/hour"
+    RATE_LIMIT_AUTH = "30/minute"
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_size": 3,
+        "max_overflow": 2,
+        "pool_recycle": 300,
+        "pool_pre_ping": True,
+    }
+
+    def __init__(self):
+        super().__init__()
+        if not self.SECRET_KEY:
+            raise RuntimeError("SECRET_KEY must be set in staging")
+        if not self.JWT_SECRET_KEY:
+            raise RuntimeError("JWT_SECRET_KEY must be set in staging")
+
+
 class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_ENGINE_OPTIONS = {
@@ -66,5 +85,6 @@ class ProductionConfig(Config):
 config_by_name = {
     "development": DevelopmentConfig,
     "testing": TestingConfig,
+    "staging": StagingConfig,
     "production": ProductionConfig,
 }

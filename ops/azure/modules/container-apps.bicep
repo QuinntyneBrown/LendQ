@@ -118,7 +118,7 @@ var appSecrets = [
 // Shared environment variables
 var corsOrigin = !empty(customDomain) ? 'https://${customDomain}' : '*'
 var appEnvVars = [
-  { name: 'FLASK_ENV', value: 'production' }
+  { name: 'FLASK_ENV', value: environmentName == 'staging' ? 'staging' : 'production' }
   { name: 'SECRET_KEY', secretRef: 'secret-key' }
   { name: 'JWT_SECRET_KEY', secretRef: 'jwt-secret-key' }
   { name: 'DATABASE_URL', secretRef: 'database-url' }
