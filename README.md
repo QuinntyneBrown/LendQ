@@ -1,385 +1,210 @@
-# LendQ
+<p align="center">
+  <img src="docs/detailed-designs/diagrams/rendered/c4_container.png" alt="LendQ — Lending Management Platform" width="600" />
+</p>
 
-[![Deploy to Staging](https://github.com/QuinntyneBrown/LendQ/actions/workflows/deploy-staging.yml/badge.svg)](https://github.com/QuinntyneBrown/LendQ/actions/workflows/deploy-staging.yml)
+<h1 align="center">LendQ</h1>
 
-LendQ is a lending management platform for tracking private, family, and small-circle loans with structured workflows for authentication, role-based access control, loan governance, payment tracking, dashboards, notifications, and auditability.
+<p align="center">
+  <strong>Private Lending Management Platform</strong> — Track family, friend, and small-circle loans
+</p>
 
-This repository contains the application stack plus supporting project assets:
+<p align="center">
+  <a href="#features">Features</a> · <a href="#tech-stack">Tech Stack</a> · <a href="#getting-started">Getting Started</a> · <a href="#architecture">Architecture</a> · <a href="#contributing">Contributing</a> · <a href="#license">License</a>
+</p>
 
-- a Flask backend API in [`backend/`](./backend)
-- a React + TypeScript frontend SPA in [`frontend/`](./frontend)
-- a Playwright end-to-end suite in [`e2e/`](./e2e)
-- supporting requirements, architecture docs, UI assets, and the OpenAPI contract in [`docs/`](./docs)
-- Azure infrastructure as code (Bicep) in [`ops/azure/`](./ops/azure)
-- local development infrastructure in [`ops/`](./ops)
+<p align="center">
+  <a href="https://github.com/QuinntyneBrown/LendQ/actions/workflows/deploy-staging.yml"><img src="https://github.com/QuinntyneBrown/LendQ/actions/workflows/deploy-staging.yml/badge.svg" alt="Deploy to Staging" /></a>
+  <img src="https://img.shields.io/badge/Flask-3-000000?logo=flask" alt="Flask 3" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react" alt="React 19" />
+  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL 16" />
+  <img src="https://img.shields.io/badge/Azure-hosted-0078D4?logo=microsoftazure&logoColor=white" alt="Azure" />
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License" />
+</p>
 
-![LendQ documented container architecture](docs/detailed-designs/diagrams/rendered/c4_container.png)
+---
 
-## Contents
+LendQ is a lending management platform for tracking private, family, and small-circle loans with structured workflows for authentication, role-based access control, loan governance, payment tracking, dashboards, notifications, and auditability. The platform is deployed to Azure with automated CI/CD — pushes to `main` auto-deploy to the staging environment.
 
-- [Project Status](#project-status)
-- [Feature Coverage](#feature-coverage)
-- [Technology Stack](#technology-stack)
-- [Repository Layout](#repository-layout)
-- [Quick Start](#quick-start)
-- [Testing](#testing)
-- [CI/CD and Deployment](#cicd-and-deployment)
-- [Current Development Notes](#current-development-notes)
-- [Documentation Map](#documentation-map)
-- [Contributing](#contributing)
-- [License](#license)
+## Features
 
-## Project Status
+### For Creditors & Borrowers
 
-LendQ is a full-stack lending management application deployed to Azure with automated CI/CD. The backend, frontend, infrastructure, and end-to-end test suite are all implemented and actively maintained. Pushes to `main` auto-deploy to the staging environment.
+- **Loan Management** — Create, update, and track loans with terms versioning and borrower change-request workflows
+- **Payment Tracking** — Schedule view, history, record payments, reschedule, and pause flows
+- **Dashboard** — Summary metrics, active loans, and activity feed at a glance
+- **Notifications** — Real-time SSE stream, unread counts, mark read, and notification preferences
+- **Authentication** — Login, signup, forgot/reset password, email verification, session management, and logout-all
 
-### What exists today
+### For Admins
 
-| Area | Status | Notes |
-| --- | --- | --- |
-| Backend API | Implemented | Flask app factory, controllers, services, repositories, models, migrations, seeding, health checks, and Celery wiring |
-| Frontend SPA | Implemented | Vite + React app covering authentication, dashboard, loans, payments, users, notifications, and settings |
-| Azure staging environment | Deployed | Container Apps (API, worker, beat), Static Web App (SPA), PostgreSQL Flexible Server, Redis, Key Vault, Application Insights |
-| CI/CD pipeline | Implemented | Push-to-main deploys to staging; PR and nightly E2E regression workflows |
-| Local dev infrastructure | Implemented | Docker Compose file for PostgreSQL, Redis, and Mailpit |
-| Infrastructure as code | Implemented | Bicep modules under [`ops/azure/`](./ops/azure) covering all Azure resources |
-| API contract | Implemented | OpenAPI source of truth lives in [`docs/api/openapi.yaml`](./docs/api/openapi.yaml) |
-| Requirements and architecture docs | Implemented | L1/L2 specs and detailed design modules live in [`docs/`](./docs) |
-| Backend tests | Implemented | Unit, integration, and security coverage under [`backend/tests/`](./backend/tests) |
-| End-to-end tests | Implemented | Playwright coverage for auth, loans, payments, responsive states, and security |
+- **User Management & RBAC** — User CRUD, role management, and access control
+- **Audit Trails** — Request IDs, security headers, and comprehensive logging
+- **Operational Readiness** — Health endpoints, rate limiting, Redis/Celery infrastructure, and observability scaffolding
 
-## Feature Coverage
+## Architecture
 
-The codebase currently includes implementation across the main product domains:
+<p align="center">
+  <img src="docs/detailed-designs/diagrams/rendered/c4_context.png" alt="C4 Context Diagram" width="550" />
+</p>
+<p align="center"><em>System context — LendQ and its external integrations</em></p>
 
-- Authentication and sessions: login, signup, forgot/reset password, email verification, session listing, logout, logout-all, and session revocation
-- User management and RBAC: user CRUD, role management, access control, and admin-facing flows
-- Loan management: list, detail, create, update, terms versions, and borrower change-request workflows
-- Payment tracking: schedule view, history, record payment, reschedule, and pause flows
-- Dashboard: summary metrics, active loans, and activity feed
-- Notifications: list, unread count, mark read, mark all read, notification preferences, and SSE stream endpoint
-- Operations: migrations, seed data, health endpoints, request IDs, security headers, rate limiting, Redis/Celery dependencies, and observability scaffolding
+<p align="center">
+  <img src="docs/detailed-designs/diagrams/rendered/c4_container.png" alt="C4 Container Diagram" width="650" />
+</p>
+<p align="center"><em>Container diagram — backend, frontend, database, and supporting services</em></p>
 
-The requirements and design baseline for these areas live in:
-
-- [`docs/specs/L1.md`](./docs/specs/L1.md)
-- [`docs/specs/L2.md`](./docs/specs/L2.md)
-- [`docs/detailed-designs/00-index.md`](./docs/detailed-designs/00-index.md)
-
-## Technology Stack
-
-### Application stack
+## Tech Stack
 
 | Layer | Technology |
-| --- | --- |
-| Backend API | Flask 3 |
-| ORM and migrations | SQLAlchemy, Flask-SQLAlchemy, Flask-Migrate |
-| Validation and serialization | Marshmallow, Flask-Marshmallow |
-| Database | PostgreSQL |
-| Background jobs | Redis, Celery |
-| Frontend | React 19, TypeScript, Vite 8 |
-| Styling | Tailwind CSS |
-| Client state and forms | TanStack Query, React Hook Form, Zod |
-| HTTP client | Axios |
-| E2E testing | Playwright |
-| CI/CD | GitHub Actions |
-| Cloud hosting | Azure (Container Apps, Static Web Apps, PostgreSQL Flexible Server, Redis, Key Vault, Application Insights) |
-| Infrastructure as code | Bicep |
-| Contract governance | OpenAPI 3.1 |
-| Design assets | Pencil `.pen`, PlantUML, draw.io |
+|-------|------------|
+| **Backend API** | Flask 3 (Python), SQLAlchemy, Flask-Migrate, Marshmallow, FluentValidation |
+| **Database** | PostgreSQL 16 |
+| **Background Jobs** | Redis, Celery |
+| **Frontend** | React 19, TypeScript, Vite 8, Tailwind CSS, TanStack Query, React Hook Form, Zod |
+| **E2E Testing** | Playwright |
+| **CI/CD** | GitHub Actions |
+| **Cloud Hosting** | Azure (Container Apps, Static Web Apps, PostgreSQL Flexible Server, Redis, Key Vault, Application Insights) |
+| **Infrastructure as Code** | Bicep |
+| **Contract Governance** | OpenAPI 3.1 |
+| **Design Assets** | Pencil `.pen`, PlantUML, draw.io |
 
-### Local infrastructure
-
-| Service | Port | Purpose |
-| --- | --- | --- |
-| Frontend | `5173` | Vite dev server |
-| Backend API | `5000` | Flask API |
-| PostgreSQL | `5432` | Primary database |
-| Redis | `6379` | Rate limiting, broker/backend infrastructure |
-| Mailpit SMTP | `1025` | Local mail capture SMTP |
-| Mailpit UI | `8025` | Browser mail inbox |
-
-## Repository Layout
+## Project Structure
 
 ```text
 LendQ/
-|-- backend/
-|   |-- app/
-|   |-- migrations/
-|   |-- tests/
-|   |-- pyproject.toml
-|   `-- requirements-dev.txt
-|-- frontend/
-|   |-- src/
-|   |-- package.json
-|   `-- vite.config.ts
-|-- e2e/
-|   |-- tests/
-|   |-- fixtures/
-|   |-- pages/
-|   `-- playwright.config.ts
-|-- docs/
-|   |-- api/openapi.yaml
-|   |-- specs/
-|   |-- detailed-designs/
-|   `-- ui-design.pen
-|-- ops/
-|   |-- azure/
-|   |   |-- modules/
-|   |   |-- main.bicep
-|   |   |-- main.staging.bicepparam
-|   |   |-- main.production.bicepparam
-|   |   `-- github-secrets-setup.txt
-|   `-- docker-compose.dev.yml
-|-- CONTRIBUTING.md
-|-- LICENSE
-`-- README.md
+├── backend/
+│   ├── app/
+│   ├── migrations/
+│   ├── tests/
+│   ├── pyproject.toml
+│   └── requirements-dev.txt
+├── frontend/
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.ts
+├── e2e/
+│   ├── tests/
+│   ├── fixtures/
+│   ├── pages/
+│   └── playwright.config.ts
+├── docs/
+│   ├── api/openapi.yaml
+│   ├── specs/
+│   ├── detailed-designs/
+│   └── ui-design.pen
+├── ops/
+│   ├── azure/
+│   │   ├── modules/
+│   │   ├── main.bicep
+│   │   ├── main.staging.bicepparam
+│   │   ├── main.production.bicepparam
+│   │   └── github-secrets-setup.txt
+│   └── docker-compose.dev.yml
+├── CONTRIBUTING.md
+├── LICENSE
+└── README.md
 ```
 
-## Quick Start
+## Getting Started
 
 ### Prerequisites
 
-- Python 3.11+
-- Node.js 20+
-- npm
-- Docker Desktop
+- [Python 3.11+](https://www.python.org/)
+- [Node.js 20+](https://nodejs.org/)
+- [Docker & Docker Compose](https://docs.docker.com/get-docker/)
 
-### 1. Start local infrastructure
+### Quick Start
 
 ```bash
+# 1. Clone the repository
+git clone https://github.com/QuinntyneBrown/LendQ.git
+cd LendQ
+
+# 2. Start local infrastructure (PostgreSQL, Redis, Mailpit)
 docker compose -f ops/docker-compose.dev.yml up -d
-```
 
-This starts PostgreSQL, Redis, and Mailpit.
-
-### 2. Configure the backend and install Python dependencies
-
-Create `backend/.env` from `backend/.env.example`, then create a virtual environment and install the backend dependencies.
-
-Windows PowerShell:
-
-```powershell
-Copy-Item backend\.env.example backend\.env -Force
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r backend\requirements-dev.txt
-```
-
-macOS/Linux:
-
-```bash
+# 3. Configure and install backend
 cp backend/.env.example backend/.env
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate        # Windows: .venv\Scripts\Activate.ps1
 pip install -r backend/requirements-dev.txt
-```
 
-### 3. Install frontend dependencies
-
-```bash
-npm --prefix frontend install
-```
-
-### 4. Run database migrations
-
-```bash
+# 4. Run database migrations and seed demo data
 cd backend
 python -m flask --app app:create_app db upgrade
-```
-
-### 5. Seed demo data
-
-From the same `backend/` shell:
-
-```bash
 python -m app.seed --profile demo
+cd ..
+
+# 5. Start the backend API (http://localhost:5000)
+cd backend
+python -m flask --app app:create_app --debug run --host 0.0.0.0 --port 5000
+
+# 6. Start the frontend (http://localhost:5173) — in a new terminal
+npm --prefix frontend install
+npm --prefix frontend run dev
 ```
 
-The `demo` seed creates both the manual demo accounts used in the app and the `@family.com` accounts used by Playwright.
-
-Primary demo accounts:
+### Demo Accounts
 
 | Role | Email | Password |
-| --- | --- | --- |
+|------|-------|----------|
 | Admin | `admin@lendq.local` | `admin123` |
 | Creditor | `creditor@lendq.local` | `password123` |
 | Borrower | `borrower1@lendq.local` | `password123` |
 | Borrower | `borrower2@lendq.local` | `password123` |
 
-Playwright fixture accounts:
-
-- `admin@family.com` / `password123`
-- `creditor@family.com` / `password123`
-- `borrower@family.com` / `password123`
-
-### 6. Start the backend API
-
-From the `backend/` directory:
+### Running Tests
 
 ```bash
-python -m flask --app app:create_app --debug run --host 0.0.0.0 --port 5000
-```
+# Backend quality checks
+cd backend
+ruff check . && ruff format --check . && pytest
 
-Useful endpoints:
-
-- API base: `http://localhost:5000/api/v1`
-- Liveness: `http://localhost:5000/health/live`
-- Readiness: `http://localhost:5000/health/ready`
-
-### 7. Start the frontend
-
-From the repository root in a new terminal:
-
-```bash
-npm --prefix frontend run dev
-```
-
-The frontend runs at `http://localhost:5173`. The checked-in Vite config already proxies `/api` to `http://localhost:5000` during local development.
-
-### 8. Inspect email traffic
-
-Mailpit UI is available at `http://localhost:8025`.
-
-It captures verification and password-reset emails sent by the backend.
-
-## Testing
-
-### Backend quality checks
-
-From the `backend/` directory with the virtual environment active:
-
-```bash
-ruff check .
-ruff format --check .
-pytest
-```
-
-The backend test suite includes:
-
-- unit tests under [`backend/tests/unit/`](./backend/tests/unit)
-- integration tests under [`backend/tests/integration/`](./backend/tests/integration)
-- security-focused tests under [`backend/tests/security/`](./backend/tests/security)
-
-### Frontend checks
-
-```bash
+# Frontend checks
 npm --prefix frontend run lint
 npm --prefix frontend run test
 npm --prefix frontend run build
-```
 
-### Playwright end-to-end tests
-
-With PostgreSQL, Redis, Mailpit, the backend, and the frontend running locally, and after applying the demo seed:
-
-```bash
+# Playwright end-to-end tests
 npm --prefix e2e install
 npm --prefix e2e exec playwright install
 npm --prefix e2e run test
 ```
 
-Useful variants:
-
-```bash
-npm --prefix e2e run test:pr
-npm --prefix e2e run test:smoke
-npm --prefix e2e run test:changed
-npm --prefix e2e run test:last-failed
-npm --prefix e2e run test:responsive
-npm --prefix e2e run test:cross-browser
-npm --prefix e2e run test:full
-npm --prefix e2e run test:headed
-npm --prefix e2e run test:ui
-npm --prefix e2e run test:debug
-npm --prefix e2e run test:chromium
-```
-
-Recommended usage:
-
-- `test` is the fast default local loop and runs `chromium-desktop`.
-- `test:pr` mirrors the PR CI path: smoke plus responsive Chromium.
-- `test:smoke` is the business-critical mutation-and-navigation path.
-- `test:full` runs the reduced full regression across the kept browser and responsive projects.
-- Use file-targeted and `--grep` Playwright commands for the tightest inner loop.
-
 ## CI/CD and Deployment
 
-### GitHub Actions workflows
-
 | Workflow | Trigger | Purpose |
-| --- | --- | --- |
-| **Deploy to Staging** (`deploy-staging.yml`) | Push to `main`, manual dispatch | Builds and deploys backend + frontend to the Azure staging environment |
-| **E2E PR Fast Path** (`e2e-pr.yml`) | Pull request | Runs smoke + responsive E2E tests |
-| **E2E Full Regression** (`e2e-full.yml`) | Daily at 06:00 UTC, manual dispatch | Runs full cross-browser E2E regression |
+|----------|---------|---------|
+| **Deploy to Staging** | Push to `main`, manual dispatch | Builds and deploys backend + frontend to Azure staging |
+| **E2E PR Fast Path** | Pull request | Runs smoke + responsive E2E tests |
+| **E2E Full Regression** | Daily at 06:00 UTC, manual dispatch | Full cross-browser E2E regression |
 
-### Staging deployment pipeline
-
-On every push to `main`, the staging deploy workflow runs two parallel jobs:
-
-1. **deploy-api**: Builds the backend Docker image, pushes it to Azure Container Registry, runs database migrations via a Container Apps job, then updates the API, worker, and beat Container Apps. Finishes with an API health check.
-2. **deploy-frontend**: Builds the Vite SPA and deploys it to Azure Static Web Apps.
-
-### Azure staging environment
+### Azure Staging Environment
 
 | Resource | Service | Name |
-| --- | --- | --- |
+|----------|---------|------|
 | Frontend | Azure Static Web Apps | `swa-lendq-staging` |
 | API | Azure Container Apps | `lendq-api-staging` |
 | Worker | Azure Container Apps | `lendq-worker-staging` |
 | Beat | Azure Container Apps | `lendq-beat-staging` |
-| Migrations | Container Apps Job | `lendq-migrate-staging` |
 | Database | PostgreSQL Flexible Server | `psql-lendq-staging` |
 | Cache/Broker | Azure Cache for Redis | `redis-lendq-staging` |
-| Container Registry | Azure Container Registry | `lendqacr` |
 | Secrets | Azure Key Vault | `kv-lendq-staging` |
-| Monitoring | Application Insights + Log Analytics | `ai-lendq-staging` |
+| Monitoring | Application Insights | `ai-lendq-staging` |
 
-Infrastructure is defined in Bicep under [`ops/azure/`](./ops/azure). See [`ops/azure/github-secrets-setup.txt`](./ops/azure/github-secrets-setup.txt) for the GitHub secrets required by the deploy workflow.
-
-## Current Development Notes
-
-- Local browser development uses the checked-in Vite proxy in [`frontend/vite.config.ts`](./frontend/vite.config.ts), so the SPA calls `/api/v1` while Flask runs on `http://localhost:5000`.
-- `python -m app.seed --profile demo` creates both the `@lendq.local` demo accounts and the `@family.com` accounts used by the Playwright fixtures.
-- The backend refresh flow is session/cookie-based, but the frontend still keeps the short-lived access token in `localStorage`, so auth storage is only partially aligned with the target design.
-- Redis and Celery wiring exist in the backend, but [`ops/docker-compose.dev.yml`](./ops/docker-compose.dev.yml) boots only PostgreSQL, Redis, and Mailpit. Worker and beat processes are not part of the default local startup yet.
-- The staging Azure PostgreSQL instance uses B1ms (Burstable) with ~50 max connections. The production config limits SQLAlchemy pool sizes to stay within this budget.
+Infrastructure is defined in Bicep under [`ops/azure/`](./ops/azure).
 
 ## Documentation Map
 
-Start here for the full system picture:
-
-- [`docs/specs/L1.md`](./docs/specs/L1.md): high-level product and platform requirements
-- [`docs/specs/L2.md`](./docs/specs/L2.md): detailed acceptance criteria
-- [`docs/detailed-designs/00-index.md`](./docs/detailed-designs/00-index.md): architecture index and module map
-- [`docs/api/openapi.yaml`](./docs/api/openapi.yaml): machine-readable API contract
-- [`docs/azure-cheapest-deployment.md`](./docs/azure-cheapest-deployment.md): recommended lowest-cost Azure deployment path and hosting choice
-- [`docs/local-development-workflow.md`](./docs/local-development-workflow.md): recommended local development conventions
-- [`docs/repository-structure.md`](./docs/repository-structure.md): repository structure and traceability notes
-
-Detailed design modules:
-
-- [`docs/detailed-designs/01-authentication.md`](./docs/detailed-designs/01-authentication.md)
-- [`docs/detailed-designs/02-user-management.md`](./docs/detailed-designs/02-user-management.md)
-- [`docs/detailed-designs/03-loan-management.md`](./docs/detailed-designs/03-loan-management.md)
-- [`docs/detailed-designs/04-payment-tracking.md`](./docs/detailed-designs/04-payment-tracking.md)
-- [`docs/detailed-designs/05-dashboard.md`](./docs/detailed-designs/05-dashboard.md)
-- [`docs/detailed-designs/06-notifications.md`](./docs/detailed-designs/06-notifications.md)
-- [`docs/detailed-designs/07-fe-architecture.md`](./docs/detailed-designs/07-fe-architecture.md)
-- [`docs/detailed-designs/08-fe-authentication.md`](./docs/detailed-designs/08-fe-authentication.md)
-- [`docs/detailed-designs/09-fe-user-management.md`](./docs/detailed-designs/09-fe-user-management.md)
-- [`docs/detailed-designs/10-fe-loan-management.md`](./docs/detailed-designs/10-fe-loan-management.md)
-- [`docs/detailed-designs/11-fe-payment-tracking.md`](./docs/detailed-designs/11-fe-payment-tracking.md)
-- [`docs/detailed-designs/12-fe-dashboard.md`](./docs/detailed-designs/12-fe-dashboard.md)
-- [`docs/detailed-designs/13-fe-notifications.md`](./docs/detailed-designs/13-fe-notifications.md)
-- [`docs/detailed-designs/14-fe-settings-preferences.md`](./docs/detailed-designs/14-fe-settings-preferences.md)
-- [`docs/detailed-designs/15-security-session-architecture.md`](./docs/detailed-designs/15-security-session-architecture.md)
-- [`docs/detailed-designs/16-operational-readiness-and-api-governance.md`](./docs/detailed-designs/16-operational-readiness-and-api-governance.md)
+- [`docs/specs/L1.md`](./docs/specs/L1.md) — High-level product and platform requirements
+- [`docs/specs/L2.md`](./docs/specs/L2.md) — Detailed acceptance criteria
+- [`docs/detailed-designs/00-index.md`](./docs/detailed-designs/00-index.md) — Architecture index and module map
+- [`docs/api/openapi.yaml`](./docs/api/openapi.yaml) — Machine-readable API contract
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get started, submit pull requests, and report issues.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get started.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the [MIT License](LICENSE).
