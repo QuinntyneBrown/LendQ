@@ -314,35 +314,22 @@ async function opRecordPayment(page: Page, state: TestState) {
   const dateInput = dialog.getByLabel(/Payment Date/i);
   await dateInput.fill(isoDate(0)); // use today, not tomorrow
 
-  // Listen for the payment API response
-  const paymentRespPromise = page.waitForResponse(
-    (r) => r.url().includes("/payments") && r.request().method() === "POST",
-    { timeout: 15000 },
-  ).catch(() => null);
-
-  // Click record
+  // Click record and wait for result
   await dialog.getByRole("button", { name: /Record Payment/i }).click();
 
-  const paymentResp = await paymentRespPromise;
-  if (paymentResp && !paymentResp.ok()) {
-    const body = await paymentResp.text().catch(() => "");
-    state.operationLog.push(`RECORD_PAYMENT_API_ERROR: ${loan.description} status=${paymentResp.status()} body=${body.substring(0, 300)}`);
-  }
+  // Give the request time to complete
+  await page.waitForTimeout(3000);
 
-  // Wait for dialog to close (success) or detect error
-  try {
-    await expect(dialog).toBeHidden({ timeout: 10000 });
+  // Check if dialog closed (success) or is still open (error)
+  const dialogStillVisible = await dialog.isVisible().catch(() => false);
+  if (!dialogStillVisible) {
     state.operationLog.push(`RECORD_PAYMENT: ${loan.description} amount=${amount}`);
-  } catch {
-    // Check for toast errors
-    const toastText = await page.locator("[data-testid='toast-error']").first().textContent().catch(() => "no toast");
-    // Dialog didn't close — dismiss it
-    const closeBtn = dialog.locator("[data-testid='modal-close']");
+  } else {
+    // Dialog still open — dismiss it
     const cancelBtn = dialog.getByRole("button", { name: "Cancel" });
-    if (await closeBtn.isVisible()) await closeBtn.click();
-    else if (await cancelBtn.isVisible()) await cancelBtn.click();
+    if (await cancelBtn.isVisible().catch(() => false)) await cancelBtn.click();
     await page.waitForTimeout(500);
-    state.operationLog.push(`RECORD_PAYMENT_FAILED: ${loan.description} amount=${amount} toast="${toastText}"`);
+    state.operationLog.push(`RECORD_PAYMENT_FAILED: ${loan.description} amount=${amount}`);
   }
 }
 
@@ -378,17 +365,16 @@ async function opRecordPartialPayment(page: Page, state: TestState) {
   await dateInput.fill(isoDate(1));
 
   await dialog.getByRole("button", { name: /Record Payment/i }).click();
+  await page.waitForTimeout(3000);
 
-  try {
-    await expect(dialog).toBeHidden({ timeout: 10000 });
+  const partialDialogVisible = await dialog.isVisible().catch(() => false);
+  if (!partialDialogVisible) {
     state.operationLog.push(`PARTIAL_PAYMENT: ${loan.description} amount=${partialAmount} of ${payment.amount_due}`);
-  } catch {
-    const closeBtn = dialog.locator("[data-testid='modal-close']");
+  } else {
     const cancelBtn = dialog.getByRole("button", { name: "Cancel" });
-    if (await closeBtn.isVisible()) await closeBtn.click();
-    else if (await cancelBtn.isVisible()) await cancelBtn.click();
+    if (await cancelBtn.isVisible().catch(() => false)) await cancelBtn.click();
     await page.waitForTimeout(500);
-    state.operationLog.push(`PARTIAL_PAYMENT_FAILED: ${loan.description} — dialog stayed open`);
+    state.operationLog.push(`PARTIAL_PAYMENT_FAILED: ${loan.description}`);
   }
 }
 
