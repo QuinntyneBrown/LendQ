@@ -24,8 +24,8 @@ class Config:
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
     LOG_FORMAT = os.environ.get("LOG_FORMAT", "json")
 
-    RATELIMIT_DEFAULT = "200/hour"
-    RATE_LIMIT_AUTH = "5/minute"
+    RATELIMIT_DEFAULT = os.environ.get("RATELIMIT_DEFAULT", "200/hour")
+    RATE_LIMIT_AUTH = os.environ.get("RATE_LIMIT_AUTH", "5/minute")
 
 
 class DevelopmentConfig(Config):

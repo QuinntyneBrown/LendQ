@@ -121,13 +121,16 @@ jobs:
           echo "API health check timed out"
           exit 1
 
-      - name: Ensure seed env var on staging API
+      - name: Ensure staging env vars on API
         continue-on-error: true
         run: |
           az containerapp update \
             --name $API_APP_NAME \
             --resource-group $AZURE_RESOURCE_GROUP \
-            --set-env-vars "SEED_ON_STARTUP=demo" 2>&1 || true
+            --set-env-vars \
+              "SEED_ON_STARTUP=demo" \
+              "RATELIMIT_DEFAULT=2000/hour" \
+              "RATE_LIMIT_AUTH=30/minute" 2>&1 || true
 
   # ──────────────────────────────────────────────────
   # Frontend: build SPA and deploy to Static Web App
