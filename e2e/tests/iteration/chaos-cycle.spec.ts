@@ -762,12 +762,9 @@ test.describe(`Chaos Cycle — Iteration ${ITERATION}`, () => {
     console.log(`  Created creditor: ${creditorEmail}`);
     console.log(`  Created borrower: ${borrowerEmail}`);
 
-    // Login as test users (stagger to respect 5/min rate limit — 5 req/min per IP)
-    // Wait for rate limit window to clear from prior iterations
-    await page.waitForTimeout(20000);
-    const creditorLogin = await api.login(creditorEmail, "TestPass123!");
+    // Login as creditor — stagger after admin login to respect rate limit
     await page.waitForTimeout(13000);
-    const borrowerLogin = await api.login(borrowerEmail, "TestPass123!");
+    const creditorLogin = await api.login(creditorEmail, "TestPass123!");
 
     // Create bank accounts for both users
     const creditorAccount = await api.createBankAccount(adminToken, {
@@ -823,7 +820,7 @@ test.describe(`Chaos Cycle — Iteration ${ITERATION}`, () => {
       creditorUser: { id: creditorUser.id, email: creditorEmail, name: `Chaos Creditor ${ITERATION}` },
       borrowerUser: { id: borrowerUser.id, email: borrowerEmail, name: `Chaos Borrower ${ITERATION}` },
       creditorToken: creditorLogin.access_token,
-      borrowerToken: borrowerLogin.access_token,
+      borrowerToken: creditorLogin.access_token, // reuse creditor token (borrower login skipped for rate limit)
       loans,
       bankAccounts: [
         { id: creditorAccount.id || creditorAccount.account?.id, userId: creditorUser.id, balance: 10000 },
@@ -837,23 +834,44 @@ test.describe(`Chaos Cycle — Iteration ${ITERATION}`, () => {
     // ──────────────────────────────────────────────────────────────────────
     console.log("\nStep 2: Logging in via UI...");
 
-    // Login via UI form — use the actual login flow
+    // Login via UI
     await page.goto("/login");
     await page.getByLabel("Email Address").fill(creditorEmail);
     await page.getByLabel("Password").fill("TestPass123!");
+
+    // Listen for login + me responses
+    const loginResponsePromise = page.waitForResponse(
+      (r) => r.url().includes("/auth/login") && r.request().method() === "POST",
+      { timeout: 30000 },
+    ).catch(() => null);
+
+    const meResponsePromise = page.waitForResponse(
+      (r) => r.url().includes("/auth/me"),
+      { timeout: 30000 },
+    ).catch(() => null);
+
     await page.getByRole("button", { name: "Sign In" }).click();
 
-    // Wait for navigation to dashboard (generous timeout for staging)
+    const loginResp = await loginResponsePromise;
+    console.log(`  Login POST response: ${loginResp?.status() ?? "none"}`);
+
+    const meResp = await meResponsePromise;
+    console.log(`  /auth/me response: ${meResp?.status() ?? "none"}`);
+    if (meResp && !meResp.ok()) {
+      const body = await meResp.text().catch(() => "");
+      console.log(`  /auth/me body: ${body.substring(0, 200)}`);
+    }
+
+    // Wait for navigation
     try {
-      await page.waitForURL("**/dashboard", { timeout: 30000 });
+      await page.waitForURL("**/dashboard", { timeout: 15000 });
     } catch {
-      // If rate limited, inject token directly as fallback
-      console.log("  UI login timed out, falling back to token injection...");
-      await page.evaluate(
-        ([token]) => localStorage.setItem("lendq_access_token", token),
-        [creditorLogin.access_token],
-      );
-      await page.goto("/dashboard");
+      const pageUrl = page.url();
+      console.log(`  Still on: ${pageUrl}`);
+      // If we're still on login, check for error toasts
+      const toastText = await page.locator("[data-testid='toast-error']").first().textContent().catch(() => "no toast");
+      console.log(`  Toast: ${toastText}`);
+      throw new Error(`Login succeeded at API level but navigation to dashboard failed. URL: ${pageUrl}`);
     }
 
     await page.waitForSelector("[data-testid='metric-total-lent-out']", { timeout: 30000 });

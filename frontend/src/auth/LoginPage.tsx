@@ -36,6 +36,8 @@ export default function LoginPage() {
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 401) {
         toast.error("Invalid email or password");
+      } else if (isAxiosError(err) && err.response?.status === 429) {
+        toast.error("Too many login attempts. Please wait a moment and try again.");
       } else {
         toast.error("Connection failed. Please try again.");
       }
