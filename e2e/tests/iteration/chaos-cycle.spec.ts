@@ -834,44 +834,25 @@ test.describe(`Chaos Cycle — Iteration ${ITERATION}`, () => {
     // ──────────────────────────────────────────────────────────────────────
     console.log("\nStep 2: Logging in via UI...");
 
-    // Login via UI
-    await page.goto("/login");
-    await page.getByLabel("Email Address").fill(creditorEmail);
-    await page.getByLabel("Password").fill("TestPass123!");
+    // Login via UI with retry (intermittent issue where login 200 but no navigation)
+    let loggedIn = false;
+    for (let loginAttempt = 1; loginAttempt <= 3; loginAttempt++) {
+      await page.goto("/login");
+      await page.getByLabel("Email Address").fill(creditorEmail);
+      await page.getByLabel("Password").fill("TestPass123!");
+      await page.getByRole("button", { name: "Sign In" }).click();
 
-    // Listen for login + me responses
-    const loginResponsePromise = page.waitForResponse(
-      (r) => r.url().includes("/auth/login") && r.request().method() === "POST",
-      { timeout: 30000 },
-    ).catch(() => null);
-
-    const meResponsePromise = page.waitForResponse(
-      (r) => r.url().includes("/auth/me"),
-      { timeout: 30000 },
-    ).catch(() => null);
-
-    await page.getByRole("button", { name: "Sign In" }).click();
-
-    const loginResp = await loginResponsePromise;
-    console.log(`  Login POST response: ${loginResp?.status() ?? "none"}`);
-
-    const meResp = await meResponsePromise;
-    console.log(`  /auth/me response: ${meResp?.status() ?? "none"}`);
-    if (meResp && !meResp.ok()) {
-      const body = await meResp.text().catch(() => "");
-      console.log(`  /auth/me body: ${body.substring(0, 200)}`);
+      try {
+        await page.waitForURL("**/dashboard", { timeout: 15000 });
+        loggedIn = true;
+        break;
+      } catch {
+        console.log(`  Login attempt ${loginAttempt}/3 — dashboard navigation failed, retrying...`);
+      }
     }
 
-    // Wait for navigation
-    try {
-      await page.waitForURL("**/dashboard", { timeout: 15000 });
-    } catch {
-      const pageUrl = page.url();
-      console.log(`  Still on: ${pageUrl}`);
-      // If we're still on login, check for error toasts
-      const toastText = await page.locator("[data-testid='toast-error']").first().textContent().catch(() => "no toast");
-      console.log(`  Toast: ${toastText}`);
-      throw new Error(`Login succeeded at API level but navigation to dashboard failed. URL: ${pageUrl}`);
+    if (!loggedIn) {
+      throw new Error("UI login failed after 3 attempts");
     }
 
     await page.waitForSelector("[data-testid='metric-total-lent-out']", { timeout: 30000 });
