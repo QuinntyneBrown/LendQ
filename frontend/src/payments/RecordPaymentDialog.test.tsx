@@ -8,8 +8,20 @@ const recordPaymentState = vi.hoisted(() => ({
   mutateAsync: vi.fn<() => Promise<void>>(),
 }));
 
+const toastState = vi.hoisted(() => ({
+  addToast: vi.fn(),
+  success: vi.fn(),
+  error: vi.fn(),
+  warning: vi.fn(),
+  info: vi.fn(),
+}));
+
 vi.mock("./hooks", () => ({
   useRecordPayment: () => recordPaymentState,
+}));
+
+vi.mock("@/notifications/useToast", () => ({
+  useToast: () => toastState,
 }));
 
 const payment = {
