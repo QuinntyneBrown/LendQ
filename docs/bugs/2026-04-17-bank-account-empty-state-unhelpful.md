@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-bank-account-empty-state-unhelpful
 title: Bank Account page shows a bare "No bank account found." message with no guidance for users without an account
-status: open
+status: fixed
 severity: low
 area: frontend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: frontend/src/bank-account/BankAccountPage.tsx (EmptyState with Wallet icon and user-guide phrasing)
 ---
 
 ## Summary

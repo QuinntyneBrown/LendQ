@@ -166,9 +166,11 @@ export function BankAccountPage() {
 
   if (!account) {
     return (
-      <div className="flex flex-col items-center justify-center py-16">
-        <p className="font-body text-text-secondary">No bank account found.</p>
-      </div>
+      <EmptyState
+        icon={Wallet}
+        title="No bank account yet"
+        description="Request an account from your administrator to start depositing funds and funding savings goals."
+      />
     );
   }
 
