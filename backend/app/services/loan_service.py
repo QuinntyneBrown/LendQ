@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import date
 from decimal import Decimal
 
 from app.errors.exceptions import AuthorizationError, NotFoundError, ValidationError
@@ -109,6 +110,11 @@ class LoanService:
         principal = Decimal(str(data["principal"]))
         if principal <= 0:
             raise ValidationError("Principal must be greater than zero")
+
+        # See docs/bugs/2026-04-17-create-loan-accepts-past-start-date.md —
+        # back-dated loans silently generated already-overdue schedules.
+        if data["start_date"] < date.today():
+            raise ValidationError("Start date cannot be in the past")
 
         loan = Loan(
             creditor_id=user.id,

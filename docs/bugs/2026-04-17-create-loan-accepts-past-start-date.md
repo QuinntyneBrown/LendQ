@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-create-loan-accepts-past-start-date
 title: Create Loan accepts arbitrary past start dates (contradicts user guide and generates invalid schedules)
-status: open
+status: fixed
 severity: high
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/services/loan_service.py (`date.today()` guard in create_loan)
 ---
 
 ## Summary
