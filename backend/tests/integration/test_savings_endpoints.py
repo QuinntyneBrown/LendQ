@@ -27,6 +27,31 @@ class TestSavingsGoalEndpoints:
         )
         assert resp.status_code == 422, resp.get_json()
 
+    def test_create_goal_rejects_angle_brackets_in_name(
+        self, client, borrower_user, auth_headers
+    ):
+        """Regression for 2026-04-17-savings-text-fields-allow-html."""
+        resp = client.post(
+            "/api/v1/savings",
+            json={"name": "<script>alert(1)</script>", "target_amount": 100},
+            headers=auth_headers(borrower_user),
+        )
+        assert resp.status_code == 422, resp.get_json()
+
+    def test_create_goal_rejects_angle_brackets_in_description(
+        self, client, borrower_user, auth_headers
+    ):
+        resp = client.post(
+            "/api/v1/savings",
+            json={
+                "name": "Emergency fund",
+                "target_amount": 100,
+                "description": "Save for <b>rainy days</b>",
+            },
+            headers=auth_headers(borrower_user),
+        )
+        assert resp.status_code == 422, resp.get_json()
+
     def test_create_goal_accepts_future_deadline(
         self, client, borrower_user, auth_headers
     ):
