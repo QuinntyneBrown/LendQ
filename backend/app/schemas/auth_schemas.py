@@ -14,9 +14,14 @@ _PASSWORD_VALIDATORS = [
     ),
 ]
 
+# 255 is the conventional email column size and keeps oversized payloads
+# from reaching the DB where they'd 500 on insert. See
+# docs/bugs/2026-04-17-long-email-crashes-signup.md.
+_EMAIL_LENGTH = validate.Length(max=255)
+
 
 class LoginRequestSchema(Schema):
-    email = fields.Email(required=True)
+    email = fields.Email(required=True, validate=_EMAIL_LENGTH)
     # Login allows any non-empty password — users who set weak passwords
     # before the tightening still need to be able to sign in.
     password = fields.String(required=True, validate=validate.Length(min=1))
@@ -24,13 +29,13 @@ class LoginRequestSchema(Schema):
 
 class SignUpRequestSchema(Schema):
     name = fields.String(required=True, validate=validate.Length(min=1, max=255))
-    email = fields.Email(required=True)
+    email = fields.Email(required=True, validate=_EMAIL_LENGTH)
     password = fields.String(required=True, validate=_PASSWORD_VALIDATORS)
     confirm_password = fields.String(required=True)
 
 
 class ForgotPasswordRequestSchema(Schema):
-    email = fields.Email(required=True)
+    email = fields.Email(required=True, validate=_EMAIL_LENGTH)
 
 
 class ResetPasswordRequestSchema(Schema):
@@ -44,7 +49,7 @@ class EmailVerificationConfirmSchema(Schema):
 
 
 class EmailVerificationResendSchema(Schema):
-    email = fields.Email(required=True)
+    email = fields.Email(required=True, validate=_EMAIL_LENGTH)
 
 
 class TokenResponseSchema(Schema):

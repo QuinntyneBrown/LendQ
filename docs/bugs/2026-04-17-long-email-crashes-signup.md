@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-long-email-crashes-signup
 title: Signup 500s on very long email addresses (no length cap)
-status: open
+status: fixed
 severity: medium
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/schemas/auth_schemas.py (`_EMAIL_LENGTH = validate.Length(max=255)` applied to every email field)
 ---
 
 ## Summary
