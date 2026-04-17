@@ -47,6 +47,16 @@ describe("LoginPage", () => {
     expect(screen.getByRole("link", { name: "Sign Up" })).toHaveAttribute("href", "/signup");
   });
 
+  it("declares autocomplete hints so password managers can fill the form (bug 2026-04-17-login-inputs-missing-autocomplete)", () => {
+    renderWithRouter(<LoginPage />, { route: "/login", path: "/login" });
+
+    expect(screen.getByLabelText("Email Address")).toHaveAttribute("autocomplete", "email");
+    expect(screen.getByLabelText("Password")).toHaveAttribute(
+      "autocomplete",
+      "current-password",
+    );
+  });
+
   it("shows inline validation when submitted with empty credentials", async () => {
     const user = userEvent.setup();
     renderWithRouter(<LoginPage />, { route: "/login", path: "/login" });
