@@ -76,8 +76,16 @@ class AuthService:
 
     def signup(
         self, name: str, email: str, password: str, confirm_password: str
-    ) -> tuple[User, str]:
+    ) -> tuple[User | None, str | None]:
         """Register a new user account with the Borrower role.
+
+        Anti-enumeration: if a user with the given email already exists the
+        method returns `(None, None)` silently rather than raising. The caller
+        returns the same success response either way so a public attacker
+        can't distinguish real accounts from new ones through this endpoint.
+        Admin-initiated user creation (POST /users) keeps the 409 path.
+
+        See docs/bugs/2026-04-17-signup-user-enumeration-via-409.md.
 
         Args:
             name: The user's display name.
@@ -86,18 +94,25 @@ class AuthService:
             confirm_password: Password confirmation for validation.
 
         Returns:
-            A tuple of (newly created User, raw email verification token).
+            On fresh signup: `(User, raw_verification_token)`.
+            On duplicate email: `(None, None)` — silent no-op.
 
         Raises:
             ValidationError: If passwords do not match.
-            ConflictError: If a user with the given email already exists.
         """
         if password != confirm_password:
             raise ValidationError("Passwords do not match")
 
         existing = self.user_repo.get_by_email(email)
         if existing:
-            raise ConflictError("A user with this email already exists")
+            # Intentional silent no-op — return generic success at the
+            # controller layer. Log the attempt for audit-trail visibility.
+            logger.info("Signup attempted for existing email; responding generically")
+            self.security_audit.log_event(
+                "SIGNUP", "DUPLICATE_EMAIL_IGNORED", user_id=existing.id
+            )
+            db.session.commit()
+            return None, None
 
         password_hash = self.password_service.hash_password(password)
         user = User(

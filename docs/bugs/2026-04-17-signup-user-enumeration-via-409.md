@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-signup-user-enumeration-via-409
 title: Public signup reveals which emails are registered (409 on duplicates)
-status: open
+status: fixed
 severity: medium
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/services/auth_service.py (signup returns (None, None) on duplicate) + auth_controller.py (None-safe, returns 201 either way)
 ---
 
 ## Summary

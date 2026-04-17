@@ -69,6 +69,9 @@ def login():
 def signup():
     data = signup_schema.load(request.get_json())
     auth_service = AuthService()
+    # user/verification_token are None when the email is already registered —
+    # anti-enumeration: caller sees the same response either way. See
+    # docs/bugs/2026-04-17-signup-user-enumeration-via-409.md.
     user, verification_token = auth_service.signup(
         name=data["name"],
         email=data["email"],

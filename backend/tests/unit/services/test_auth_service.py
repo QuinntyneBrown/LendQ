@@ -38,8 +38,17 @@ class TestAuthService:
             with pytest.raises(ValidationError):
                 service.signup("New User", "new2@test.com", "password123", "different")
 
-    def test_signup_duplicate_email(self, app, borrower_user):
+    def test_signup_duplicate_email_returns_none_silently(self, app, borrower_user):
+        """Anti-enumeration — bug 2026-04-17-signup-user-enumeration-via-409.
+
+        Signup with an already-registered email must NOT raise; it returns
+        (None, None) so the controller can respond with the same generic
+        success shape it uses for fresh signups.
+        """
         with app.app_context():
             service = AuthService()
-            with pytest.raises(ConflictError):
-                service.signup("Another", "borrower@test.com", "password123", "password123")
+            user, token = service.signup(
+                "Another", "borrower@test.com", "password123", "password123"
+            )
+            assert user is None
+            assert token is None
