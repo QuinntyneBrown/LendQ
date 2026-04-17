@@ -57,4 +57,47 @@ describe("CreateEditLoanModal", () => {
     expect(await screen.findByTestId("error-num_payments")).toBeVisible();
     expect(createLoanState.mutate).not.toHaveBeenCalled();
   });
+
+  describe("edit mode field permissions (bug 2026-04-17-edit-loan-wrong-fields-editable)", () => {
+    const existingLoan = {
+      id: "loan-1",
+      creditor_id: "cred-1",
+      borrower_id: "borr-1",
+      creditor_name: "Jane Creditor",
+      borrower_name: "Bob Borrower",
+      description: "Personal loan for home improvement",
+      principal: 5000,
+      interest_rate: "5.00",
+      notes: "",
+      repayment_frequency: "MONTHLY",
+      start_date: "2026-02-16",
+      status: "ACTIVE",
+      outstanding_balance: 4400,
+      total_paid: 880,
+      created_at: "2026-02-16T00:00:00",
+      updated_at: "2026-02-16T00:00:00",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+
+    it("disables Principal Amount in edit mode (immutable per user guide)", () => {
+      renderWithRouter(
+        <CreateEditLoanModal open onClose={() => {}} loan={existingLoan} />,
+      );
+      expect(screen.getByLabelText(/Principal Amount/i)).toBeDisabled();
+    });
+
+    it("enables Interest Rate in edit mode (editable per user guide)", () => {
+      renderWithRouter(
+        <CreateEditLoanModal open onClose={() => {}} loan={existingLoan} />,
+      );
+      expect(screen.getByLabelText(/Interest Rate/i)).not.toBeDisabled();
+    });
+
+    it("disables Start Date in edit mode (immutable per user guide)", () => {
+      renderWithRouter(
+        <CreateEditLoanModal open onClose={() => {}} loan={existingLoan} />,
+      );
+      expect(screen.getByLabelText(/Start Date/i)).toBeDisabled();
+    });
+  });
 });
