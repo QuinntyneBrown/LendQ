@@ -71,6 +71,30 @@ class TestLoanEndpoints:
         )
         assert resp.status_code == 422, resp.get_json()
 
+    def test_create_loan_rejects_unbounded_num_payments(
+        self, client, creditor_user, borrower_user, auth_headers
+    ):
+        """Regression for 2026-04-17-num-payments-unbounded.
+
+        num_payments=100000 previously 500'd while trying to generate
+        tens of thousands of Payment rows. Must be rejected at the
+        schema layer with a reasonable upper bound.
+        """
+        resp = client.post(
+            "/api/v1/loans/",
+            json={
+                "borrower_id": borrower_user.id,
+                "description": "Huge num_payments audit",
+                "principal": 100,
+                "interest_rate": 0,
+                "repayment_frequency": "MONTHLY",
+                "start_date": _future_date(30),
+                "num_payments": 100000,
+            },
+            headers=auth_headers(creditor_user),
+        )
+        assert resp.status_code == 422, resp.get_json()
+
     def test_create_loan_rejects_past_start_date(
         self, client, creditor_user, borrower_user, auth_headers
     ):
