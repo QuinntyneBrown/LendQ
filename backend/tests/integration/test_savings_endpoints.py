@@ -17,6 +17,16 @@ def _past_date(days: int = 30) -> str:
 
 
 class TestSavingsGoalEndpoints:
+    def test_list_savings_rejects_huge_per_page(
+        self, client, borrower_user, auth_headers
+    ):
+        """Regression for 2026-04-17-pagination-params-uncapped (savings endpoint)."""
+        resp = client.get(
+            "/api/v1/savings?per_page=100000",
+            headers=auth_headers(borrower_user),
+        )
+        assert resp.status_code == 422, resp.get_json()
+
     def test_create_goal_accepts_future_deadline(
         self, client, borrower_user, auth_headers
     ):

@@ -4,6 +4,7 @@ from http import HTTPStatus
 
 from flask import Blueprint, Response, g, jsonify, request
 
+from app.controllers.pagination import parse_pagination
 from app.extensions import db
 from app.middleware.auth_middleware import require_auth
 from app.models.notification_preference import NotificationPreference
@@ -19,8 +20,7 @@ notification_bp = Blueprint("notifications", __name__, url_prefix="/api/v1/notif
 @notification_bp.route("/", methods=["GET"])
 @require_auth
 def list_notifications():
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
+    page, per_page = parse_pagination()
     notification_type = request.args.get("type")
     service = NotificationService()
     result = service.list_notifications(g.current_user.id, page, per_page, notification_type)

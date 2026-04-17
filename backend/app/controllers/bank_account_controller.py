@@ -3,6 +3,7 @@ from http import HTTPStatus
 
 from flask import Blueprint, g, jsonify, request
 
+from app.controllers.pagination import parse_pagination
 from app.middleware.auth_middleware import require_auth, require_role
 from app.middleware.idempotency import require_idempotency
 from app.schemas.bank_account_schemas import (
@@ -33,8 +34,7 @@ recurring_schema = RecurringDepositSchema()
 @account_bp.route("", methods=["GET"])
 @require_auth
 def list_accounts():
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
+    page, per_page = parse_pagination()
     service = BankAccountService()
     result = service.list_accounts(g.current_user, page, per_page)
     return jsonify(paginated_response(account_schema, result)), HTTPStatus.OK
@@ -84,8 +84,7 @@ def reverse_transaction(transaction_id):
 @account_bp.route("/<account_id>/transactions", methods=["GET"])
 @require_auth
 def list_transactions(account_id):
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
+    page, per_page = parse_pagination()
     entry_type = request.args.get("entry_type")
     service = BankAccountService()
     result = service.list_transactions(account_id, g.current_user, page, per_page, entry_type)
@@ -104,8 +103,7 @@ def create_recurring_deposit(account_id):
 @account_bp.route("/<account_id>/recurring-deposits", methods=["GET"])
 @require_auth
 def list_recurring_deposits(account_id):
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
+    page, per_page = parse_pagination()
     service = BankAccountService()
     result = service.list_recurring_deposits(account_id, g.current_user, page, per_page)
     return jsonify(paginated_response(recurring_schema, result)), HTTPStatus.OK

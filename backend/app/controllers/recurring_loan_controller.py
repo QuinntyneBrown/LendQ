@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from flask import Blueprint, g, jsonify, request
 
+from app.controllers.pagination import parse_pagination
 from app.middleware.auth_middleware import require_auth
 from app.schemas.pagination import paginated_response
 from app.schemas.recurring_loan_schemas import (
@@ -25,8 +26,7 @@ generated_loan_record_schema = GeneratedLoanRecordSchema()
 @recurring_loan_bp.route("", methods=["GET"])
 @require_auth
 def list_recurring_loans():
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
+    page, per_page = parse_pagination()
     service = RecurringLoanService()
     result = service.list_recurring_loans(g.current_user, page, per_page)
     return jsonify(paginated_response(recurring_loan_schema, result)), HTTPStatus.OK
@@ -109,8 +109,7 @@ def cancel_recurring_loan(recurring_id):
 @recurring_loan_bp.route("/<recurring_id>/generated", methods=["GET"])
 @require_auth
 def list_generated_loans(recurring_id):
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
+    page, per_page = parse_pagination()
     service = RecurringLoanService()
     result = service.list_generated_loans(
         recurring_id, g.current_user, page, per_page

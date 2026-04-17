@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from flask import Blueprint, g, jsonify, request
 
+from app.controllers.pagination import parse_pagination
 from app.middleware.auth_middleware import require_auth
 from app.middleware.idempotency import require_idempotency
 from app.schemas.pagination import paginated_response
@@ -28,8 +29,7 @@ entry_schema = SavingsGoalEntrySchema()
 @savings_bp.route("", methods=["GET"])
 @require_auth
 def list_goals():
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
+    page, per_page = parse_pagination()
     service = SavingsGoalService()
     result = service.list_goals(g.current_user, page, per_page)
     return jsonify(paginated_response(goal_schema, result)), HTTPStatus.OK
@@ -94,8 +94,7 @@ def release(goal_id):
 @savings_bp.route("/<goal_id>/entries", methods=["GET"])
 @require_auth
 def list_entries(goal_id):
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
+    page, per_page = parse_pagination()
     service = SavingsGoalService()
     result = service.list_entries(goal_id, g.current_user, page, per_page)
     return jsonify(paginated_response(entry_schema, result)), HTTPStatus.OK

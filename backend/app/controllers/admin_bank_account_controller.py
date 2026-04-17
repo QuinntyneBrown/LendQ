@@ -3,6 +3,7 @@ from http import HTTPStatus
 
 from flask import Blueprint, g, jsonify, request
 
+from app.controllers.pagination import parse_pagination
 from app.middleware.auth_middleware import require_role
 from app.schemas.bank_account_schemas import (
     AdminAccountDetailSchema,
@@ -31,8 +32,7 @@ detail_schema = AdminAccountDetailSchema()
 @admin_accounts_bp.route("", methods=["GET"])
 @require_role("Admin")
 def list_admin_accounts():
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
+    page, per_page = parse_pagination()
     search = request.args.get("search")
     status = request.args.get("status")
 

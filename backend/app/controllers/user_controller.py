@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from flask import Blueprint, g, jsonify, request
 
+from app.controllers.pagination import parse_pagination
 from app.middleware.auth_middleware import require_role
 from app.schemas.pagination import paginated_response
 from app.schemas.user_schemas import CreateUserRequestSchema, UpdateUserRequestSchema, UserSchema
@@ -17,8 +18,7 @@ update_user_schema = UpdateUserRequestSchema()
 @user_bp.route("/", methods=["GET"])
 @require_role("Admin")
 def list_users():
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
+    page, per_page = parse_pagination()
     search = request.args.get("search")
     role = request.args.get("role")
     is_active = request.args.get("is_active")

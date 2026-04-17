@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from flask import Blueprint, jsonify, request
 
+from app.controllers.pagination import parse_pagination
 from app.middleware.auth_middleware import require_role
 from app.models.security_audit_event import SecurityAuditEvent
 
@@ -11,8 +12,7 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/api/v1/admin")
 @admin_bp.route("/audit-events", methods=["GET"])
 @require_role("Admin")
 def list_audit_events():
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
+    page, per_page = parse_pagination()
     user_id = request.args.get("user_id")
     action = request.args.get("action")
 
