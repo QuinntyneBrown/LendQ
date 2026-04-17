@@ -5,16 +5,23 @@ import { Button } from "@/ui/Button";
 import { useToast } from "@/notifications/useToast";
 import { useUpdatePermissions } from "./hooks";
 
+// Catalog of permissions recognised by the backend. Keep this in sync with
+// any additions on the server side — see
+// docs/bugs/2026-04-17-role-editor-missing-permissions.md. Long-term fix is
+// to fetch this list from the API so it cannot drift.
 const ALL_PERMISSIONS = [
   "users:read",
   "users:write",
   "users:delete",
+  "roles:write",
   "loans:read",
   "loans:write",
   "loans:delete",
+  "loans:create",
   "payments:read",
   "payments:write",
   "payments:delete",
+  "payments:reschedule",
   "reports:read",
   "settings:read",
   "settings:write",

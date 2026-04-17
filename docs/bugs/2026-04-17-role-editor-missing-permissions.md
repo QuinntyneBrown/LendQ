@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-role-editor-missing-permissions
 title: Role Permission Editor is missing permissions that roles actually use
-status: open
+status: fixed
 severity: medium
 area: frontend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: frontend/src/users/RolePermissionEditor.tsx (added `loans:create`, `roles:write`, `payments:reschedule` to catalog)
 ---
 
 ## Summary
