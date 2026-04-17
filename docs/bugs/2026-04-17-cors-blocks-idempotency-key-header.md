@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-cors-blocks-idempotency-key-header
 title: CORS preflight blocks Idempotency-Key header — Record Payment, Deposit, Add Funds all fail
-status: open
+status: fixed
 severity: critical
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/middleware/security_headers.py (added Idempotency-Key + X-Request-ID to Access-Control-Allow-Headers) and backend/app/__init__.py (explicit allow_headers on Flask-CORS init)
 ---
 
 ## Summary

@@ -22,7 +22,17 @@ def create_app(config_name=None):
     db.init_app(app)
     migrate.init_app(app, db)
     ma.init_app(app)
-    cors.init_app(app, origins=app.config["CORS_ORIGINS"], supports_credentials=True)
+    cors.init_app(
+        app,
+        origins=app.config["CORS_ORIGINS"],
+        supports_credentials=True,
+        allow_headers=[
+            "Content-Type",
+            "Authorization",
+            "Idempotency-Key",
+            "X-Request-ID",
+        ],
+    )
     limiter.init_app(app)
 
     # Register middleware
