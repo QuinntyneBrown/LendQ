@@ -2,7 +2,7 @@
 
 LendQ adapts its layout to three screen sizes. This page describes what you see where.
 
-## Desktop (≥ 1024 px wide)
+## Desktop (≥ 1280 px wide)
 
 ![Desktop layout](screenshots/05-layout-desktop.png)
 
@@ -29,7 +29,7 @@ A thin sticky bar across the top of the content area. On the right side:
 
 The rest of the viewport. Each page title appears at the top of the content area, often with action buttons on the right (for example, a **Create New Loan** button on the Loans list).
 
-## Tablet (768 – 1023 px wide)
+## Tablet (768 – 1279 px wide)
 
 The sidebar collapses into a **hamburger drawer**. Tap the hamburger in the top-left to open it; tap outside or on a link to close it.
 

@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-user-guide-breakpoints-mismatch
 title: User guide's responsive breakpoints don't match the shipped CSS
-status: open
+status: fixed
 severity: low
 area: docs
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: docs/user-guide/03-navigation.md (Desktop ≥1280, Tablet 768–1279) + test_user_guide_sync.py pins the values
 ---
 
 ## Summary
