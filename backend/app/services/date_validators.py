@@ -38,3 +38,21 @@ def reject_past_date(value: date | None, field_label: str = "Date") -> None:
         return
     if value < date.today():
         raise ValidationError(f"{field_label} cannot be in the past")
+
+
+def reject_future_date(value: date | None, field_label: str = "Date") -> None:
+    """Raise ValidationError if `value` is strictly after today.
+
+    Mirror of `reject_past_date` for fields that must not be in the future —
+    e.g. a payment's `paid_date` (money that has actually moved) or an
+    audit event's `occurred_at`.
+
+    Args:
+        value: The date to check, or None to skip.
+        field_label: Human-readable name for the field, used in the error
+            message. Example: "Paid date".
+    """
+    if value is None:
+        return
+    if value > date.today():
+        raise ValidationError(f"{field_label} cannot be in the future")

@@ -1,11 +1,11 @@
-"""Unit tests for the reject_past_date helper."""
+"""Unit tests for the date_validators helpers."""
 
 from datetime import date, timedelta
 
 import pytest
 
 from app.errors.exceptions import ValidationError
-from app.services.date_validators import reject_past_date
+from app.services.date_validators import reject_future_date, reject_past_date
 
 
 class TestRejectPastDate:
@@ -38,3 +38,28 @@ class TestRejectPastDate:
             reject_past_date(date(2010, 1, 1))
         # Default label is "Date".
         assert "Date" in str(exc_info.value)
+
+
+class TestRejectFutureDate:
+    def test_accepts_today(self):
+        reject_future_date(date.today())
+
+    def test_accepts_past(self):
+        reject_future_date(date.today() - timedelta(days=1))
+
+    def test_accepts_none(self):
+        reject_future_date(None)
+
+    def test_rejects_tomorrow(self):
+        with pytest.raises(ValidationError) as exc_info:
+            reject_future_date(date.today() + timedelta(days=1))
+        assert "future" in str(exc_info.value).lower()
+
+    def test_rejects_far_future(self):
+        with pytest.raises(ValidationError):
+            reject_future_date(date(2099, 1, 1))
+
+    def test_uses_field_label_in_error(self):
+        with pytest.raises(ValidationError) as exc_info:
+            reject_future_date(date(2099, 1, 1), field_label="Paid date")
+        assert "Paid date" in str(exc_info.value)

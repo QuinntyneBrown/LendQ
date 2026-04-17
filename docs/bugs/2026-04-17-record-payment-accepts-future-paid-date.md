@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-record-payment-accepts-future-paid-date
 title: Record Payment accepts future paid_date (no server-side upper bound)
-status: open
+status: fixed
 severity: medium
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/services/date_validators.py (new reject_future_date) + payment_service.py (call from record_payment)
 ---
 
 ## Summary

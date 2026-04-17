@@ -4,7 +4,7 @@ import logging
 from decimal import Decimal
 
 from app.errors.exceptions import NotFoundError, ValidationError
-from app.services.date_validators import reject_past_date
+from app.services.date_validators import reject_future_date, reject_past_date
 from app.extensions import db
 from app.models.loan import LoanStatus
 from app.models.payment import PaymentStatus
@@ -66,6 +66,9 @@ class PaymentService:
         amount = Decimal(str(data["amount"]))
         if amount <= 0:
             raise ValidationError("Payment amount must be greater than zero")
+
+        # See docs/bugs/2026-04-17-record-payment-accepts-future-paid-date.md.
+        reject_future_date(data["paid_date"], field_label="Paid date")
 
         paid_date = data["paid_date"]
         notes = data.get("notes")
