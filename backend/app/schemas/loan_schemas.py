@@ -36,9 +36,24 @@ class LoanSchema(Schema):
         return obj.borrower.name if obj.borrower else None
 
 
+_PLAIN_TEXT_NO_ANGLE_BRACKETS = validate.Regexp(
+    r"^[^<>]*$",
+    error="cannot contain < or > characters",
+)
+
+
 class CreateLoanRequestSchema(Schema):
     borrower_id = fields.String(required=True)
-    description = fields.String(required=True, validate=validate.Length(min=1, max=500))
+    # Angle-bracket rejection keeps HTML-looking text out of headings/lists.
+    # React already escapes on render, so this is data hygiene, not XSS
+    # defence — see docs/bugs/2026-04-17-loan-description-allows-html-characters.md.
+    description = fields.String(
+        required=True,
+        validate=[
+            validate.Length(min=1, max=500),
+            _PLAIN_TEXT_NO_ANGLE_BRACKETS,
+        ],
+    )
     principal = fields.Decimal(required=True, as_string=True)
     # User guide 04-loans.md promises interest_rate ∈ [0, 100]. Without this
     # bound, negative rates were silently accepted and absurd rates crashed
@@ -60,11 +75,21 @@ class CreateLoanRequestSchema(Schema):
         required=True, validate=validate.Range(min=1, max=1000)
     )
     start_date = fields.Date(required=True)
-    notes = fields.String(validate=validate.Length(max=2000))
+    notes = fields.String(
+        validate=[
+            validate.Length(max=2000),
+            _PLAIN_TEXT_NO_ANGLE_BRACKETS,
+        ],
+    )
 
 
 class UpdateLoanRequestSchema(Schema):
-    description = fields.String(validate=validate.Length(min=1, max=500))
+    description = fields.String(
+        validate=[
+            validate.Length(min=1, max=500),
+            _PLAIN_TEXT_NO_ANGLE_BRACKETS,
+        ],
+    )
     principal = fields.Decimal(as_string=True)
     interest_rate = fields.Decimal(
         as_string=True,
@@ -77,4 +102,9 @@ class UpdateLoanRequestSchema(Schema):
     status = fields.String(
         validate=validate.OneOf(["ACTIVE", "PAUSED", "OVERDUE", "PAID_OFF", "DEFAULTED"])
     )
-    notes = fields.String(validate=validate.Length(max=2000))
+    notes = fields.String(
+        validate=[
+            validate.Length(max=2000),
+            _PLAIN_TEXT_NO_ANGLE_BRACKETS,
+        ],
+    )

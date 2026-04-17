@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-loan-description-allows-html-characters
 title: Loan description accepts HTML-looking text (data hygiene, not XSS)
-status: open
+status: fixed
 severity: low
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/schemas/loan_schemas.py (angle-bracket regex on description + notes)
 ---
 
 ## Summary
