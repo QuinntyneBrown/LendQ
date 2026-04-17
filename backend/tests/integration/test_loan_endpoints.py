@@ -25,6 +25,52 @@ class TestLoanEndpoints:
         }, headers=auth_headers(creditor_user))
         assert resp.status_code == 201
 
+    def test_create_loan_rejects_negative_interest_rate(
+        self, client, creditor_user, borrower_user, auth_headers
+    ):
+        """Regression for 2026-04-17-interest-rate-no-bounds.
+
+        Before this fix a loan with `interest_rate=-10` was accepted and
+        the creditor effectively owed the borrower.
+        """
+        resp = client.post(
+            "/api/v1/loans/",
+            json={
+                "borrower_id": borrower_user.id,
+                "description": "Negative rate audit",
+                "principal": 100,
+                "interest_rate": -10,
+                "repayment_frequency": "MONTHLY",
+                "start_date": _future_date(30),
+                "num_payments": 3,
+            },
+            headers=auth_headers(creditor_user),
+        )
+        assert resp.status_code == 422, resp.get_json()
+
+    def test_create_loan_rejects_absurd_interest_rate(
+        self, client, creditor_user, borrower_user, auth_headers
+    ):
+        """Regression for 2026-04-17-interest-rate-no-bounds.
+
+        An interest_rate of 99999 crashed the schedule arithmetic with a
+        500 response. Upper bound must be rejected at the schema layer.
+        """
+        resp = client.post(
+            "/api/v1/loans/",
+            json={
+                "borrower_id": borrower_user.id,
+                "description": "Absurd rate audit",
+                "principal": 100,
+                "interest_rate": 99999,
+                "repayment_frequency": "MONTHLY",
+                "start_date": _future_date(30),
+                "num_payments": 3,
+            },
+            headers=auth_headers(creditor_user),
+        )
+        assert resp.status_code == 422, resp.get_json()
+
     def test_create_loan_rejects_past_start_date(
         self, client, creditor_user, borrower_user, auth_headers
     ):
