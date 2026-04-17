@@ -146,6 +146,29 @@ class TestLoanEndpoints:
         assert data["code"] == "VALIDATION_ERROR"
         assert "past" in data["message"].lower() or "start date" in data["message"].lower()
 
+    def test_list_loans_rejects_huge_per_page(
+        self, client, creditor_user, borrower_user, auth_headers
+    ):
+        """Regression for 2026-04-17-pagination-params-uncapped.
+
+        per_page=100000 used to return 200 with the value echoed back in the
+        response metadata. Must now be rejected at the schema/helper layer.
+        """
+        resp = client.get(
+            "/api/v1/loans/?per_page=100000",
+            headers=auth_headers(creditor_user),
+        )
+        assert resp.status_code == 422, resp.get_json()
+
+    def test_list_loans_rejects_negative_page(
+        self, client, creditor_user, borrower_user, auth_headers
+    ):
+        resp = client.get(
+            "/api/v1/loans/?page=-1",
+            headers=auth_headers(creditor_user),
+        )
+        assert resp.status_code == 422, resp.get_json()
+
     def test_list_loans(self, client, creditor_user, borrower_user, auth_headers):
         LoanFactory.create(creditor_id=creditor_user.id, borrower_id=borrower_user.id)
         resp = client.get("/api/v1/loans/", headers=auth_headers(creditor_user))
