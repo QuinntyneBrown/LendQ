@@ -8,7 +8,7 @@ import { MetricCard } from "@/ui/MetricCard";
 import { LoadingSkeleton } from "@/ui/LoadingSkeleton";
 import { ErrorState } from "@/ui/ErrorState";
 import { Pagination } from "@/ui/Pagination";
-import { formatCurrency, formatDate } from "@/utils/format";
+import { formatCurrency, formatDate, parseDateOnly } from "@/utils/format";
 import { useSavingsGoal, useSavingsGoalEntries } from "./hooks";
 import { CreateEditSavingsGoalDialog } from "./CreateEditSavingsGoalDialog";
 import { AddFundsDialog } from "./AddFundsDialog";
@@ -22,7 +22,7 @@ function statusBadgeProps(goal: SavingsGoal): { label: string; variant: "active"
     return { label: "Cancelled", variant: "default" };
   }
   if (goal.deadline) {
-    const deadlineDate = new Date(goal.deadline);
+    const deadlineDate = parseDateOnly(goal.deadline);
     const now = new Date();
     if (deadlineDate < now && goal.progress_percent < 100) {
       return { label: "Overdue", variant: "overdue" };
@@ -34,7 +34,7 @@ function statusBadgeProps(goal: SavingsGoal): { label: string; variant: "active"
 function getDaysLeft(deadline: string | null): string {
   if (!deadline) return "No Deadline";
   const now = new Date();
-  const target = new Date(deadline);
+  const target = parseDateOnly(deadline);
   const diff = Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   if (diff < 0) return "Past Due";
   if (diff === 0) return "Today";

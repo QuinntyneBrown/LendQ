@@ -7,7 +7,7 @@ import { ErrorState } from "@/ui/ErrorState";
 import { LoadingSkeleton } from "@/ui/LoadingSkeleton";
 import { Pagination } from "@/ui/Pagination";
 import { Badge } from "@/ui/Badge";
-import { formatCurrency } from "@/utils/format";
+import { formatCurrency, formatDate, parseDateOnly } from "@/utils/format";
 import { useSavingsGoals } from "./hooks";
 import { CreateEditSavingsGoalDialog } from "./CreateEditSavingsGoalDialog";
 import type { SavingsGoal, SavingsGoalStatus } from "@/api/types";
@@ -21,7 +21,7 @@ function statusBadgeProps(goal: SavingsGoal): { label: string; variant: "active"
   }
   // IN_PROGRESS - check if overdue
   if (goal.deadline) {
-    const deadlineDate = new Date(goal.deadline);
+    const deadlineDate = parseDateOnly(goal.deadline);
     const now = new Date();
     if (deadlineDate < now && goal.progress_percent < 100) {
       return { label: "Overdue", variant: "overdue" };
@@ -31,8 +31,7 @@ function statusBadgeProps(goal: SavingsGoal): { label: string; variant: "active"
 }
 
 function formatDeadline(deadline: string): string {
-  const d = new Date(deadline);
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return formatDate(deadline);
 }
 
 export function SavingsGoalListPage() {

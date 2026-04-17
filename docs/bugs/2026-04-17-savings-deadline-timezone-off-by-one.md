@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-savings-deadline-timezone-off-by-one
 title: Savings goal deadline still renders one day early (continuation of formatDate timezone bug)
-status: open
+status: fixed
 severity: high
 area: frontend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: frontend/src/utils/format.ts (added parseDateOnly helper) + SavingsGoalListPage.tsx + SavingsGoalDetailPage.tsx (switched to parseDateOnly / formatDate)
 ---
 
 ## Summary
