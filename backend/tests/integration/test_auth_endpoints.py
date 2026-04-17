@@ -39,6 +39,23 @@ class TestAuthEndpoints:
         })
         assert resp.status_code == 422, resp.get_json()
 
+    def test_signup_rejects_oversized_email(self, client):
+        """Regression for 2026-04-17-long-email-crashes-signup.
+
+        A 300-char local-part previously crashed the DB insert with a 500.
+        Must be rejected at the schema layer now.
+        """
+        resp = client.post(
+            "/api/v1/auth/signup",
+            json={
+                "name": "Oversized",
+                "email": ("a" * 300) + "@example.com",
+                "password": "Password123",
+                "confirm_password": "Password123",
+            },
+        )
+        assert resp.status_code == 422, resp.get_json()
+
     def test_signup_rejects_all_digit_password(self, client):
         """Symmetric case: 8+ digits, no letters."""
         resp = client.post("/api/v1/auth/signup", json={
