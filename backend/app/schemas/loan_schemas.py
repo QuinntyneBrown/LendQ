@@ -53,7 +53,12 @@ class CreateLoanRequestSchema(Schema):
         required=True,
         validate=validate.OneOf(["WEEKLY", "BIWEEKLY", "MONTHLY", "CUSTOM"]),
     )
-    num_payments = fields.Integer(required=True, validate=validate.Range(min=1))
+    # Upper bound keeps the schedule generator from crashing on absurd
+    # inputs — see docs/bugs/2026-04-17-num-payments-unbounded.md.
+    # 1000 monthly installments ≈ 83 years, far past any realistic loan.
+    num_payments = fields.Integer(
+        required=True, validate=validate.Range(min=1, max=1000)
+    )
     start_date = fields.Date(required=True)
     notes = fields.String(validate=validate.Length(max=2000))
 

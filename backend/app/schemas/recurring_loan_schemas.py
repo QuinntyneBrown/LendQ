@@ -45,7 +45,7 @@ class CreateRecurringLoanSchema(Schema):
         validate=validate.OneOf(["WEEKLY", "BIWEEKLY", "MONTHLY"]),
     )
     installment_count = fields.Integer(
-        required=True, validate=validate.Range(min=1)
+        required=True, validate=validate.Range(min=1, max=1000)
     )
     recurrence_interval = fields.String(
         required=True,
@@ -53,7 +53,7 @@ class CreateRecurringLoanSchema(Schema):
     )
     start_date = fields.Date(required=True)
     end_date = fields.Date()
-    max_occurrences = fields.Integer(validate=validate.Range(min=1))
+    max_occurrences = fields.Integer(validate=validate.Range(min=1, max=1000))
     timezone = fields.String(load_default="UTC")
     allow_parallel_active_generated_loans = fields.Boolean(load_default=False)
     max_generated_loan_principal_exposure = fields.Decimal(as_string=True)
@@ -72,7 +72,7 @@ class UpdateRecurringLoanSchema(Schema):
     repayment_frequency = fields.String(
         validate=validate.OneOf(["WEEKLY", "BIWEEKLY", "MONTHLY"]),
     )
-    installment_count = fields.Integer(validate=validate.Range(min=1))
+    installment_count = fields.Integer(validate=validate.Range(min=1, max=1000))
     recurrence_interval = fields.String(
         validate=validate.OneOf(["WEEKLY", "BIWEEKLY", "MONTHLY"]),
     )

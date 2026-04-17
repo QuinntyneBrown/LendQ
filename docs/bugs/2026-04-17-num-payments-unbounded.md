@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-num-payments-unbounded
 title: Loan creation has no upper bound on num_payments — huge values 500
-status: open
+status: fixed
 severity: medium
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/schemas/loan_schemas.py + recurring_loan_schemas.py (`max=1000` on num_payments / installment_count / max_occurrences)
 ---
 
 ## Summary
