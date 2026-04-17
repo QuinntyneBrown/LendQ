@@ -3,6 +3,7 @@ from decimal import Decimal
 from marshmallow import Schema, fields, validate
 
 from app.schemas.loan_schemas import MONEY_MAX
+from app.schemas.text_validators import PLAIN_TEXT_NO_ANGLE_BRACKETS
 
 
 class SavingsGoalSchema(Schema):
@@ -30,18 +31,28 @@ class SavingsGoalSchema(Schema):
 
 
 class CreateSavingsGoalSchema(Schema):
-    name = fields.String(required=True, validate=validate.Length(min=1, max=255))
+    name = fields.String(
+        required=True,
+        validate=[validate.Length(min=1, max=255), PLAIN_TEXT_NO_ANGLE_BRACKETS],
+    )
     target_amount = fields.Decimal(required=True, as_string=True, validate=validate.Range(min=Decimal("0.01"), max=MONEY_MAX))
     currency = fields.String(load_default="CAD")
     deadline = fields.Date(load_default=None)
-    description = fields.String(load_default=None, validate=validate.Length(max=500))
+    description = fields.String(
+        load_default=None,
+        validate=[validate.Length(max=500), PLAIN_TEXT_NO_ANGLE_BRACKETS],
+    )
 
 
 class UpdateSavingsGoalSchema(Schema):
-    name = fields.String(validate=validate.Length(min=1, max=255))
+    name = fields.String(
+        validate=[validate.Length(min=1, max=255), PLAIN_TEXT_NO_ANGLE_BRACKETS],
+    )
     target_amount = fields.Decimal(as_string=True, validate=validate.Range(min=Decimal("0.01"), max=MONEY_MAX))
     deadline = fields.Date()
-    description = fields.String(validate=validate.Length(max=500))
+    description = fields.String(
+        validate=[validate.Length(max=500), PLAIN_TEXT_NO_ANGLE_BRACKETS],
+    )
     expected_version = fields.Integer(required=True)
 
 

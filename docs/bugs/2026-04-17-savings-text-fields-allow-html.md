@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-savings-text-fields-allow-html
 title: Savings goal name/description accept HTML characters (same as loan description)
-status: open
+status: fixed
 severity: low
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/schemas/text_validators.py (shared module) + savings_goal_schemas.py (applied to name + description on Create and Update) + loan_schemas.py (refactored to use the shared module)
 ---
 
 ## Summary

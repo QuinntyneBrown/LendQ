@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from marshmallow import Schema, fields, validate
 
+from app.schemas.text_validators import PLAIN_TEXT_NO_ANGLE_BRACKETS
+
 
 class LoanSchema(Schema):
     id = fields.String(dump_only=True)
@@ -36,11 +38,6 @@ class LoanSchema(Schema):
         return obj.borrower.name if obj.borrower else None
 
 
-_PLAIN_TEXT_NO_ANGLE_BRACKETS = validate.Regexp(
-    r"^[^<>]*$",
-    error="cannot contain < or > characters",
-)
-
 # Upper bound for money fields. Keeps DB Numeric columns from overflowing
 # and rejects obviously-bogus inputs at the API edge. A private-lending
 # platform never needs more than a billion-dollar transaction; ~10^9 is
@@ -57,7 +54,7 @@ class CreateLoanRequestSchema(Schema):
         required=True,
         validate=[
             validate.Length(min=1, max=500),
-            _PLAIN_TEXT_NO_ANGLE_BRACKETS,
+            PLAIN_TEXT_NO_ANGLE_BRACKETS,
         ],
     )
     principal = fields.Decimal(
@@ -88,7 +85,7 @@ class CreateLoanRequestSchema(Schema):
     notes = fields.String(
         validate=[
             validate.Length(max=2000),
-            _PLAIN_TEXT_NO_ANGLE_BRACKETS,
+            PLAIN_TEXT_NO_ANGLE_BRACKETS,
         ],
     )
 
@@ -97,7 +94,7 @@ class UpdateLoanRequestSchema(Schema):
     description = fields.String(
         validate=[
             validate.Length(min=1, max=500),
-            _PLAIN_TEXT_NO_ANGLE_BRACKETS,
+            PLAIN_TEXT_NO_ANGLE_BRACKETS,
         ],
     )
     principal = fields.Decimal(
@@ -118,6 +115,6 @@ class UpdateLoanRequestSchema(Schema):
     notes = fields.String(
         validate=[
             validate.Length(max=2000),
-            _PLAIN_TEXT_NO_ANGLE_BRACKETS,
+            PLAIN_TEXT_NO_ANGLE_BRACKETS,
         ],
     )
