@@ -53,3 +53,44 @@ class TestPaymentEndpoints:
             headers=auth_headers(creditor_user),
         )
         assert resp.status_code == 200
+
+    def test_reschedule_rejects_past_date(self, client, creditor_user, borrower_user, auth_headers):
+        """Regression for 2026-04-17-reschedule-accepts-past-dates.
+
+        Before the fix, POSTing new_date=2020-01-01 to the reschedule
+        endpoint was accepted and the payment's due_date was overwritten
+        to 2020. Now it must return 422.
+        """
+        loan = LoanFactory.create(creditor_id=creditor_user.id, borrower_id=borrower_user.id)
+        payment = PaymentFactory.create(
+            loan_id=loan.id, amount_due=500, due_date="2026-06-16"
+        )
+
+        resp = client.put(
+            f"/api/v1/payments/{payment.id}/reschedule",
+            json={"new_date": "2020-01-01"},
+            headers=auth_headers(creditor_user),
+        )
+
+        assert resp.status_code == 422, resp.get_json()
+        data = resp.get_json()
+        assert data["code"] == "VALIDATION_ERROR"
+        # Message must mention past / date so the UI can surface it.
+        assert "past" in data["message"].lower() or "date" in data["message"].lower()
+
+    def test_reschedule_accepts_today_or_future(self, client, creditor_user, borrower_user, auth_headers):
+        """Sanity: the new date can be today or later."""
+        import datetime
+        loan = LoanFactory.create(creditor_id=creditor_user.id, borrower_id=borrower_user.id)
+        payment = PaymentFactory.create(
+            loan_id=loan.id, amount_due=500, due_date="2026-06-16"
+        )
+        future = (datetime.date.today() + datetime.timedelta(days=30)).isoformat()
+
+        resp = client.put(
+            f"/api/v1/payments/{payment.id}/reschedule",
+            json={"new_date": future},
+            headers=auth_headers(creditor_user),
+        )
+
+        assert resp.status_code == 200, resp.get_json()
