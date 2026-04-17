@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-savings-goal-accepts-past-deadline
 title: Savings goal creation accepts arbitrary past deadlines
-status: open
+status: fixed
 severity: medium
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/services/savings_goal_service.py (`date.today()` guard in create_goal)
 ---
 
 ## Summary

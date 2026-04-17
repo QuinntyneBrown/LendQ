@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+from datetime import date
 from decimal import Decimal
 
 from app.errors.exceptions import AuthorizationError, ConflictError, NotFoundError, ValidationError
@@ -45,12 +46,19 @@ class SavingsGoalService:
 
     def create_goal(self, data: dict, user) -> SavingsGoal:
         """Create a new savings goal."""
+        # See docs/bugs/2026-04-17-savings-goal-accepts-past-deadline.md —
+        # a savings goal is a forward-looking target; back-dated deadlines
+        # land in the list as instantly Overdue and confuse the user.
+        deadline = data.get("deadline")
+        if deadline is not None and deadline < date.today():
+            raise ValidationError("Deadline cannot be in the past")
+
         goal = SavingsGoal(
             user_id=user.id,
             name=data["name"],
             target_amount=Decimal(str(data["target_amount"])),
             currency=data.get("currency", "CAD"),
-            deadline=data.get("deadline"),
+            deadline=deadline,
             description=data.get("description"),
             status=SavingsGoalStatus.IN_PROGRESS,
         )
