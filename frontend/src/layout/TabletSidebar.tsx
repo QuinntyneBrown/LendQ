@@ -72,12 +72,20 @@ export function TabletSidebar({ open, onClose }: TabletSidebarProps) {
             onClick={onClose}
           />
           {isAdmin && (
-            <NavItem
-              icon={Users}
-              label="Users"
-              href="/users"
-              onClick={onClose}
-            />
+            <>
+              <NavItem
+                icon={Users}
+                label="Users"
+                href="/users"
+                onClick={onClose}
+              />
+              <NavItem
+                icon={Wallet}
+                label="Bank Accounts"
+                href="/admin/accounts"
+                onClick={onClose}
+              />
+            </>
           )}
           <NavItem
             icon={Bell}

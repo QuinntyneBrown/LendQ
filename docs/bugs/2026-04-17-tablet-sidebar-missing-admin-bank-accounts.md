@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-tablet-sidebar-missing-admin-bank-accounts
 title: Tablet drawer omits the "Bank Accounts" admin link (desktop has it)
-status: open
+status: fixed
 severity: low
 area: frontend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: frontend/src/layout/TabletSidebar.tsx (added Bank Accounts NavItem beside Users behind isAdmin fragment)
 ---
 
 ## Summary
