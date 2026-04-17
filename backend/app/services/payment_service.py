@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import date
 from decimal import Decimal
 
 from app.errors.exceptions import NotFoundError, ValidationError
@@ -132,6 +133,11 @@ class PaymentService:
 
         if payment.status not in [PaymentStatus.SCHEDULED, PaymentStatus.RESCHEDULED]:
             raise ValidationError("Only scheduled payments can be rescheduled")
+
+        # See docs/bugs/2026-04-17-reschedule-accepts-past-dates.md — without
+        # this guard the schedule can be overwritten with arbitrary past dates.
+        if data["new_date"] < date.today():
+            raise ValidationError("New payment date cannot be in the past")
 
         old_date = payment.due_date
         if not payment.original_due_date:

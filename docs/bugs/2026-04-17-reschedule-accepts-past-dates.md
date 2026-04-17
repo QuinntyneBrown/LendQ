@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-reschedule-accepts-past-dates
 title: Reschedule Payment accepts arbitrary past dates (no server-side validation)
-status: open
+status: fixed
 severity: high
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/services/payment_service.py (date.today() guard in reschedule_payment)
 ---
 
 ## Summary
