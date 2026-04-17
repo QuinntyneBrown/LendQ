@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-weak-password-accepted
 title: Signup accepts trivially weak passwords ("password", "        ")
-status: open
+status: fixed
 severity: high
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/schemas/auth_schemas.py (shared _PASSWORD_VALIDATORS with letter+digit regex) + user guide updated
 ---
 
 ## Summary

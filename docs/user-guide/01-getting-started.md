@@ -18,7 +18,7 @@ If this is your first time on LendQ and an administrator has not already provisi
 2. Fill in the form:
    - **Full Name** — how you want to appear to other users.
    - **Email Address** — used for sign-in, password resets, and notifications.
-   - **Password** — minimum 8 characters.
+   - **Password** — minimum 8 characters, must include at least one letter and one digit.
    - **Confirm Password** — must match.
 3. Click **Create Account**.
 4. You will see a success screen that says to check your email to verify the address.
