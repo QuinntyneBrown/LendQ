@@ -70,3 +70,55 @@ class TestSeedDemo:
             f"seed_demo is not idempotent: first run created {first_count} loans, "
             f"second run produced {second_count}"
         )
+
+    def test_seed_demo_populates_fixture_loans_even_when_unrelated_loans_exist(self):
+        """Regression — bug 2026-04-17-seed-demo-idempotence-skips-on-any-loan.
+
+        An unrelated loan (e.g. one created by a user through the UI) must not
+        block the demo fixture from being seeded. The old implementation gave
+        up as soon as `Loan.query.count() > 0`, which meant the first manual
+        loan permanently disabled the demo seed.
+        """
+        from datetime import date
+        from decimal import Decimal
+
+        # First ensure demo users exist so we have something to attach the
+        # unrelated loan to.
+        seed_demo()
+        creditor = User.query.filter_by(email="creditor@lendq.local").first()
+        borrower = User.query.filter_by(email="borrower1@lendq.local").first()
+        demo_count_before_intrusion = Loan.query.count()
+
+        # Nuke the demo loans so the DB only holds baseline users/roles.
+        Payment.query.delete()
+        Loan.query.delete()
+        db.session.commit()
+        assert Loan.query.count() == 0
+
+        # Simulate a user creating a loan through the UI before the next
+        # deploy-triggered seed.
+        user_loan = Loan(
+            creditor_id=creditor.id,
+            borrower_id=borrower.id,
+            description="User-created unrelated loan",
+            principal=Decimal("500.00"),
+            interest_rate=Decimal("0.00"),
+            repayment_frequency="MONTHLY",
+            start_date=date.today(),
+            status=LoanStatus.ACTIVE,
+        )
+        db.session.add(user_loan)
+        db.session.commit()
+        assert Loan.query.count() == 1
+
+        # Now re-run the demo seed. It must create the demo fixture loans in
+        # addition to the user loan that's already there.
+        seed_demo()
+
+        total_after_seed = Loan.query.count()
+        assert total_after_seed == demo_count_before_intrusion + 1, (
+            "seed_demo must re-seed fixture loans even when an unrelated loan "
+            f"already exists (expected {demo_count_before_intrusion + 1} loans, "
+            f"got {total_after_seed}). See "
+            "docs/bugs/2026-04-17-seed-demo-idempotence-skips-on-any-loan.md."
+        )
