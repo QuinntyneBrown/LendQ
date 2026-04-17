@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-formatdate-timezone-off-by-one
 title: Date-only values render as the previous day for users west of UTC
-status: open
+status: fixed
 severity: high
 area: frontend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: frontend/src/utils/format.ts (parseISO instead of new Date)
 ---
 
 ## Summary
