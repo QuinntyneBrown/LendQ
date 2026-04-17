@@ -71,6 +71,28 @@ class TestLoanEndpoints:
         )
         assert resp.status_code == 422, resp.get_json()
 
+    def test_create_loan_rejects_huge_principal(
+        self, client, creditor_user, borrower_user, auth_headers
+    ):
+        """Regression for 2026-04-17-decimal-amounts-unbounded.
+
+        27-digit principal previously 500'd at DB-insert time.
+        """
+        resp = client.post(
+            "/api/v1/loans/",
+            json={
+                "borrower_id": borrower_user.id,
+                "description": "Huge principal audit",
+                "principal": "999999999999999999999999999.99",
+                "interest_rate": 0,
+                "repayment_frequency": "MONTHLY",
+                "start_date": _future_date(30),
+                "num_payments": 3,
+            },
+            headers=auth_headers(creditor_user),
+        )
+        assert resp.status_code == 422, resp.get_json()
+
     def test_create_loan_rejects_angle_brackets_in_description(
         self, client, creditor_user, borrower_user, auth_headers
     ):

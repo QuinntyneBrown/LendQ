@@ -78,6 +78,25 @@ class TestPaymentEndpoints:
         # Message must mention past / date so the UI can surface it.
         assert "past" in data["message"].lower() or "date" in data["message"].lower()
 
+    def test_record_payment_rejects_huge_amount(
+        self, client, creditor_user, borrower_user, auth_headers
+    ):
+        """Regression for 2026-04-17-decimal-amounts-unbounded.
+
+        27-digit amounts were previously accepted; per-row clamp absorbed
+        the excess silently.
+        """
+        loan = LoanFactory.create(creditor_id=creditor_user.id, borrower_id=borrower_user.id)
+        PaymentFactory.create(loan_id=loan.id, amount_due=500, due_date="2026-06-01")
+        headers = auth_headers(creditor_user)
+        headers["Idempotency-Key"] = "huge-amount-test"
+        resp = client.post(
+            f"/api/v1/loans/{loan.id}/payments",
+            json={"amount": "999999999999999999999999999.99", "paid_date": "2026-04-17"},
+            headers=headers,
+        )
+        assert resp.status_code == 422, resp.get_json()
+
     def test_record_payment_rejects_future_paid_date(
         self, client, creditor_user, borrower_user, auth_headers
     ):
