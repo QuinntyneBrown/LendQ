@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-seed-demo-idempotence-skips-on-any-loan
 title: Demo seed skips all loan creation when any loan exists (user-created loans block seeding)
-status: open
+status: fixed
 severity: high
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/seed.py (`_ensure_loan` + per-fixture idempotence)
 ---
 
 ## Summary
