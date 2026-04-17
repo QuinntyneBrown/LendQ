@@ -78,6 +78,32 @@ class TestPaymentEndpoints:
         # Message must mention past / date so the UI can surface it.
         assert "past" in data["message"].lower() or "date" in data["message"].lower()
 
+    def test_record_payment_rejects_future_paid_date(
+        self, client, creditor_user, borrower_user, auth_headers
+    ):
+        """Regression for 2026-04-17-record-payment-accepts-future-paid-date.
+
+        Before this fix, paid_date=2099-01-01 was accepted and the payment
+        row was stamped decades in the future.
+        """
+        import datetime
+        loan = LoanFactory.create(creditor_id=creditor_user.id, borrower_id=borrower_user.id)
+        PaymentFactory.create(loan_id=loan.id, amount_due=500, due_date="2026-06-01")
+        future = (datetime.date.today() + datetime.timedelta(days=30)).isoformat()
+
+        headers = auth_headers(creditor_user)
+        headers["Idempotency-Key"] = "future-paid-date-test"
+        resp = client.post(
+            f"/api/v1/loans/{loan.id}/payments",
+            json={"amount": 100, "paid_date": future},
+            headers=headers,
+        )
+
+        assert resp.status_code == 422, resp.get_json()
+        data = resp.get_json()
+        assert data["code"] == "VALIDATION_ERROR"
+        assert "future" in data["message"].lower() or "paid" in data["message"].lower()
+
     def test_reschedule_accepts_today_or_future(self, client, creditor_user, borrower_user, auth_headers):
         """Sanity: the new date can be today or later."""
         import datetime
