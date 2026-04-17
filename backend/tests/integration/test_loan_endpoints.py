@@ -1,5 +1,15 @@
+import datetime
+
 import pytest
 from tests.factories import LoanFactory
+
+
+def _future_date(days: int = 30) -> str:
+    return (datetime.date.today() + datetime.timedelta(days=days)).isoformat()
+
+
+def _past_date(days: int = 30) -> str:
+    return (datetime.date.today() - datetime.timedelta(days=days)).isoformat()
 
 
 class TestLoanEndpoints:
@@ -10,10 +20,37 @@ class TestLoanEndpoints:
             "principal": 5000,
             "interest_rate": 0,
             "repayment_frequency": "MONTHLY",
-            "start_date": "2026-04-01",
+            "start_date": _future_date(30),
             "num_payments": 10,
         }, headers=auth_headers(creditor_user))
         assert resp.status_code == 201
+
+    def test_create_loan_rejects_past_start_date(
+        self, client, creditor_user, borrower_user, auth_headers
+    ):
+        """Regression for 2026-04-17-create-loan-accepts-past-start-date.
+
+        The user guide says a new loan's start date "cannot be in the past."
+        Before this fix the backend accepted 2010-01-01 and silently generated
+        a schedule of already-overdue payments.
+        """
+        resp = client.post(
+            "/api/v1/loans/",
+            json={
+                "borrower_id": borrower_user.id,
+                "description": "Back-dated loan",
+                "principal": 5000,
+                "interest_rate": 0,
+                "repayment_frequency": "MONTHLY",
+                "start_date": _past_date(30),
+                "num_payments": 10,
+            },
+            headers=auth_headers(creditor_user),
+        )
+        assert resp.status_code == 422, resp.get_json()
+        data = resp.get_json()
+        assert data["code"] == "VALIDATION_ERROR"
+        assert "past" in data["message"].lower() or "start date" in data["message"].lower()
 
     def test_list_loans(self, client, creditor_user, borrower_user, auth_headers):
         LoanFactory.create(creditor_id=creditor_user.id, borrower_id=borrower_user.id)
