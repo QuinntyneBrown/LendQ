@@ -150,6 +150,7 @@ export function CreateEditLoanModal({
             setValue("borrower_id", userId, { shouldValidate: true });
           }}
           error={errors.borrower_id?.message}
+          readOnly={isEdit}
         />
 
         <Input
@@ -174,7 +175,6 @@ export function CreateEditLoanModal({
             icon={Percent}
             type="number"
             step="0.01"
-            disabled={isEdit}
             {...register("interest_rate", { valueAsNumber: true })}
             error={errors.interest_rate?.message}
           />
@@ -211,6 +211,7 @@ export function CreateEditLoanModal({
             label="Start Date"
             icon={Calendar}
             type="date"
+            disabled={isEdit}
             {...register("start_date")}
             error={errors.start_date?.message}
           />

@@ -7,9 +7,15 @@ interface BorrowerSelectProps {
   value: string;
   onChange: (userId: string, userName: string) => void;
   error?: string;
+  /**
+   * When true the selected borrower is shown as a read-only label —
+   * no clear (X) button, no search input. Used in Edit Loan, where
+   * the borrower is immutable after creation.
+   */
+  readOnly?: boolean;
 }
 
-export function BorrowerSelect({ value, onChange, error }: BorrowerSelectProps) {
+export function BorrowerSelect({ value, onChange, error, readOnly }: BorrowerSelectProps) {
   const [search, setSearch] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [results, setResults] = useState<User[]>([]);
@@ -99,14 +105,20 @@ export function BorrowerSelect({ value, onChange, error }: BorrowerSelectProps) 
           <span className="font-body text-[15px] text-text-primary">
             {displayName}
           </span>
-          <button
-            type="button"
-            onClick={handleClear}
-            className="text-text-muted hover:text-text-primary transition-colors"
-            aria-label="Clear borrower"
-          >
-            <X size={16} />
-          </button>
+          {!readOnly && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="text-text-muted hover:text-text-primary transition-colors"
+              aria-label="Clear borrower"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      ) : readOnly ? (
+        <div className="rounded-input border border-border-strong px-4 py-3 bg-background font-body text-[15px] text-text-muted">
+          No borrower selected
         </div>
       ) : (
         <div className="relative">

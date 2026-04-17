@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-edit-loan-wrong-fields-editable
 title: Edit Loan dialog enables the wrong set of fields — immutable fields are editable, Interest Rate is disabled
-status: open
+status: fixed
 severity: high
 area: frontend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: frontend/src/loans/CreateEditLoanModal.tsx + BorrowerSelect.tsx (readOnly prop). Backend guard not yet added — deferred.
 ---
 
 ## Summary
