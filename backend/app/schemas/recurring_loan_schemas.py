@@ -3,6 +3,7 @@ from decimal import Decimal
 from marshmallow import Schema, fields, validate
 
 from app.schemas.loan_schemas import MONEY_MAX
+from app.schemas.text_validators import PLAIN_TEXT_NO_ANGLE_BRACKETS
 
 
 class RecurringLoanSchema(Schema):
@@ -34,7 +35,8 @@ class RecurringLoanSchema(Schema):
 class CreateRecurringLoanSchema(Schema):
     borrower_id = fields.String(required=True)
     description_template = fields.String(
-        required=True, validate=validate.Length(min=1, max=500)
+        required=True,
+        validate=[validate.Length(min=1, max=500), PLAIN_TEXT_NO_ANGLE_BRACKETS],
     )
     principal_amount = fields.Decimal(
         required=True,
@@ -68,7 +70,9 @@ class CreateRecurringLoanSchema(Schema):
 class UpdateRecurringLoanSchema(Schema):
     expected_version = fields.Integer(required=True)
     borrower_id = fields.String()
-    description_template = fields.String(validate=validate.Length(min=1, max=500))
+    description_template = fields.String(
+        validate=[validate.Length(min=1, max=500), PLAIN_TEXT_NO_ANGLE_BRACKETS],
+    )
     principal_amount = fields.Decimal(
         as_string=True,
         validate=validate.Range(min=Decimal("0.01"), max=MONEY_MAX),

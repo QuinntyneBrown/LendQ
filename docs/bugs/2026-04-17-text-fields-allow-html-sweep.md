@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-text-fields-allow-html-sweep
 title: Angle-bracket guard missing from most user-supplied text fields
-status: open
+status: fixed
 severity: low
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: auth_schemas.py, user_schemas.py, payment_schemas.py (notes + reschedule reason + pause reason), recurring_loan_schemas.py (description_template), bank_account_schemas.py (reason + description + source_description)
 ---
 
 ## Summary

@@ -1,5 +1,7 @@
 from marshmallow import Schema, fields, validate
 
+from app.schemas.text_validators import PLAIN_TEXT_NO_ANGLE_BRACKETS
+
 
 class RoleNestedSchema(Schema):
     id = fields.String()
@@ -17,14 +19,19 @@ class UserSchema(Schema):
 
 
 class CreateUserRequestSchema(Schema):
-    name = fields.String(required=True, validate=validate.Length(min=1, max=255))
+    name = fields.String(
+        required=True,
+        validate=[validate.Length(min=1, max=255), PLAIN_TEXT_NO_ANGLE_BRACKETS],
+    )
     email = fields.Email(required=True)
     password = fields.String(required=True, validate=validate.Length(min=8))
     role_ids = fields.List(fields.String(), load_default=[])
 
 
 class UpdateUserRequestSchema(Schema):
-    name = fields.String(validate=validate.Length(min=1, max=255))
+    name = fields.String(
+        validate=[validate.Length(min=1, max=255), PLAIN_TEXT_NO_ANGLE_BRACKETS],
+    )
     email = fields.Email()
     is_active = fields.Boolean()
     role_ids = fields.List(fields.String())

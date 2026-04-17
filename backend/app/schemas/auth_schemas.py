@@ -1,5 +1,7 @@
 from marshmallow import Schema, fields, validate
 
+from app.schemas.text_validators import PLAIN_TEXT_NO_ANGLE_BRACKETS
+
 
 # Minimum-viable password strength: length + at least one letter + at least
 # one digit. Implicitly rejects whitespace-only, all-letter, and all-digit
@@ -28,7 +30,10 @@ class LoginRequestSchema(Schema):
 
 
 class SignUpRequestSchema(Schema):
-    name = fields.String(required=True, validate=validate.Length(min=1, max=255))
+    name = fields.String(
+        required=True,
+        validate=[validate.Length(min=1, max=255), PLAIN_TEXT_NO_ANGLE_BRACKETS],
+    )
     email = fields.Email(required=True, validate=_EMAIL_LENGTH)
     password = fields.String(required=True, validate=_PASSWORD_VALIDATORS)
     confirm_password = fields.String(required=True)

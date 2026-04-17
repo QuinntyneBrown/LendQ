@@ -3,6 +3,7 @@ from decimal import Decimal
 from marshmallow import Schema, fields, validate
 
 from app.schemas.loan_schemas import MONEY_MAX
+from app.schemas.text_validators import PLAIN_TEXT_NO_ANGLE_BRACKETS
 
 
 class PaymentSchema(Schema):
@@ -27,14 +28,20 @@ class RecordPaymentRequestSchema(Schema):
         validate=validate.Range(min=Decimal("0.01"), max=MONEY_MAX),
     )
     paid_date = fields.Date(required=True)
-    notes = fields.String(validate=validate.Length(max=2000))
+    notes = fields.String(
+        validate=[validate.Length(max=2000), PLAIN_TEXT_NO_ANGLE_BRACKETS],
+    )
 
 
 class RescheduleRequestSchema(Schema):
     new_date = fields.Date(required=True)
-    reason = fields.String(validate=validate.Length(max=500))
+    reason = fields.String(
+        validate=[validate.Length(max=500), PLAIN_TEXT_NO_ANGLE_BRACKETS],
+    )
 
 
 class PauseRequestSchema(Schema):
     payment_ids = fields.List(fields.String(), required=True, validate=validate.Length(min=1))
-    reason = fields.String(validate=validate.Length(max=500))
+    reason = fields.String(
+        validate=[validate.Length(max=500), PLAIN_TEXT_NO_ANGLE_BRACKETS],
+    )
