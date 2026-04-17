@@ -73,6 +73,7 @@ export default function LoginPage() {
               label="Email Address"
               icon={Mail}
               placeholder="you@example.com"
+              autoComplete="email"
               disabled={isSubmitting}
               error={errors.email?.message}
               {...register("email")}
@@ -83,6 +84,7 @@ export default function LoginPage() {
               type="password"
               icon={Lock}
               placeholder="Enter your password"
+              autoComplete="current-password"
               disabled={isSubmitting}
               error={errors.password?.message}
               {...register("password")}

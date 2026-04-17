@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-login-inputs-missing-autocomplete
 title: Login form inputs missing `autocomplete` attributes
-status: open
+status: fixed
 severity: low
 area: frontend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: see git log for `frontend/src/auth/LoginPage.tsx`
 ---
 
 ## Summary
