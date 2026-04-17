@@ -52,7 +52,22 @@ content-security-policy: default-src 'self'
 - `X-Frame-Options: DENY` (blocks iframe embedding)
 - `Content-Security-Policy: frame-ancestors 'none'` (modern equivalent; also blocks `<embed>` / `<object>`)
 
-A full CSP is a bigger effort (needs to permit Google Fonts, the API origin, inline styles for the app, and whatever the React build emits). Start with clickjacking defence and iterate.
+A full CSP is a bigger effort (needs to permit Google Fonts, the API origin, inline styles for the app, and whatever the React build emits). Shipped alongside the clickjacking fix in iter 34:
+
+```
+default-src 'self';
+script-src 'self' 'unsafe-inline';        # iter-8 inline reload bootstrap
+style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+font-src 'self' https://fonts.gstatic.com;
+img-src 'self' data:;
+connect-src 'self' https://*.azurecontainerapps.io;
+frame-ancestors 'none';
+base-uri 'self';
+form-action 'self';
+object-src 'none';
+```
+
+`'unsafe-inline'` on script-src still required by the asset-reload bootstrap from iter 8. A tighter CSP would externalize that script or use a SHA hash — tracked as a future cleanup.
 
 ## Actual behavior
 
