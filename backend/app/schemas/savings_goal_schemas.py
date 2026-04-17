@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from marshmallow import Schema, fields, validate
 
+from app.schemas.loan_schemas import MONEY_MAX
+
 
 class SavingsGoalSchema(Schema):
     id = fields.String(dump_only=True)
@@ -29,7 +31,7 @@ class SavingsGoalSchema(Schema):
 
 class CreateSavingsGoalSchema(Schema):
     name = fields.String(required=True, validate=validate.Length(min=1, max=255))
-    target_amount = fields.Decimal(required=True, as_string=True, validate=validate.Range(min=Decimal("0.01")))
+    target_amount = fields.Decimal(required=True, as_string=True, validate=validate.Range(min=Decimal("0.01"), max=MONEY_MAX))
     currency = fields.String(load_default="CAD")
     deadline = fields.Date(load_default=None)
     description = fields.String(load_default=None, validate=validate.Length(max=500))
@@ -37,19 +39,19 @@ class CreateSavingsGoalSchema(Schema):
 
 class UpdateSavingsGoalSchema(Schema):
     name = fields.String(validate=validate.Length(min=1, max=255))
-    target_amount = fields.Decimal(as_string=True, validate=validate.Range(min=Decimal("0.01")))
+    target_amount = fields.Decimal(as_string=True, validate=validate.Range(min=Decimal("0.01"), max=MONEY_MAX))
     deadline = fields.Date()
     description = fields.String(validate=validate.Length(max=500))
     expected_version = fields.Integer(required=True)
 
 
 class ContributeSchema(Schema):
-    amount = fields.Decimal(required=True, as_string=True, validate=validate.Range(min=Decimal("0.01")))
+    amount = fields.Decimal(required=True, as_string=True, validate=validate.Range(min=Decimal("0.01"), max=MONEY_MAX))
     account_id = fields.String(required=True)
 
 
 class ReleaseSchema(Schema):
-    amount = fields.Decimal(required=True, as_string=True, validate=validate.Range(min=Decimal("0.01")))
+    amount = fields.Decimal(required=True, as_string=True, validate=validate.Range(min=Decimal("0.01"), max=MONEY_MAX))
     account_id = fields.String(required=True)
 
 

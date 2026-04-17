@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-decimal-amounts-unbounded
 title: Money amounts have no upper bound — huge principal 500s, huge payments slip through
-status: open
+status: fixed
 severity: medium
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/schemas/loan_schemas.py (shared MONEY_MAX = 999,999,999.99) + payment_schemas.py + savings_goal_schemas.py + bank_account_schemas.py + recurring_loan_schemas.py
 ---
 
 ## Summary

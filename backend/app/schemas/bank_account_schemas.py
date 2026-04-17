@@ -1,5 +1,7 @@
 from marshmallow import Schema, fields, validate
 
+from app.schemas.loan_schemas import MONEY_MAX
+
 
 # ---------------------------------------------------------------------------
 # Admin schemas
@@ -68,13 +70,13 @@ class BankAccountSchema(Schema):
 
 
 class DepositRequestSchema(Schema):
-    amount = fields.Decimal(required=True, as_string=True, validate=validate.Range(min=0.01))
+    amount = fields.Decimal(required=True, as_string=True, validate=validate.Range(min=0.01, max=MONEY_MAX))
     reason_code = fields.String(required=True, validate=validate.Length(min=1, max=50))
     description = fields.String(validate=validate.Length(max=500))
 
 
 class WithdrawRequestSchema(Schema):
-    amount = fields.Decimal(required=True, as_string=True, validate=validate.Range(min=0.01))
+    amount = fields.Decimal(required=True, as_string=True, validate=validate.Range(min=0.01, max=MONEY_MAX))
     reason_code = fields.String(required=True, validate=validate.Length(min=1, max=50))
     description = fields.String(validate=validate.Length(max=500))
 
@@ -95,7 +97,7 @@ class BankTransactionSchema(Schema):
 
 
 class CreateRecurringDepositSchema(Schema):
-    amount = fields.Decimal(required=True, as_string=True, validate=validate.Range(min=0.01))
+    amount = fields.Decimal(required=True, as_string=True, validate=validate.Range(min=0.01, max=MONEY_MAX))
     source_description = fields.String(required=True, validate=validate.Length(min=1, max=255))
     frequency = fields.String(required=True, validate=validate.OneOf(["WEEKLY", "BIWEEKLY", "MONTHLY"]))
     start_date = fields.Date(required=True)
@@ -105,7 +107,7 @@ class CreateRecurringDepositSchema(Schema):
 
 
 class UpdateRecurringDepositSchema(Schema):
-    amount = fields.Decimal(as_string=True, validate=validate.Range(min=0.01))
+    amount = fields.Decimal(as_string=True, validate=validate.Range(min=0.01, max=MONEY_MAX))
     source_description = fields.String(validate=validate.Length(min=1, max=255))
     frequency = fields.String(validate=validate.OneOf(["WEEKLY", "BIWEEKLY", "MONTHLY"]))
     end_date = fields.Date()

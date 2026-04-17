@@ -41,6 +41,12 @@ _PLAIN_TEXT_NO_ANGLE_BRACKETS = validate.Regexp(
     error="cannot contain < or > characters",
 )
 
+# Upper bound for money fields. Keeps DB Numeric columns from overflowing
+# and rejects obviously-bogus inputs at the API edge. A private-lending
+# platform never needs more than a billion-dollar transaction; ~10^9 is
+# generous headroom. See docs/bugs/2026-04-17-decimal-amounts-unbounded.md.
+MONEY_MAX = Decimal("999999999.99")
+
 
 class CreateLoanRequestSchema(Schema):
     borrower_id = fields.String(required=True)
@@ -54,7 +60,11 @@ class CreateLoanRequestSchema(Schema):
             _PLAIN_TEXT_NO_ANGLE_BRACKETS,
         ],
     )
-    principal = fields.Decimal(required=True, as_string=True)
+    principal = fields.Decimal(
+        required=True,
+        as_string=True,
+        validate=validate.Range(min=Decimal("0.01"), max=MONEY_MAX),
+    )
     # User guide 04-loans.md promises interest_rate ∈ [0, 100]. Without this
     # bound, negative rates were silently accepted and absurd rates crashed
     # the schedule arithmetic — see
@@ -90,7 +100,10 @@ class UpdateLoanRequestSchema(Schema):
             _PLAIN_TEXT_NO_ANGLE_BRACKETS,
         ],
     )
-    principal = fields.Decimal(as_string=True)
+    principal = fields.Decimal(
+        as_string=True,
+        validate=validate.Range(min=Decimal("0.01"), max=MONEY_MAX),
+    )
     interest_rate = fields.Decimal(
         as_string=True,
         validate=validate.Range(min=Decimal("0"), max=Decimal("100")),

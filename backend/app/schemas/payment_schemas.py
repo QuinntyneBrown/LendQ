@@ -1,4 +1,8 @@
+from decimal import Decimal
+
 from marshmallow import Schema, fields, validate
+
+from app.schemas.loan_schemas import MONEY_MAX
 
 
 class PaymentSchema(Schema):
@@ -15,7 +19,13 @@ class PaymentSchema(Schema):
 
 
 class RecordPaymentRequestSchema(Schema):
-    amount = fields.Decimal(required=True, as_string=True)
+    # See docs/bugs/2026-04-17-decimal-amounts-unbounded.md. Upper bound
+    # rejects DoS-shaped inputs at the schema edge.
+    amount = fields.Decimal(
+        required=True,
+        as_string=True,
+        validate=validate.Range(min=Decimal("0.01"), max=MONEY_MAX),
+    )
     paid_date = fields.Date(required=True)
     notes = fields.String(validate=validate.Length(max=2000))
 

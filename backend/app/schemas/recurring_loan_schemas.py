@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from marshmallow import Schema, fields, validate
 
+from app.schemas.loan_schemas import MONEY_MAX
+
 
 class RecurringLoanSchema(Schema):
     id = fields.String(dump_only=True)
@@ -34,7 +36,11 @@ class CreateRecurringLoanSchema(Schema):
     description_template = fields.String(
         required=True, validate=validate.Length(min=1, max=500)
     )
-    principal_amount = fields.Decimal(required=True, as_string=True)
+    principal_amount = fields.Decimal(
+        required=True,
+        as_string=True,
+        validate=validate.Range(min=Decimal("0.01"), max=MONEY_MAX),
+    )
     currency = fields.String(load_default="CAD", validate=validate.Length(equal=3))
     interest_rate_percent = fields.Decimal(
         as_string=True,
@@ -63,7 +69,10 @@ class UpdateRecurringLoanSchema(Schema):
     expected_version = fields.Integer(required=True)
     borrower_id = fields.String()
     description_template = fields.String(validate=validate.Length(min=1, max=500))
-    principal_amount = fields.Decimal(as_string=True)
+    principal_amount = fields.Decimal(
+        as_string=True,
+        validate=validate.Range(min=Decimal("0.01"), max=MONEY_MAX),
+    )
     currency = fields.String(validate=validate.Length(equal=3))
     interest_rate_percent = fields.Decimal(
         as_string=True,
@@ -89,7 +98,10 @@ class RecurringLoanTemplateVersionSchema(Schema):
     recurring_loan_id = fields.String()
     version_number = fields.Integer()
     description_template = fields.String()
-    principal_amount = fields.Decimal(as_string=True)
+    principal_amount = fields.Decimal(
+        as_string=True,
+        validate=validate.Range(min=Decimal("0.01"), max=MONEY_MAX),
+    )
     currency = fields.String()
     interest_rate_percent = fields.Decimal(
         as_string=True,
