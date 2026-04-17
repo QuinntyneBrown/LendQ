@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-next-payment-card-shows-start-date
 title: Loan "Next Payment" summary card shows the loan's start date, not the next unpaid payment's due date
-status: open
+status: fixed
 severity: medium
 area: frontend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: frontend/src/loans/LoanSummaryCards.tsx (nextPaymentDate prop) + LoanDetailPage.tsx (threaded prop, expanded pending statuses)
 ---
 
 ## Summary

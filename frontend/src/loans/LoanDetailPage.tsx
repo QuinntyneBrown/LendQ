@@ -30,7 +30,7 @@ export function LoanDetailPage() {
   const isBorrower =
     roles.length === 1 && roles[0] === "Borrower";
 
-  const pendingStatuses = ["SCHEDULED", "OVERDUE", "RESCHEDULED"];
+  const pendingStatuses = ["SCHEDULED", "OVERDUE", "RESCHEDULED", "PARTIALLY_PAID"];
   const nextPendingPayment = payments?.find((p) =>
     pendingStatuses.includes(p.status),
   );
@@ -116,7 +116,10 @@ export function LoanDetailPage() {
         </div>
       </div>
 
-      <LoanSummaryCards loan={loan} />
+      <LoanSummaryCards
+        loan={loan}
+        nextPaymentDate={nextPendingPayment?.due_date ?? null}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div data-testid="loan-info-card">

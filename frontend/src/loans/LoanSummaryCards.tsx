@@ -5,11 +5,22 @@ import { formatDate } from "@/utils/format";
 
 interface LoanSummaryCardsProps {
   loan: Loan;
+  /**
+   * Due date of the next unpaid payment (SCHEDULED / OVERDUE /
+   * RESCHEDULED / PARTIALLY_PAID). If omitted, falls back to the loan's
+   * `start_date`, then to "—". See
+   * docs/bugs/2026-04-17-next-payment-card-shows-start-date.md.
+   */
+  nextPaymentDate?: string | null;
 }
 
-export function LoanSummaryCards({ loan }: LoanSummaryCardsProps) {
+export function LoanSummaryCards({ loan, nextPaymentDate }: LoanSummaryCardsProps) {
   const totalPaid = Number(loan.total_paid);
-  const nextPayment = loan.start_date ? formatDate(loan.start_date) : "—";
+  const nextPayment = nextPaymentDate
+    ? formatDate(nextPaymentDate)
+    : loan.start_date
+      ? formatDate(loan.start_date)
+      : "—";
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
