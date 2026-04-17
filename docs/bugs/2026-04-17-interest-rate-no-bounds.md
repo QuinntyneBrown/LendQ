@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-interest-rate-no-bounds
 title: Loan creation has no bounds on interest_rate — negative accepted, huge values crash
-status: open
+status: fixed
 severity: high
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/schemas/loan_schemas.py + recurring_loan_schemas.py (validate.Range(min=0, max=100) on all interest_rate fields)
 ---
 
 ## Summary

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from marshmallow import Schema, fields, validate
 
 
@@ -38,7 +40,15 @@ class CreateLoanRequestSchema(Schema):
     borrower_id = fields.String(required=True)
     description = fields.String(required=True, validate=validate.Length(min=1, max=500))
     principal = fields.Decimal(required=True, as_string=True)
-    interest_rate = fields.Decimal(load_default="0.00", as_string=True)
+    # User guide 04-loans.md promises interest_rate ∈ [0, 100]. Without this
+    # bound, negative rates were silently accepted and absurd rates crashed
+    # the schedule arithmetic — see
+    # docs/bugs/2026-04-17-interest-rate-no-bounds.md.
+    interest_rate = fields.Decimal(
+        load_default="0.00",
+        as_string=True,
+        validate=validate.Range(min=Decimal("0"), max=Decimal("100")),
+    )
     repayment_frequency = fields.String(
         required=True,
         validate=validate.OneOf(["WEEKLY", "BIWEEKLY", "MONTHLY", "CUSTOM"]),
@@ -51,7 +61,10 @@ class CreateLoanRequestSchema(Schema):
 class UpdateLoanRequestSchema(Schema):
     description = fields.String(validate=validate.Length(min=1, max=500))
     principal = fields.Decimal(as_string=True)
-    interest_rate = fields.Decimal(as_string=True)
+    interest_rate = fields.Decimal(
+        as_string=True,
+        validate=validate.Range(min=Decimal("0"), max=Decimal("100")),
+    )
     repayment_frequency = fields.String(
         validate=validate.OneOf(["WEEKLY", "BIWEEKLY", "MONTHLY", "CUSTOM"])
     )
