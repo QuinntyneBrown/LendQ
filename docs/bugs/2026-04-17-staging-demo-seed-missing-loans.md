@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-staging-demo-seed-missing-loans
 title: Staging demo seed does not populate loans — every account's dashboard is empty
-status: open
+status: fixed
 severity: high
-area: backend
+area: infra
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: .github/workflows/deploy-staging.yml (merged SEED_ON_STARTUP into image update step)
 ---
 
 ## Summary
@@ -78,7 +80,20 @@ Candidate causes to investigate, in order of likelihood:
 
 Ruled out: auth (tokens work, `/auth/me` returns the correct user), read permissions (list/summary endpoints return 200, not 403), and API health (backend is responsive, no 5xx seen).
 
-## Suggested fix
+## Resolution
+
+Confirmed via `backend/tests/integration/test_seed_demo.py` that `seed_demo()` produces the expected loans, payments, and users in a clean local environment — so the bug is environmental, not in the seed code.
+
+Root cause: the deploy workflow applied `SEED_ON_STARTUP=demo` in a separate step **after** the image was already rolled out and the health check had passed. The first revision of each deploy therefore booted without the env var, completed startup without seeding, and the subsequent env-var update (marked `continue-on-error: true` with `|| true`) could fail silently.
+
+Fix in [`.github/workflows/deploy-staging.yml`](../../.github/workflows/deploy-staging.yml):
+
+- `SEED_ON_STARTUP=demo`, `RATELIMIT_DEFAULT`, and `RATE_LIMIT_AUTH` are now passed to the same `az containerapp update --set-env-vars` call that updates the image. The new revision boots with the var in place and runs the seed immediately.
+- The separate "Ensure staging env vars on API" step (with silent failure handling) has been removed.
+
+Guard-rail test: [`backend/tests/integration/test_deploy_workflow_seed_contract.py`](../../backend/tests/integration/test_deploy_workflow_seed_contract.py) asserts both properties are true — they previously failed against the old workflow file.
+
+## Original suggested fix (kept for history)
 
 Short-term:
 

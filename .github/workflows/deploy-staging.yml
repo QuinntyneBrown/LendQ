@@ -55,10 +55,19 @@ jobs:
           FULL_IMAGE="$ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG"
           echo "Updating apps to image: $FULL_IMAGE"
 
+          # Apply image and staging env vars in one update so the new API
+          # revision boots with SEED_ON_STARTUP=demo in place. See
+          # docs/bugs/2026-04-17-staging-demo-seed-missing-loans.md — the
+          # seed would otherwise be skipped on the first revision after
+          # deploy and never run.
           az containerapp update \
             --name $API_APP_NAME \
             --resource-group $AZURE_RESOURCE_GROUP \
-            --image "$FULL_IMAGE"
+            --image "$FULL_IMAGE" \
+            --set-env-vars \
+              "SEED_ON_STARTUP=demo" \
+              "RATELIMIT_DEFAULT=2000/hour" \
+              "RATE_LIMIT_AUTH=30/minute"
 
           az containerapp update \
             --name $WORKER_APP_NAME \
@@ -120,17 +129,6 @@ jobs:
           done
           echo "API health check timed out"
           exit 1
-
-      - name: Ensure staging env vars on API
-        continue-on-error: true
-        run: |
-          az containerapp update \
-            --name $API_APP_NAME \
-            --resource-group $AZURE_RESOURCE_GROUP \
-            --set-env-vars \
-              "SEED_ON_STARTUP=demo" \
-              "RATELIMIT_DEFAULT=2000/hour" \
-              "RATE_LIMIT_AUTH=30/minute" 2>&1 || true
 
   # ──────────────────────────────────────────────────
   # Frontend: build SPA and deploy to Static Web App
