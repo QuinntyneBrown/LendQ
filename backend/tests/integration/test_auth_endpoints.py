@@ -39,6 +39,19 @@ class TestAuthEndpoints:
         })
         assert resp.status_code == 422, resp.get_json()
 
+    def test_signup_rejects_angle_brackets_in_name(self, client):
+        """Regression for 2026-04-17-text-fields-allow-html-sweep."""
+        resp = client.post(
+            "/api/v1/auth/signup",
+            json={
+                "name": "<img src=x>",
+                "email": "angle-bracket-name@test.com",
+                "password": "Password123",
+                "confirm_password": "Password123",
+            },
+        )
+        assert resp.status_code == 422, resp.get_json()
+
     def test_signup_rejects_oversized_email(self, client):
         """Regression for 2026-04-17-long-email-crashes-signup.
 
