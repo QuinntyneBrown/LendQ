@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Wallet } from "lucide-react";
 import type { SavingsGoal } from "@/api/types";
 import { Modal } from "@/ui/Modal";
 import { Input } from "@/ui/Input";
@@ -84,6 +85,8 @@ export function AddFundsDialog({
     );
   };
 
+  const hasAccount = Boolean(accountId);
+
   return (
     <Modal
       open={open}
@@ -93,69 +96,84 @@ export function AddFundsDialog({
       footer={
         <div className="flex items-center justify-end gap-3">
           <Button variant="secondary" onClick={onClose}>
-            Cancel
+            {hasAccount ? "Cancel" : "Close"}
           </Button>
-          <Button
-            type="submit"
-            onClick={handleSubmit(onSubmit)}
-            isLoading={contributeMutation.isPending}
-            disabled={contributeMutation.isPending || !accountId}
-          >
-            Add Funds
-          </Button>
+          {hasAccount && (
+            <Button
+              type="submit"
+              onClick={handleSubmit(onSubmit)}
+              isLoading={contributeMutation.isPending}
+              disabled={contributeMutation.isPending}
+            >
+              Add Funds
+            </Button>
+          )}
         </div>
       }
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
-        {/* Current balance info */}
-        <div className="bg-background rounded-card p-4 flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <span className="font-body text-[13px] text-text-muted">Current Savings</span>
-            <span className="font-body text-sm font-bold text-text-primary">
-              {formatCurrency(goal.current_amount)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="font-body text-[13px] text-text-muted">Remaining to Goal</span>
-            <span data-testid="available-balance" className="font-body text-sm font-bold text-text-primary">
-              {formatCurrency(remaining)}
-            </span>
-          </div>
+      {!hasAccount ? (
+        <div
+          data-testid="no-account-message"
+          className="flex flex-col items-center gap-3 text-center py-4"
+        >
+          <Wallet className="h-10 w-10 text-text-muted" aria-hidden="true" />
+          <p className="font-body text-sm text-text-secondary max-w-sm">
+            You need a bank account to fund a savings goal.
+            Request an account from your administrator, then come back to add funds.
+          </p>
         </div>
-
-        {/* Amount input */}
-        <Input
-          label="Amount to Add"
-          type="number"
-          step="0.01"
-          placeholder="0.00"
-          {...register("amount", { valueAsNumber: true })}
-          error={errors.amount?.message}
-        />
-
-        {/* Progress preview */}
-        {watchedAmount > 0 && (
-          <div data-testid="progress-preview" className="bg-background rounded-card p-4 flex flex-col gap-2">
-            <span className="font-body text-[13px] font-medium text-text-secondary">
-              After this contribution
-            </span>
+      ) : (
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+          {/* Current balance info */}
+          <div className="bg-background rounded-card p-4 flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="font-body text-sm text-text-primary">
-                {formatCurrency(progressPreview.newTotal)} / {formatCurrency(goal.target_amount)}
-              </span>
-              <span className="font-body text-sm font-bold text-primary">
-                {Math.round(progressPreview.newPercent)}%
+              <span className="font-body text-[13px] text-text-muted">Current Savings</span>
+              <span className="font-body text-sm font-bold text-text-primary">
+                {formatCurrency(goal.current_amount)}
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-primary h-2 rounded-full transition-all"
-                style={{ width: `${progressPreview.newPercent}%` }}
-              />
+            <div className="flex items-center justify-between">
+              <span className="font-body text-[13px] text-text-muted">Remaining to Goal</span>
+              <span data-testid="available-balance" className="font-body text-sm font-bold text-text-primary">
+                {formatCurrency(remaining)}
+              </span>
             </div>
           </div>
-        )}
-      </form>
+
+          {/* Amount input */}
+          <Input
+            label="Amount to Add"
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            {...register("amount", { valueAsNumber: true })}
+            error={errors.amount?.message}
+          />
+
+          {/* Progress preview */}
+          {watchedAmount > 0 && (
+            <div data-testid="progress-preview" className="bg-background rounded-card p-4 flex flex-col gap-2">
+              <span className="font-body text-[13px] font-medium text-text-secondary">
+                After this contribution
+              </span>
+              <div className="flex items-center justify-between">
+                <span className="font-body text-sm text-text-primary">
+                  {formatCurrency(progressPreview.newTotal)} / {formatCurrency(goal.target_amount)}
+                </span>
+                <span className="font-body text-sm font-bold text-primary">
+                  {Math.round(progressPreview.newPercent)}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-primary h-2 rounded-full transition-all"
+                  style={{ width: `${progressPreview.newPercent}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </form>
+      )}
     </Modal>
   );
 }

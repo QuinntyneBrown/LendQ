@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-add-funds-silently-disabled-without-account
 title: "Add Funds dialog is silently disabled when the user has no bank account"
-status: open
+status: fixed
 severity: medium
 area: frontend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: frontend/src/savings/AddFundsDialog.tsx (no-account branch with Wallet icon + guidance)
 ---
 
 ## Summary
