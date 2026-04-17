@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-frontend-missing-clickjacking-headers
 title: Static Web App serves HTML without X-Frame-Options or Content-Security-Policy
-status: open
+status: fixed
 severity: medium
 area: infra
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: frontend/public/staticwebapp.config.json (globalHeaders with X-Frame-Options: DENY and Content-Security-Policy: frame-ancestors 'none')
 ---
 
 ## Summary
