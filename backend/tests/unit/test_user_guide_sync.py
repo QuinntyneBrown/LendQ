@@ -12,6 +12,25 @@ DOCS_ROOT = Path(__file__).resolve().parents[3] / "docs" / "user-guide"
 
 
 class TestUserGuideSync:
+    def test_navigation_guide_breakpoints_match_useBreakpoint_code(self):
+        """Regression for 2026-04-17-user-guide-breakpoints-mismatch.
+
+        Code in frontend/src/layout/useBreakpoint.ts switches to desktop at
+        ≥ 1280 px. The guide's section headers must agree.
+        """
+        content = (DOCS_ROOT / "03-navigation.md").read_text(encoding="utf-8")
+        assert "## Desktop (≥ 1280 px wide)" in content, (
+            "Desktop section header must list 1280 px cutoff to match "
+            "useBreakpoint.ts"
+        )
+        assert "## Tablet (768 – 1279 px wide)" in content, (
+            "Tablet section header must list 768–1279 px to match "
+            "useBreakpoint.ts"
+        )
+        # Stale values must not appear in headers.
+        assert "## Desktop (≥ 1024 px" not in content
+        assert "## Tablet (768 – 1023 px" not in content
+
     def test_navigation_guide_describes_actual_mobile_tabs(self):
         """The mobile-nav section of 03-navigation.md must list the labels
         actually shipped in the design + app: Home, Loans, Owed, Alerts, More.
