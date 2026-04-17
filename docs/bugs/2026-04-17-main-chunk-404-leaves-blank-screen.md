@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-main-chunk-404-leaves-blank-screen
 title: Main entry script 404 after deploy leaves a permanently blank screen
-status: open
+status: fixed
 severity: high
 area: frontend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: frontend/index.html (inline reload bootstrap) + frontend/src/utils/assetReloadGuard.ts (testable helper)
 ---
 
 ## Summary

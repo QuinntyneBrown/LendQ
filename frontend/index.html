@@ -11,6 +11,31 @@
       rel="stylesheet"
     />
     <title>LendQ</title>
+    <script>
+      /* Asset-reload guard — see docs/bugs/2026-04-17-main-chunk-404-leaves-blank-screen.md.
+         If the Vite-hashed entry script or a modulepreload link 404s (because a new
+         deploy replaced the filename), reload the tab once so the browser fetches the
+         fresh index.html. sessionStorage guard prevents loops on persistent failures. */
+      (function () {
+        var KEY = "lendq_chunk_reload_at";
+        var COOLDOWN = 30000;
+        window.addEventListener(
+          "error",
+          function (e) {
+            var t = e.target;
+            if (!t) return;
+            if (t.tagName !== "SCRIPT" && t.tagName !== "LINK") return;
+            var src = t.src || t.href || "";
+            if (src.indexOf("/assets/") === -1) return;
+            var lastRaw = sessionStorage.getItem(KEY);
+            if (lastRaw && Date.now() - Number(lastRaw) < COOLDOWN) return;
+            sessionStorage.setItem(KEY, String(Date.now()));
+            window.location.reload();
+          },
+          true,
+        );
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
