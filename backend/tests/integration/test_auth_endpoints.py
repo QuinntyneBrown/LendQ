@@ -11,6 +11,44 @@ class TestAuthEndpoints:
         })
         assert resp.status_code == 201
 
+    def test_signup_rejects_all_letter_password(self, client):
+        """Regression for 2026-04-17-weak-password-accepted.
+
+        8+ letters with no digits must be rejected. Before the fix this
+        was accepted — "abcdefgh", "password", etc. all passed.
+        """
+        resp = client.post("/api/v1/auth/signup", json={
+            "name": "Weak",
+            "email": "weak-letters@test.com",
+            "password": "abcdefgh",
+            "confirm_password": "abcdefgh",
+        })
+        assert resp.status_code == 422, resp.get_json()
+
+    def test_signup_rejects_whitespace_only_password(self, client):
+        """Regression for 2026-04-17-weak-password-accepted.
+
+        8 literal spaces passed length validation. No digit + no letter
+        means the new validator now rejects it too.
+        """
+        resp = client.post("/api/v1/auth/signup", json={
+            "name": "Weak",
+            "email": "weak-spaces@test.com",
+            "password": "        ",
+            "confirm_password": "        ",
+        })
+        assert resp.status_code == 422, resp.get_json()
+
+    def test_signup_rejects_all_digit_password(self, client):
+        """Symmetric case: 8+ digits, no letters."""
+        resp = client.post("/api/v1/auth/signup", json={
+            "name": "Weak",
+            "email": "weak-digits@test.com",
+            "password": "12345678",
+            "confirm_password": "12345678",
+        })
+        assert resp.status_code == 422, resp.get_json()
+
     def test_signup_duplicate_email_is_anti_enumeration(self, client, creditor_user):
         """Regression for 2026-04-17-signup-user-enumeration-via-409.
 
