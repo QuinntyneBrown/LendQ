@@ -1,28 +1,29 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import { ProtectedRoute } from "@/auth/ProtectedRoute";
 import { AppLayout } from "@/layout/AppLayout";
+import { lazyRoute } from "@/utils/lazyWithReload";
 
-const LoginPage = lazy(() => import("@/auth/LoginPage"));
-const SignUpPage = lazy(() => import("@/auth/SignUpPage"));
-const ForgotPasswordPage = lazy(() => import("@/auth/ForgotPasswordPage"));
-const ResetPasswordPage = lazy(() => import("@/auth/ResetPasswordPage"));
-const DashboardPage = lazy(() => import("@/dashboard/DashboardPage"));
-const LoanListPage = lazy(() => import("@/loans/LoanListPage"));
-const LoanDetailPage = lazy(() => import("@/loans/LoanDetailPage"));
-const UserListPage = lazy(() => import("@/users/UserListPage"));
-const RoleManagementPage = lazy(() => import("@/users/RoleManagementPage"));
-const NotificationListPage = lazy(
+const LoginPage = lazyRoute(() => import("@/auth/LoginPage"));
+const SignUpPage = lazyRoute(() => import("@/auth/SignUpPage"));
+const ForgotPasswordPage = lazyRoute(() => import("@/auth/ForgotPasswordPage"));
+const ResetPasswordPage = lazyRoute(() => import("@/auth/ResetPasswordPage"));
+const DashboardPage = lazyRoute(() => import("@/dashboard/DashboardPage"));
+const LoanListPage = lazyRoute(() => import("@/loans/LoanListPage"));
+const LoanDetailPage = lazyRoute(() => import("@/loans/LoanDetailPage"));
+const UserListPage = lazyRoute(() => import("@/users/UserListPage"));
+const RoleManagementPage = lazyRoute(() => import("@/users/RoleManagementPage"));
+const NotificationListPage = lazyRoute(
   () => import("@/notifications/NotificationListPage"),
 );
-const SettingsPage = lazy(() => import("@/settings/SettingsPage"));
-const BankAccountPage = lazy(() => import("@/bank-account/BankAccountPage"));
-const SavingsGoalListPage = lazy(() => import("@/savings/SavingsGoalListPage"));
-const SavingsGoalDetailPage = lazy(() => import("@/savings/SavingsGoalDetailPage"));
-const RecurringLoanListPage = lazy(() => import("@/recurring-loans/RecurringLoanListPage"));
-const RecurringLoanDetailPage = lazy(() => import("@/recurring-loans/RecurringLoanDetailPage"));
-const AdminBankAccountListPage = lazy(() => import("@/admin/bank-accounts/AdminBankAccountListPage"));
-const AdminBankAccountDetailPage = lazy(() => import("@/admin/bank-accounts/AdminBankAccountDetailPage"));
+const SettingsPage = lazyRoute(() => import("@/settings/SettingsPage"));
+const BankAccountPage = lazyRoute(() => import("@/bank-account/BankAccountPage"));
+const SavingsGoalListPage = lazyRoute(() => import("@/savings/SavingsGoalListPage"));
+const SavingsGoalDetailPage = lazyRoute(() => import("@/savings/SavingsGoalDetailPage"));
+const RecurringLoanListPage = lazyRoute(() => import("@/recurring-loans/RecurringLoanListPage"));
+const RecurringLoanDetailPage = lazyRoute(() => import("@/recurring-loans/RecurringLoanDetailPage"));
+const AdminBankAccountListPage = lazyRoute(() => import("@/admin/bank-accounts/AdminBankAccountListPage"));
+const AdminBankAccountDetailPage = lazyRoute(() => import("@/admin/bank-accounts/AdminBankAccountDetailPage"));
 
 function Loading() {
   return (

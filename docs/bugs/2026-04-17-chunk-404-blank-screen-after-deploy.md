@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-chunk-404-blank-screen-after-deploy
 title: Blank screen when a dynamically imported route chunk 404s after a frontend redeploy
-status: open
+status: fixed
 severity: high
 area: frontend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: frontend/src/utils/lazyWithReload.ts + routes.tsx
 ---
 
 ## Summary
