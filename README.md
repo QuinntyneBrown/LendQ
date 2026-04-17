@@ -196,6 +196,7 @@ Infrastructure is defined in Bicep under [`ops/azure/`](./ops/azure).
 
 ## Documentation Map
 
+- [`docs/user-guide/README.md`](./docs/user-guide/README.md) — End-user walkthrough of every feature, plus troubleshooting and deployment
 - [`docs/specs/L1.md`](./docs/specs/L1.md) — High-level product and platform requirements
 - [`docs/specs/L2.md`](./docs/specs/L2.md) — Detailed acceptance criteria
 - [`docs/detailed-designs/00-index.md`](./docs/detailed-designs/00-index.md) — Architecture index and module map
