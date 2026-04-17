@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-recurring-loan-past-start-date
 title: Recurring loan template accepts arbitrary past start_date (4th past-date validation gap)
-status: open
+status: fixed
 severity: high
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/services/recurring_loan_service.py (`date.today()` guard in create_recurring_loan)
 ---
 
 ## Summary

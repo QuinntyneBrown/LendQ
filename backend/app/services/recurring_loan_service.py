@@ -130,6 +130,12 @@ class RecurringLoanService:
         if principal <= 0:
             raise ValidationError("Principal amount must be greater than zero")
 
+        # See docs/bugs/2026-04-17-recurring-loan-past-start-date.md —
+        # back-dating anchors next_generation_at in the past and risks
+        # kicking off catch-up generations for dozens of missed cycles.
+        if data["start_date"] < date.today():
+            raise ValidationError("Start date cannot be in the past")
+
         recurring = RecurringLoan(
             creditor_id=user.id,
             borrower_id=data["borrower_id"],
