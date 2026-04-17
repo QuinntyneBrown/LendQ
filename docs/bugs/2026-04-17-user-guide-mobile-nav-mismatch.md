@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-user-guide-mobile-nav-mismatch
 title: User guide's mobile bottom-nav description doesn't match the design or the implementation
-status: open
+status: fixed
 severity: low
 area: docs
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: docs/user-guide/03-navigation.md (Mobile section rewritten to match Home/Loans/Owed/Alerts/More design) + test_user_guide_sync.py pins the labels
 ---
 
 ## Summary

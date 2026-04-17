@@ -39,10 +39,17 @@ The desktop notification bell remains in the header.
 
 ![Mobile layout](screenshots/06-layout-mobile.png)
 
-- **Top bar** — logo and notification bell.
+- **Top bar** — logo and user avatar (click to open the account menu).
 - **Main content** — full-width pages with stacked cards and sticky action buttons.
-- **Bottom navigation** — five primary tabs always visible: Dashboard, My Loans, Borrowings, Savings, Notifications.
-- **More menu** — a sixth button that reveals Recurring Loans, Account, Settings, and (for Admins) Users and Bank Accounts, plus **Sign out**.
+- **Bottom navigation** — five primary tabs always visible:
+  - **Home** (`layout-dashboard` icon) — the dashboard.
+  - **Loans** (`banknote` icon) — loans where you are the creditor.
+  - **Owed** (`hand-coins` icon) — loans where you are the borrower.
+  - **Alerts** (`bell` icon) — notifications list.
+  - **More** (`menu` icon) — expands the full menu.
+- **More menu** reveals the less-frequent destinations: Savings, Recurring Loans, Account, Settings, and (for Admins) Users and Bank Accounts, plus **Sign out**.
+
+> The desktop sidebar uses the full "My Loans" / "Borrowings" / "Savings" / "Notifications" labels; the mobile bar uses shorter forms to fit. Both point at the same pages.
 
 ## The notification bell
 
