@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import logging
-from datetime import date
 from decimal import Decimal
 
 from app.errors.exceptions import AuthorizationError, ConflictError, NotFoundError, ValidationError
+from app.services.date_validators import reject_past_date
 from app.extensions import db
 from app.models.bank_account import BankAccountStatus
 from app.models.bank_transaction import BankTransaction, BankTransactionDirection, BankTransactionEntryType
@@ -50,8 +50,7 @@ class SavingsGoalService:
         # a savings goal is a forward-looking target; back-dated deadlines
         # land in the list as instantly Overdue and confuse the user.
         deadline = data.get("deadline")
-        if deadline is not None and deadline < date.today():
-            raise ValidationError("Deadline cannot be in the past")
+        reject_past_date(deadline, field_label="Deadline")
 
         goal = SavingsGoal(
             user_id=user.id,

@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-recurring-deposit-past-start-date
 title: Bank-account recurring deposit accepts past start_date (5th and final past-date gap)
-status: open
+status: fixed
 severity: high
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/services/date_validators.py (shared helper) + bank_account_service.py + consolidated all 5 services to use the helper
 ---
 
 ## Summary

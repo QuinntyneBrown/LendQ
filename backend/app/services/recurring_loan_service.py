@@ -26,6 +26,7 @@ from app.repositories.recurring_loan_repository import (
 )
 from app.repositories.user_repository import UserRepository
 from app.services.audit_service import AuditService
+from app.services.date_validators import reject_past_date
 from app.services.loan_service import LoanService
 
 logger = logging.getLogger(__name__)
@@ -133,8 +134,7 @@ class RecurringLoanService:
         # See docs/bugs/2026-04-17-recurring-loan-past-start-date.md —
         # back-dating anchors next_generation_at in the past and risks
         # kicking off catch-up generations for dozens of missed cycles.
-        if data["start_date"] < date.today():
-            raise ValidationError("Start date cannot be in the past")
+        reject_past_date(data["start_date"], field_label="Start date")
 
         recurring = RecurringLoan(
             creditor_id=user.id,

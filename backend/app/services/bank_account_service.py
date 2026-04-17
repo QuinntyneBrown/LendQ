@@ -12,6 +12,7 @@ from app.errors.exceptions import (
     NotFoundError,
     ValidationError,
 )
+from app.services.date_validators import reject_past_date
 from app.extensions import db
 from app.models.bank_account import BankAccount, BankAccountStatus
 from app.models.bank_transaction import (
@@ -286,6 +287,9 @@ class BankAccountService:
             raise ConflictError("Account must be ACTIVE to create recurring deposit")
         if account.user_id != user.id and not user.has_role("Admin"):
             raise AuthorizationError("Only account owner or admin can create recurring deposits")
+
+        # See docs/bugs/2026-04-17-recurring-deposit-past-start-date.md.
+        reject_past_date(data["start_date"], field_label="Start date")
 
         from datetime import datetime, time
         start = data["start_date"]

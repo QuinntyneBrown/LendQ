@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import logging
-from datetime import date
 from decimal import Decimal
 
 from app.errors.exceptions import AuthorizationError, NotFoundError, ValidationError
+from app.services.date_validators import reject_past_date
 from app.extensions import db
 from app.models.loan import Loan
 from app.models.user import User
@@ -113,8 +113,7 @@ class LoanService:
 
         # See docs/bugs/2026-04-17-create-loan-accepts-past-start-date.md —
         # back-dated loans silently generated already-overdue schedules.
-        if data["start_date"] < date.today():
-            raise ValidationError("Start date cannot be in the past")
+        reject_past_date(data["start_date"], field_label="Start date")
 
         loan = Loan(
             creditor_id=user.id,
