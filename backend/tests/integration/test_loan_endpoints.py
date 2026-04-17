@@ -71,6 +71,30 @@ class TestLoanEndpoints:
         )
         assert resp.status_code == 422, resp.get_json()
 
+    def test_create_loan_rejects_angle_brackets_in_description(
+        self, client, creditor_user, borrower_user, auth_headers
+    ):
+        """Regression for 2026-04-17-loan-description-allows-html-characters.
+
+        HTML-looking strings (safe thanks to React escaping, but visually
+        broken in the UI) must be rejected at the schema layer so the data
+        stays plain human text.
+        """
+        resp = client.post(
+            "/api/v1/loans/",
+            json={
+                "borrower_id": borrower_user.id,
+                "description": "<img src=x onerror=alert(1)>",
+                "principal": 100,
+                "interest_rate": 0,
+                "repayment_frequency": "MONTHLY",
+                "start_date": _future_date(30),
+                "num_payments": 3,
+            },
+            headers=auth_headers(creditor_user),
+        )
+        assert resp.status_code == 422, resp.get_json()
+
     def test_create_loan_rejects_unbounded_num_payments(
         self, client, creditor_user, borrower_user, auth_headers
     ):
