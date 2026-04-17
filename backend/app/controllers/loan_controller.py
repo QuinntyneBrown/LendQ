@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from flask import Blueprint, g, jsonify, request
 
+from app.controllers.pagination import parse_pagination
 from app.middleware.auth_middleware import require_auth
 from app.schemas.loan_schemas import CreateLoanRequestSchema, LoanSchema, UpdateLoanRequestSchema
 from app.schemas.pagination import paginated_response
@@ -18,8 +19,7 @@ update_loan_schema = UpdateLoanRequestSchema()
 @loan_bp.route("/", methods=["GET"])
 @require_auth
 def list_loans():
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
+    page, per_page = parse_pagination()
     tab = request.args.get("tab", "creditor")
     status = request.args.get("status")
     loan_service = LoanService()

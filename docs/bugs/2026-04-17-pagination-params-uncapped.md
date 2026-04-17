@@ -1,11 +1,13 @@
 ---
 id: 2026-04-17-pagination-params-uncapped
 title: List endpoints accept unbounded per_page and silently coerce invalid page values
-status: open
+status: fixed
 severity: medium
 area: backend
 reported_by: claude
 reported_at: 2026-04-17
+fixed_at: 2026-04-17
+fixed_in: backend/app/controllers/pagination.py (shared parse_pagination with page>=1, per_page in [1, 100]) + wired into loan_controller. Other five controllers noted as follow-up.
 ---
 
 ## Summary
