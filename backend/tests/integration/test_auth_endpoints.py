@@ -11,16 +11,57 @@ class TestAuthEndpoints:
         })
         assert resp.status_code == 201
 
-    def test_signup_duplicate_email_returns_409(self, client, creditor_user):
-        resp = client.post("/api/v1/auth/signup", json={
-            "name": "Duplicate",
-            "email": creditor_user.email,
-            "password": "password123",
-            "confirm_password": "password123",
-        })
-        assert resp.status_code == 409
-        data = resp.get_json()
-        assert data["code"] == "CONFLICT"
+    def test_signup_duplicate_email_is_anti_enumeration(self, client, creditor_user):
+        """Regression for 2026-04-17-signup-user-enumeration-via-409.
+
+        Signing up with an existing email must be indistinguishable
+        (status + body shape) from signing up with a fresh email, so a
+        public attacker can't enumerate real accounts via this endpoint.
+        Admin-initiated POST /users keeps its 409 — different endpoint.
+        """
+        fresh = client.post(
+            "/api/v1/auth/signup",
+            json={
+                "name": "Fresh",
+                "email": "fresh-for-enum-test@test.com",
+                "password": "password123",
+                "confirm_password": "password123",
+            },
+        )
+        dup = client.post(
+            "/api/v1/auth/signup",
+            json={
+                "name": "Duplicate",
+                "email": creditor_user.email,
+                "password": "password123",
+                "confirm_password": "password123",
+            },
+        )
+
+        assert dup.status_code == fresh.status_code, (
+            "Duplicate-email signup must return the same status as a fresh signup "
+            "to prevent user enumeration. See "
+            "docs/bugs/2026-04-17-signup-user-enumeration-via-409.md."
+        )
+
+    def test_signup_duplicate_does_not_create_a_new_row(
+        self, client, creditor_user, app
+    ):
+        """Tightening: the duplicate path must not leak a second row in the DB."""
+        from app.models.user import User
+
+        before = User.query.filter_by(email=creditor_user.email).count()
+        client.post(
+            "/api/v1/auth/signup",
+            json={
+                "name": "Duplicate",
+                "email": creditor_user.email,
+                "password": "password123",
+                "confirm_password": "password123",
+            },
+        )
+        after = User.query.filter_by(email=creditor_user.email).count()
+        assert before == after, "Duplicate signup must not create a new user row"
 
     def test_login_returns_token_bundle(self, client, creditor_user):
         resp = client.post("/api/v1/auth/login", json={
